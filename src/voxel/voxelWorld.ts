@@ -258,6 +258,17 @@ export class VoxelWorld {
           if (s.skirt) for (let iy = this.groundAt(ix, iz); iy < y0; iy++) this.setBlock(ix, iy, iz, STRATA[(y0 - 1 - iy) % STRATA.length]);
           if (s.erode && top < y1 && hash2(ix + 3, iz) < 0.6) this.setBlock(ix, top, iz, B.Rubble);
         }
+      if (s.carve) {
+        // Terraces bury their grass tops inside the mound; a carved room cuts through them and
+        // would show green stripes on its walls. Buried grass (solid above it) becomes stone.
+        for (let iy = y0 - 1; iy <= y1 + 1; iy++)
+          for (let iz = z0 - 1; iz <= z1 + 1; iz++)
+            for (let ix = x0 - 1; ix <= x1 + 1; ix++) {
+              const inside = iy >= y0 && iy <= y1 && iz >= z0 && iz <= z1 && ix >= x0 && ix <= x1;
+              if (inside || this.get(ix, iy, iz) !== B.GrassStone) continue;
+              if (this.get(ix, iy + 1, iz) !== B.Air) this.setBlock(ix, iy, iz, B.Stone);
+            }
+      }
       return;
     }
 

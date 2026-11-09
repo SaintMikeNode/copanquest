@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
-import { CENSERS, TORCHES } from "../game/torches";
+import { CENSERS, TORCHES, TORCH_WALL } from "../game/torches";
 import { rosalilaHoles } from "./buildGreybox";
 import { shared } from "../voxel/material";
 
@@ -15,9 +15,11 @@ export function Torches() {
     shared.interiorBMax.value.set(b[3] - 2.2, b[4], b[5]); // daylight reaches a little way into the entrance
     TORCHES.forEach((t, i) => shared.torches.value[i].copy(t));
   }, []);
-  const { stick, bowl, foot, mClay, flame, core, mStick, mFlame, mCore } = useMemo(
+  const { stick, bracket, bowl, foot, mClay, flame, core, mStick, mFlame, mCore } = useMemo(
     () => ({
       stick: new THREE.BoxGeometry(0.07, 0.45, 0.07),
+      // Wooden bracket from the wall to the torch (along local +x, turned per wall).
+      bracket: new THREE.BoxGeometry(0.2, 0.06, 0.06),
       // Clay censer: a wide bowl on a pedestal.
       bowl: new THREE.BoxGeometry(0.62, 0.3, 0.62),
       foot: new THREE.BoxGeometry(0.34, 0.6, 0.34),
@@ -51,7 +53,18 @@ export function Torches() {
               <mesh geometry={bowl} material={mClay} position={[0, -0.3, 0]} />
             </>
           ) : (
-            <mesh geometry={stick} material={mStick} position={[0, -0.35, 0]} />
+            <>
+              <mesh geometry={stick} material={mStick} position={[0, -0.35, 0]} />
+              {TORCH_WALL[i] && (
+                // Rotate so local +x points into the wall, then sit halfway between wall and stick.
+                <mesh
+                  geometry={bracket}
+                  material={mStick}
+                  position={[-TORCH_WALL[i]![0] * 0.1, -0.45, -TORCH_WALL[i]![1] * 0.1]}
+                  rotation-y={Math.atan2(TORCH_WALL[i]![1], -TORCH_WALL[i]![0])}
+                />
+              )}
+            </>
           )}
           <group ref={(g) => void (flames.current[i] = g)}>
             <mesh geometry={flame} material={mFlame} />

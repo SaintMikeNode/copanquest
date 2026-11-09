@@ -7,7 +7,7 @@ import { BLOCKS, MONUMENTS, MOUNDS, PATHS, PLAYER_SPAWN } from "../world/siteDat
 import { FIELDS, HOUSEHOLDS, LADDERS, STALLS } from "../world/villageData";
 
 /** Bump when meshing/decoration code changes in a way the data hash can't see. */
-const VOXEL_CODE_VERSION = 13;
+const VOXEL_CODE_VERSION = 14;
 
 export const voxelStats = { ms: 0, triangles: 0, nearTriangles: 0, plants: 0, cached: false };
 
