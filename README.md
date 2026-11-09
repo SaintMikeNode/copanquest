@@ -33,7 +33,7 @@ Hosting: a Cloudflare static-assets Worker (`cloudflare.config.ts`, `wrangler.co
 | Walk | W A S D / arrows | Left joystick |
 | Run | Shift | Push the joystick to the edge |
 | Jump | Space | *Saltar* button |
-| Look | Drag the mouse, Q / E | Drag on the screen |
+| Look | Click the game once, then move the mouse (Esc frees the cursor); Q / E | Drag on the screen |
 | Zoom | Mouse wheel | Pinch |
 | Map | Click the minimap | Tap the minimap |
 

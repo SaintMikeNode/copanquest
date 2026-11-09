@@ -16,7 +16,7 @@
   "jump": "Jump",
   "nearby": "You are near",
   "controls.keys": "Move with W A S D or the arrow keys. Shift to run. Space to jump.",
-  "controls.mouse": "Drag with the mouse to look around. Scroll to zoom in or out.",
+  "controls.mouse": "Click the game and move the mouse to look around (Esc frees the cursor). Scroll to zoom in or out.",
   "controls.touch": "Use the stick on the left to walk and drag on the screen to look around. Push the stick to the edge to run.",
   "controls.poi": "Walk up to the stelae, altars and temples to learn about them.",
   "greybox": "Work in progress: we keep improving the world.",
@@ -79,5 +79,6 @@
   "xp": "XP",
   "inventory": "Bag",
   "lens.past": "⏳ Copán around AD 800",
-  "lens.present": "⏳ Back to the present"
+  "lens.present": "⏳ Back to the present",
+  "mouse.hint": "Click the game to look around with the mouse · Esc frees the cursor"
 }

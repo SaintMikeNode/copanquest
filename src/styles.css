@@ -242,3 +242,8 @@ button { font: inherit; cursor: pointer; }
   animation: lensfx 1.4s ease-out forwards;
 }
 @keyframes lensfx { from { transform: scale(.2); opacity: 1; } to { transform: scale(2.4); opacity: 0; } }
+
+.mouse-hint {
+  position: absolute; left: 50%; top: 58%; transform: translateX(-50%); padding: 8px 14px; border-radius: 10px;
+  background: var(--panel); color: var(--panel-text); font-size: .85rem; font-weight: 700; pointer-events: none; white-space: nowrap;
+}

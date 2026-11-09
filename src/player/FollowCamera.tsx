@@ -9,6 +9,14 @@ import { playerState } from "./playerState";
 import { DEV_TOOLS } from "../config";
 import { SPAWN_YAW } from "../world/siteData";
 import { useCamera } from "../game/camera";
+import { useGame } from "../state/useGame";
+import { useAction } from "../game/WorldGame";
+
+/** True while a menu, dialogue or card needs the cursor. */
+function blockedByUI() {
+  const g = useGame.getState();
+  return !!g.overlay || !!g.dialogue || !!useAction.getState().found;
+}
 
 const MIN_DIST = 2.5;
 const MAX_DIST = DEV_TOOLS ? 120 : 14;
@@ -58,7 +66,22 @@ export function FollowCamera({ target }: { target: RefObject<EcctrlHandle | null
     const pinch = new Map<number, { x: number; y: number }>();
     let pinchDist = 0;
 
+    // Desktop: click to lock the pointer, then the mouse turns the camera (like a PC game).
+    const locked = () => document.pointerLockElement === el;
     const down = (e: PointerEvent) => {
+      if (e.pointerType === "mouse") {
+        if (locked()) {
+          // Left click while aiming the explorer's camera takes the photo.
+          if (e.button === 0 && useCamera.getState().active) window.dispatchEvent(new Event("cq-shutter"));
+          return;
+        }
+        if (!blockedByUI()) {
+          const req = el.requestPointerLock?.({ unadjustedMovement: true } as never) as Promise<void> | undefined;
+          // Some browsers reject unadjustedMovement; retry without it.
+          req?.catch?.(() => el.requestPointerLock?.());
+          return;
+        }
+      }
       pinch.set(e.pointerId, { x: e.clientX, y: e.clientY });
       if (pinch.size === 2) {
         const [a, b] = [...pinch.values()];
@@ -70,7 +93,13 @@ export function FollowCamera({ target }: { target: RefObject<EcctrlHandle | null
       lastY = e.clientY;
       el.setPointerCapture(e.pointerId);
     };
+    const look = (e: MouseEvent) => {
+      if (!locked()) return;
+      yaw.current -= e.movementX * 0.0026;
+      pitch.current = THREE.MathUtils.clamp(pitch.current + e.movementY * 0.0021, MIN_PITCH, MAX_PITCH);
+    };
     const move = (e: PointerEvent) => {
+      if (e.pointerType === "mouse" && locked()) return;
       if (pinch.has(e.pointerId)) pinch.set(e.pointerId, { x: e.clientX, y: e.clientY });
       if (pinch.size === 2) {
         const [a, b] = [...pinch.values()];
@@ -94,12 +123,14 @@ export function FollowCamera({ target }: { target: RefObject<EcctrlHandle | null
       e.preventDefault();
       wantDist.current = THREE.MathUtils.clamp(wantDist.current * (1 + e.deltaY * 0.001), MIN_DIST, MAX_DIST);
     };
+    document.addEventListener("mousemove", look);
     el.addEventListener("pointerdown", down);
     el.addEventListener("pointermove", move);
     el.addEventListener("pointerup", up);
     el.addEventListener("pointercancel", up);
     el.addEventListener("wheel", wheel, { passive: false });
     return () => {
+      document.removeEventListener("mousemove", look);
       el.removeEventListener("pointerdown", down);
       el.removeEventListener("pointermove", move);
       el.removeEventListener("pointerup", up);

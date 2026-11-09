@@ -101,10 +101,15 @@ export function CameraOverlay() {
     if (!active) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.code === "KeyF" || e.code === "Enter") shoot();
-      if (e.code === "Escape") useCamera.getState().toggle(false);
+      if (e.code === "Escape" && !document.pointerLockElement) useCamera.getState().toggle(false);
     };
+    const onShutter = () => shoot();
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    window.addEventListener("cq-shutter", onShutter);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      window.removeEventListener("cq-shutter", onShutter);
+    };
   });
   if (!active) return null;
   const subject = aim ? SUBJECT_BY_ID[aim] : null;

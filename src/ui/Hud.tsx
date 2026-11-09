@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { useGame } from "../state/useGame";
 import { useT } from "../i18n";
 import { IS_TOUCH } from "../config";
@@ -13,6 +14,22 @@ import { DialogueBox, Progress, TalkPrompt, Toast } from "./Dialogue";
 import { ActionPrompt, CameraOverlay, GlyphPuzzle, HudButtons, Journal } from "./GameUI";
 import { useCamera } from "../game/camera";
 import { useAction } from "../game/WorldGame";
+
+/** Desktop mouse-look: free the cursor when UI needs it, and remind how to grab it. */
+function MouseLook({ needsCursor }: { needsCursor: boolean }) {
+  const t = useT();
+  const [locked, setLocked] = useState(false);
+  useEffect(() => {
+    const onChange = () => setLocked(!!document.pointerLockElement);
+    document.addEventListener("pointerlockchange", onChange);
+    return () => document.removeEventListener("pointerlockchange", onChange);
+  }, []);
+  useEffect(() => {
+    if (needsCursor && document.pointerLockElement) document.exitPointerLock();
+  }, [needsCursor]);
+  if (IS_TOUCH || locked || needsCursor) return null;
+  return <div className="mouse-hint">🖱 {t("mouse.hint")}</div>;
+}
 
 export function Hud() {
   const t = useT();
@@ -41,6 +58,7 @@ export function Hud() {
       {!camOn && !dialogue && <ActionPrompt />}
       <DialogueBox />
       <Toast />
+      <MouseLook needsCursor={!!overlay || !!dialogue || !!found} />
       {IS_TOUCH && !overlay && !dialogue && !found && !camOn && <TouchControls />}
       {overlay === "map" && (
         <Overlay title={t("map")} onClose={close}>
