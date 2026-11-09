@@ -15,6 +15,8 @@ export const playerState = {
   climbing: false,
   /** Set by the dialogue UI: freezes movement while talking. */
   frozen: false,
+  /** Kneeling and digging at an excavation square. */
+  digging: false,
   /** The player's rigid body (for ray filters). */
   body: null as RapierRigidBody | null,
 };

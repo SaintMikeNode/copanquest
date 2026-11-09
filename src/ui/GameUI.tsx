@@ -387,6 +387,8 @@ export function ActionPrompt() {
     timer.current = null;
     digSite.current = null;
     playerState.frozen = false;
+    playerState.digging = false;
+    useAction.setState({ digging: null });
     setProgress(0);
   };
   // Tap once to dig: the player kneels still while the bar fills, then the find appears.
@@ -398,6 +400,8 @@ export function ActionPrompt() {
     if (kind !== "dig" || !id || timer.current !== null) return;
     digSite.current = id;
     playerState.frozen = true;
+    playerState.digging = true;
+    useAction.setState({ digging: id });
     const t0 = performance.now();
     timer.current = window.setInterval(() => {
       const k = (performance.now() - t0) / 1000 / DIG_SECONDS;

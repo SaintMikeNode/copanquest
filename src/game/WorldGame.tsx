@@ -23,12 +23,18 @@ export const useAction = create<{
   kind: "dig" | "ball" | null;
   id: string | null;
   found: string | null;
+  /** Site currently being dug (for the dirt-spray effect). */
+  digging: string | null;
+  /** Last find, to play the "artifact rises from the ground" effect. */
+  reveal: { site: string; artifact: string; t: number } | null;
   set: (kind: "dig" | "ball" | null, id?: string | null) => void;
   setFound: (id: string | null) => void;
 }>((set, get) => ({
   kind: null,
   id: null,
   found: null,
+  digging: null,
+  reveal: null,
   set: (kind, id = null) => {
     if (get().kind !== kind || get().id !== id) set({ kind, id });
   },
@@ -339,7 +345,9 @@ export function finishDig(siteId: string) {
   const before = rankIndex(computeXp());
   useProgress.getState().addArtifact(siteId, artifact.id);
   useAction.getState().set(null);
-  useAction.getState().setFound(artifact.id);
+  useAction.setState({ digging: null, reveal: { site: siteId, artifact: artifact.id, t: performance.now() } });
+  // Let the artifact rise out of the ground before the card pops up.
+  setTimeout(() => useAction.getState().setFound(artifact.id), 1300);
   checkRankUp(before);
 }
 

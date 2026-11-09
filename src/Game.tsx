@@ -23,6 +23,7 @@ import { dayClock } from "./game/time";
 import { DEV_TOOLS } from "./config";
 import { CameraAim } from "./game/CameraAim";
 import { Animals, BallGame, DigTracker, Pickups } from "./game/WorldGame";
+import { DigEffects } from "./game/DigEffects";
 import { People } from "./npc/People";
 import { Jades } from "./poi/Jades";
 import { Boundary } from "./world/Boundary";
@@ -109,6 +110,7 @@ export default function Game() {
             <Pickups />
             <Animals />
             <DigTracker />
+            <DigEffects />
             <BallGame />
           </Physics>
           <VoxelTerrain />

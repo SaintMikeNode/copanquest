@@ -143,10 +143,23 @@ function PlayerModel({ controller }: { controller: React.RefObject<EcctrlHandle 
   const armL = useRef<THREE.Group>(null);
   const armR = useRef<THREE.Group>(null);
   const phase = useRef(0);
+  const body = useRef<THREE.Group>(null);
   useFrame((_, dt) => {
     const c = controller.current;
     const speed = c ? c.moveSpeed : 0;
     const air = c ? !c.isOnGround : false;
+    if (playerState.digging) {
+      // Crouch and dig with both hands.
+      phase.current += dt * 11;
+      const s = Math.sin(phase.current);
+      if (armL.current) armL.current.rotation.x = -1.2 + s * 0.6;
+      if (armR.current) armR.current.rotation.x = -1.2 - s * 0.6;
+      if (legL.current) legL.current.rotation.x = -0.9;
+      if (legR.current) legR.current.rotation.x = 0.3;
+      if (body.current) body.current.position.y = FEET - 0.16;
+      return;
+    }
+    if (body.current) body.current.position.y = FEET;
     if (playerState.climbing) {
       // Hand over hand.
       phase.current += dt * 9;
@@ -170,7 +183,7 @@ function PlayerModel({ controller }: { controller: React.RefObject<EcctrlHandle 
   );
   // Feet at y = FEET (capsule bottom minus float height).
   return (
-    <group position={[0, FEET, 0]}>
+    <group ref={body} position={[0, FEET, 0]}>
       <group ref={legL} position={[-0.085, 0.43, 0]}>
         {part(0, [0, -0.2, 0])}
         {part(1, [0, -0.395, 0.02])}
