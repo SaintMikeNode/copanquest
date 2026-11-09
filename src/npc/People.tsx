@@ -20,6 +20,15 @@ const talkables = new Map<string, THREE.Vector3>();
 
 type Ray = InstanceType<ReturnType<typeof useRapier>["rapier"]["Ray"]>;
 
+/**
+ * Highest step an actor walks up in one go (m). The ground ray starts this far above the feet:
+ * a wall, block or ledge taller than that puts the ray's start inside it (hit at distance 0),
+ * so the actor turns back instead of popping up onto it.
+ */
+const STEP = 0.6;
+/** Highest drop an actor walks off (m). */
+const DROP = 1.2;
+
 /** Ground height under (x, z), searching down from `fromY`. */
 function useGround() {
   const { world, rapier } = useRapier();
@@ -134,12 +143,21 @@ function Talker({ index }: { index: number }) {
         a.tz = t.home[1] + Math.sin(ang) * r;
       } else {
         const sp = 0.9 * dt;
-        a.x += (dx / d) * Math.min(sp, d);
-        a.z += (dz / d) * Math.min(sp, d);
-        a.yaw = turn(a.yaw, Math.atan2(dx, dz), 0.15);
-        moving = true;
-        const g = ground(a.x, a.z, a.y + 1.5, body.current);
-        if (g !== null) a.y = g;
+        const nx = a.x + (dx / d) * Math.min(sp, d);
+        const nz = a.z + (dz / d) * Math.min(sp, d);
+        const g = ground(nx, nz, a.y + STEP, body.current);
+        if (g === null || g - a.y > STEP - 0.05 || a.y - g > DROP) {
+          // Wall, block or ledge ahead: stay put and pick another spot after a pause.
+          a.tx = a.x;
+          a.tz = a.z;
+          a.wait = 0.5;
+        } else {
+          a.x = nx;
+          a.z = nz;
+          a.y = g;
+          a.yaw = turn(a.yaw, Math.atan2(dx, dz), 0.15);
+          moving = true;
+        }
       }
     }
     a.phase += dt * 6;
@@ -205,8 +223,10 @@ function Walker({ index }: { index: number }) {
     a.x = x0 + (x1 - x0) * f + (dz / len) * w.side;
     a.z = z0 + (z1 - z0) * f - (dx / len) * w.side;
     a.yaw = turn(a.yaw, Math.atan2(dx, dz), 0.12);
-    const g = ground(a.x, a.z, Number.isNaN(a.y) ? path.y + 20 : a.y + 1.5, body.current);
-    if (g !== null) a.y = g;
+    // Follow the ground down, and up only by small steps (never onto blocks beside the trail).
+    const first = Number.isNaN(a.y);
+    const g = ground(a.x, a.z, first ? path.y + 20 : a.y + STEP, body.current);
+    if (g !== null && (first || g - a.y < STEP - 0.05)) a.y = g;
     a.phase += dt * 6.5;
     swing(limbs.current, a.phase, blocked ? 0 : 0.6, w.outfit.basket === true);
     body.current?.setNextKinematicTranslation({ x: a.x, y: a.y, z: a.z });
@@ -269,12 +289,20 @@ function Jaguar({ index }: { index: number }) {
         a.tz = range[1] + Math.random() * (range[3] - range[1]);
       } else {
         const sp = 1.3 * dt;
-        a.x += (dx / d) * Math.min(sp, d);
-        a.z += (dz / d) * Math.min(sp, d);
-        a.yaw = turn(a.yaw, Math.atan2(dx, dz), 0.06);
-        moving = true;
-        const g = ground(a.x, a.z, a.y + 2, body.current);
-        if (g !== null) a.y = g;
+        const nx = a.x + (dx / d) * Math.min(sp, d);
+        const nz = a.z + (dz / d) * Math.min(sp, d);
+        const g = ground(nx, nz, a.y + STEP, body.current);
+        if (g === null || g - a.y > STEP - 0.05 || a.y - g > DROP) {
+          a.tx = a.x;
+          a.tz = a.z;
+          a.wait = 0.5;
+        } else {
+          a.x = nx;
+          a.z = nz;
+          a.y = g;
+          a.yaw = turn(a.yaw, Math.atan2(dx, dz), 0.06);
+          moving = true;
+        }
       }
     }
     a.phase += dt * (moving ? 7 : 0);

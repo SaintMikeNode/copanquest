@@ -232,7 +232,8 @@ button { font: inherit; cursor: pointer; }
 /* Language, sound and credits inside the pause menu and the journal. */
 .quick-settings { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin-top: 14px; padding-top: 12px; border-top: 3px solid #c9ab76; }
 .quick-settings label { display: inline-flex; align-items: center; gap: 6px; font-weight: 700; }
-.quick-settings .px-btn { padding: 2px 12px; font-size: 1rem; margin-left: auto; }
+.quick-settings .px-btn { padding: 2px 12px; font-size: 1rem; }
+.quick-settings .px-btn:first-of-type { margin-left: auto; }
 .round.locked { filter: grayscale(1); opacity: .6; }
 .rank-chip { gap: 8px; }
 .xpbar { width: 54px; height: 8px; background: #120b06; box-shadow: inset 1px 1px 0 #000; display: inline-block; }

@@ -91,6 +91,7 @@
   "clock.tzolkin": "Tzolk'in, the 260-day sacred calendar: a number from 1 to 13 and one of 20 day names.",
   "clock.haab": "Haab', the 365-day solar year: 18 months of 20 days plus 5 extra days (Wayeb').",
   "clock.long": "Long Count: days counted from the start of the Maya era, in 3114 BC.",
+  "hud.progress": "Progress",
   "sound.title": "Sound",
   "sound.music": "Music",
   "sound.sfx": "Sound effects",

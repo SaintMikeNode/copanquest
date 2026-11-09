@@ -255,7 +255,8 @@ export function Player() {
 
   useFrame((_, delta) => {
     const c = ref.current;
-    if (!c) return;
+    // The body is null for a frame while the character mounts or remounts (hot reload).
+    if (!c || !c.body) return;
 
     // Merge keyboard + touch input and hand it to Ecctrl (it moves relative to the camera).
     const k = getKeys();

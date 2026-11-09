@@ -40,17 +40,28 @@ export function Hud() {
   const found = useAction((s) => s.found);
   const setOverlay = useGame((s) => s.setOverlay);
   const close = () => setOverlay(null);
+  // Phones: the progress chips hide behind a button so they don't cover the game.
+  const [stats, setStats] = useState(!IS_TOUCH);
   return (
     <div className="hud">
-      {/* One row of same-height chips (wraps on narrow screens): menu, help, progress, FPS. */}
+      {/* One row of same-height chips (wraps on narrow screens): menu, progress, FPS. On phones the
+          progress chips and FPS open from a "Progreso" button. */}
       <div className="hud-left">
         <div className="hud-bar">
           <button className="pill menu-btn" onClick={() => setOverlay("pause")} aria-label={t("menu")}>
             {IS_TOUCH ? <span aria-hidden="true">☰</span> : <kbd>Esc</kbd>} {t("menu")}
           </button>
-          <button className="pill" onClick={() => setOverlay("help")} aria-label={t("help")}>?</button>
-          <Progress />
-          <DebugOverlay />
+          {IS_TOUCH && (
+            <button className="pill stats-btn" onClick={() => setStats(!stats)} aria-expanded={stats}>
+              <span aria-hidden="true">{stats ? "▴" : "▾"}</span> {t("hud.progress")}
+            </button>
+          )}
+          {stats && (
+            <>
+              <Progress />
+              <DebugOverlay />
+            </>
+          )}
         </div>
       </div>
       <button className="hud-map" onClick={() => setOverlay("map")} aria-label={t("map")}>
