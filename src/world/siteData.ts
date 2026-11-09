@@ -86,6 +86,43 @@ export interface Block {
   rotation?: [number, number, number];
   material?: Material;
   collider?: boolean;
+  /** Ruined top: remove up to this many blocks per column (axis-aligned boxes only). */
+  erode?: number;
+}
+
+/**
+ * Ruined two-room building on top of a ball-court structure: thick walls, a doorway into each
+ * room on the alley side. x0..x1, z0..z1 = outer footprint; y = floor; alleyX = the side the
+ * doors face. Walls 1 m thick, 2.5 m tall before erosion (est.).
+ */
+function ballcourtRooms(id: string, x0: number, x1: number, z0: number, z1: number, y: number, doorsEast: boolean): Block[] {
+  const h = 2.5;
+  const t = 1;
+  const cy = y + h / 2;
+  const zm = (z0 + z1) / 2;
+  const wall = (k: string, ax: number, bx: number, az: number, bz: number): Block => ({
+    id: `${id}-${k}`,
+    position: [(ax + bx) / 2, cy, (az + bz) / 2],
+    size: [bx - ax, h, bz - az],
+    material: "stone",
+    collider: true,
+    erode: 2,
+  });
+  const back = doorsEast ? [x0, x0 + t] : [x1 - t, x1];
+  const front = doorsEast ? [x1 - t, x1] : [x0, x0 + t];
+  const door = 1.5;
+  const d1 = (z0 + zm) / 2;
+  const d2 = (zm + z1) / 2;
+  return [
+    wall("back", back[0], back[1], z0, z1),
+    wall("end-n", x0, x1, z0, z0 + t),
+    wall("end-s", x0, x1, z1 - t, z1),
+    wall("mid", x0, x1, zm - t / 2, zm + t / 2),
+    wall("front-a", front[0], front[1], z0 + t, d1 - door / 2),
+    wall("front-b", front[0], front[1], d1 + door / 2, zm - t / 2),
+    wall("front-c", front[0], front[1], zm + t / 2, d2 - door / 2),
+    wall("front-d", front[0], front[1], d2 + door / 2, z1 - t),
+  ];
 }
 
 /** Dirt paths (present-day visitor trails, laid out for the game). y = approximate surface. */
@@ -190,7 +227,10 @@ export const MOUNDS: Mound[] = [
     tiers: 1,
     tierHeight: 3,
     setback: 1,
-    temple: [5, 4, 24],
+    // Stairs up the south end from the Court of the Hieroglyphic Stairway (seen in photos from
+    // Temple 11). The ruined room building on top sits on the north part (BLOCKS below).
+    // Plus outer stairs up to the rooms on the north part (west side; Stela 1 stands south of them).
+    stairs: [{ face: "s", width: 6, run: 3 }, { face: "w", width: 10, offset: 8, run: 3 }],
     material: "stone",
   },
   {
@@ -201,7 +241,25 @@ export const MOUNDS: Mound[] = [
     tiers: 1,
     tierHeight: 3,
     setback: 1,
-    temple: [5, 4, 24],
+    // Stairs up the south end from the Court of the Hieroglyphic Stairway (seen in photos from
+    // Temple 11). The ruined room building on top sits on the north part (BLOCKS below).
+    // Plus outer stairs up to the rooms on the north part (east side).
+    stairs: [{ face: "s", width: 6, run: 3 }, { face: "e", width: 10, offset: -8, run: 3 }],
+    material: "stone",
+  },
+
+  // Low stepped platform closing the north end of the ball court, crowned by Stela 2 with
+  // Altar L (Mesoweb Copán tour; FLAAR: steps across the whole north end, wider than the
+  // playing alley). Size and height est.
+  {
+    id: "ballcourt-north",
+    name: { es: "Plataforma norte del Juego de Pelota", en: "Ball Court north platform" },
+    center: [22, 137],
+    size: [44, 22],
+    tiers: 1,
+    tierHeight: 2.5,
+    setback: 1,
+    stairs: [{ face: "s", width: 40, run: 4 }],
     material: "stone",
   },
 
@@ -350,6 +408,10 @@ export const MOUNDS: Mound[] = [
 ];
 
 export const BLOCKS: Block[] = [
+  // Ball court: ruined room buildings on the north part of Structures 9 and 10 (photos from the
+  // south show them there; the south part of each top is open).
+  ...ballcourtRooms("str9-rooms", 8, 14, 155, 167, 3, true),
+  ...ballcourtRooms("str10-rooms", 30, 36, 155, 167, 3, false),
   // Ball court: sloped playing walls on both sides of the alley (x 18.5–25.5)
   {
     id: "ballcourt-slope-w",
@@ -438,8 +500,8 @@ export const MONUMENTS: Monument[] = [
   { id: "stela-j", kind: "stela", position: [153.9, 56.9], height: 3, width: 1 },
   { id: "stela-3", kind: "stela", position: [-0.5, 94.5], height: 3, width: 1 },
   { id: "altar-k", kind: "altar", position: [-47.6, 116], height: 1, width: 1.5 },
-  { id: "stela-2", kind: "stela", position: [36.8, 130.6], height: 3, width: 1 },
-  { id: "altar-l", kind: "altar", position: [36.8, 127.5], height: 1, width: 1.5 },
+  { id: "stela-2", kind: "stela", position: [36.8, 130.6], baseY: 2.5, height: 3, width: 1 },
+  { id: "altar-l", kind: "altar", position: [36.8, 127.5], baseY: 2.5, height: 1, width: 1.5 },
   { id: "stela-1", kind: "stela", position: [4.1, 170.3], height: 3, width: 1 },
 
   // Court of the Hieroglyphic Stairway

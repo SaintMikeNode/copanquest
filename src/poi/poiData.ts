@@ -128,6 +128,20 @@ export const POIS: Poi[] = [
     source: "mayaruins.com (Ball Court); Wikipedia",
   },
   {
+    id: "stela-2",
+    position: [36.8, 131],
+    y: 2.5,
+    radius: 8,
+    markerHeight: 5,
+    title: { es: "Estela 2 y Altar L", en: "Stela 2 and Altar L" },
+    date: { es: "Año 652 d. C.", en: "AD 652" },
+    body: {
+      es: "Esta plataforma escalonada cierra el norte del Juego de Pelota. Arriba está la Estela 2, que levantó el rey K'ahk' Uti' Witz' K'awiil (Humo Imix) en el año 652, mirando hacia la cancha. A su lado está el Altar L, el último monumento tallado de Copán, del año 822.",
+      en: "This stepped platform closes the north end of the Ball Court. On top stands Stela 2, raised by King K'ahk' Uti' Witz' K'awiil (Smoke Imix) in 652, looking over the court. Beside it is Altar L, the last carved monument of Copán, from 822.",
+    },
+    source: "Mesoweb (Copán tour); FLAAR (Copán ballcourt); Wikipedia; Google Arts & Culture (Altar L)",
+  },
+  {
     id: "hieroglyphic-stairway",
     position: [57, 204.5],
     radius: 9,

@@ -302,7 +302,7 @@ const loop = (cx: number, cz: number, rx: number, rz: number): [number, number][
 
 const PLAZA_LOOPS: { pts: [number, number][]; y: number }[] = [
   { pts: loop(-5, 15, 32, 26), y: 0 }, // Great Plaza
-  { pts: loop(0, 112, 30, 22), y: 0 }, // middle plaza
+  { pts: loop(-8, 106, 24, 16), y: 0 }, // middle plaza (clear of the ball court's north platform)
   { pts: loop(15, 210, 26, 12), y: 0 }, // Court of the Hieroglyphic Stairway
   { pts: loop(12, 318, 24, 20), y: 12 }, // West Court
   { pts: loop(116, 286, 14, 22), y: 12 }, // East Court

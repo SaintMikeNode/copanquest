@@ -43,6 +43,8 @@ Hosting: a Cloudflare static-assets Worker at https://copanquest.todosenlaweb.co
 | Pause | Esc (also frees the cursor; closes an open window first) | — |
 | Map | Click the minimap | Tap the minimap |
 
+**UI look:** pixel-art wood, moss and jade in the style of "garden/nature" Minecraft UI packs (style references only; no art copied). The textures are drawn at startup from the game's own palettes (`src/ui/uiTextures.ts`) and used as CSS variables: wood-framed panels with parchment inside and moss on top, plank buttons (jade for the main action), dark inset slots for HUD chips, 9-slice pixel frames (`border-image`). Font: Pixelify Sans.
+
 The pause menu freezes the whole world (R3F frameloop `never`) and has Resume, Back to the entrance, Credits and the controls. Losing the mouse capture (Esc, switching windows) opens it. Computer keys live in `src/ui/DesktopKeys.tsx`; right-click fires a `cq-interact` event from `FollowCamera`.
 
 Dev tools: `npm run dev` or `?debug` in the URL enables the collider view. `F3` (or tapping the FPS counter) opens the debug panel: draw calls, triangles, position and quality. `?touch` forces the touch controls on desktop. In dev, `cqTeleport(x, y, z)` in the console moves the player.
@@ -84,6 +86,7 @@ Everything feeds **XP** and four **ranks** (`src/state/progress.ts`): Turista �
 - **Glyph puzzles:** Maya numbers in dots (1), bars (5) and the shell (0), drawn in pixel art.
 - **Digging:** hold to dig at staked squares. Each square gives an artifact with a fact (Copador pottery, Ixtepeque obsidian, shell bead, spindle whorl, greenstone axe), which goes to the journal's **museum**.
 - **Ballgame:** a physics rubber ball, a hip-bump action, and six macaw-head markers on the sloped walls.
+- **Ball Court A-III** as seen from the south in photos: a low stepped platform closes the north end (44 m wide, steps across its whole south face; size est.) with Stela 2 (AD 652, K'ahk' Uti' Witz' K'awiil, "Smoke Imix") and Altar L (AD 822, the last carved monument) on top; ruined two-room buildings with doorways on the north part of Structures 9 and 10; stairs at their south ends and on their outer sides (Mesoweb Copán tour; FLAAR ballcourt report; OSM for the monument positions).
 - **Time lens** (⏳ / T): blends the world toward Copán around AD 800 in the shaders. Stone becomes red-painted stucco, plazas and terrace tops become cream plaster, wild plants fade from the city core, and ancient townspeople fill the plazas while today's tourists disappear (`src/game/lens.ts`).
 - **Fixed time of day** (`src/game/time.ts`, `FIXED_TIME`): a bright morning with readable shadows. The night code (stars, Venus, fireflies) is still there; `cqTime()` previews it. A HUD chip shows **today's real date in the Maya calendar** (Long Count, Tzolk'in, Haab'; GMT correlation 584283, checked against 21 Dec 2012 = 13.0.0.0.0 4 Ajaw 3 K'ank'in).
 - **Rosalila:**
@@ -262,6 +265,7 @@ The in-game **Créditos** screen (`src/ui/creditsData.ts`) must stay in sync wit
 - **Copernicus DEM GLO-30** (modified): produced using Copernicus WorldDEM-30 © DLR e.V. 2010-2014 and © Airbus Defence and Space GmbH 2014-2018 provided under COPERNICUS by the European Union and ESA; all rights reserved. Via AWS Open Data, `copernicus-dem-30m`.
 - A. P. Maudslay, *Biologia Centrali-Americana: Archaeology* (1889–1902), **public domain**: https://biodiversitylibrary.org/item/106393
 - OpenStreetMap data (structure and monument positions): © OpenStreetMap contributors, **ODbL 1.0**
+- Pixelify Sans font by The Pixelify Sans Project Authors, **SIL OFL 1.1** (bundled via `@fontsource/pixelify-sans`): https://github.com/eifetx/Pixelify-Sans
 - Fact sources for the info cards: Wikipedia (CC BY-SA), Penn Museum *Expedition*, mayaruins.com, Uncovered History, ahutnick.github.io/copanaltarqkings, Mesoweb, Asociación Copán, and Sugiyama et al. 2018 (*PLOS ONE*). See `src/ui/creditsData.ts`.
 
 **Reference only (copyrighted; not redistributed)**

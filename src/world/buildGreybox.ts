@@ -202,6 +202,7 @@ export function buildGreybox(): Greybox {
       rotation: b.rotation,
       material: b.material ?? "stone",
       fillTo: b.collider && b.rotation ? 0 : undefined,
+      erode: b.erode,
     };
     if (b.collider) pushSolid(g, shape);
     else g.shapes.push(shape);
