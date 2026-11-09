@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
 import { useKeyboardControls } from "@react-three/drei";
+import { useRapier } from "@react-three/rapier";
 
 import { Ecctrl, type EcctrlHandle } from "ecctrl";
 import { useButtonStore, useJoystickStore } from "ecctrl/input";
@@ -208,6 +209,21 @@ export function Player() {
   // ecctrl reads input once per physics step (1/60 s), so a quick tap of Space or the jump
   // button could start and end between two steps and be lost. Hold each press for a moment.
   const jumpUntil = useRef(0);
+
+  // Footsteps (see the end of useFrame). The surface comes from what the ground ray hits: the
+  // terrain is the only triangle-mesh collider; mounds, stairs and floors are stone.
+  const { world, rapier } = useRapier();
+  const lastFoot = useRef(new THREE.Vector3());
+  const stride = useRef(0);
+  const fallSpeed = useRef(0);
+  const footRay = useMemo(() => new rapier.Ray({ x: 0, y: 0, z: 0 }, { x: 0, y: -1, z: 0 }), [rapier]);
+  const footstep = (volume: number) => {
+    const p = playerState.position;
+    footRay.origin = { x: p.x, y: p.y, z: p.z };
+    const hit = world.castRay(footRay, 3, true, rapier.QueryFilterFlags.EXCLUDE_SENSORS, undefined, undefined, playerState.body ?? undefined);
+    const stone = !!hit && hit.collider.shape.type !== rapier.ShapeType.TriMesh;
+    play(stone ? "step-stone" : "step", { volume, rate: 0.9 + Math.random() * 0.2 });
+  };
   useEffect(
     () => subscribeKeys((s) => s.jump, (down) => {
       if (down) jumpUntil.current = performance.now() + JUMP_LATCH_MS;
@@ -237,7 +253,7 @@ export function Player() {
     };
   }, []);
 
-  useFrame(() => {
+  useFrame((_, delta) => {
     const c = ref.current;
     if (!c) return;
 
@@ -287,7 +303,31 @@ export function Player() {
     playerState.body = c.body;
     playerState.position.copy(c.currPos);
     // Jump sound: leaving the ground fast upward (not a ladder, not falling off a ledge).
-    if (playerState.grounded && !c.isOnGround && !climbing && c.body.linvel().y > 2.5) play("jump", { rate: 0.95 + Math.random() * 0.1 });
+    const vel = c.body.linvel();
+    if (playerState.grounded && !c.isOnGround && !climbing && vel.y > 2.5) play("jump", { rate: 0.95 + Math.random() * 0.1 });
+    // Footsteps: one every stride of ground covered; soft on the terrain, crunchier on stone.
+    // Landing from a fall plays one louder step; ladders knock every rung.
+    const fx = c.currPos.x - lastFoot.current.x;
+    const fz = c.currPos.z - lastFoot.current.z;
+    lastFoot.current.set(c.currPos.x, c.currPos.y, c.currPos.z);
+    if (climbing) {
+      stride.current += Math.abs(vel.y) * delta;
+      if (stride.current > 0.45) {
+        stride.current = 0;
+        play("ladder", { rate: 0.9 + Math.random() * 0.2 });
+      }
+    } else if (c.isOnGround && !playerState.digging) {
+      const speed = Math.hypot(vel.x, vel.z);
+      if (!playerState.grounded && fallSpeed.current < -4) footstep(1.4);
+      else if (speed > 0.6) {
+        stride.current += Math.min(Math.hypot(fx, fz), 1);
+        if (stride.current > (speed > 4 ? 1.3 : 0.95)) {
+          stride.current = 0;
+          footstep(speed > 4 ? 1.15 : 1);
+        }
+      } else stride.current = 0.5; // the first step comes soon after starting to walk
+    }
+    fallSpeed.current = vel.y;
     playerState.grounded = c.isOnGround;
     euler.setFromQuaternion(c.currQuat, "YXZ");
     playerState.facingYaw = euler.y;

@@ -42,12 +42,12 @@ const buttonCap = {
   height: "76px",
   borderWidth: "8px",
   borderImage: "var(--ui-frame) 4 / 8px stretch",
-  background: "var(--ui-jade) 0 0 / 32px 32px",
+  background: "var(--ui-clay) 0 0 / 32px 32px",
   fontFamily: "inherit",
   fontSize: "16px",
   fontWeight: 700,
   color: "#fff1d2",
-  textShadow: "2px 2px 0 #0d3a27",
+  textShadow: "var(--outline-clay)",
 };
 
 /** On-screen joystick (left) and jump button (right) for phones and tablets. */

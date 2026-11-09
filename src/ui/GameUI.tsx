@@ -13,6 +13,8 @@ import { playerState } from "../player/playerState";
 import { ballHit, finishDig, useAction } from "../game/WorldGame";
 import { InteractKey } from "./Dialogue";
 import { play } from "../audio/sound";
+import { IS_TOUCH } from "../config";
+import { QuickSettings } from "./QuickSettings";
 
 // ---------------------------------------------------------------- HUD buttons + rank
 
@@ -48,14 +50,17 @@ export function HudButtons() {
   return (
     <div className="hud-buttons">
       {fx > 0 && <div key={fx} className="lens-fx" />}
-      <button className={camOn ? "round on" : "round"} onClick={() => toggleCamera()} aria-label={t("camera")}>
-        📷
+      <button className={camOn ? "round on" : "round"} onClick={() => toggleCamera()} aria-label={t("camera")} title={t("camera")}>
+        <i className="px-icon" style={{ backgroundImage: "var(--icon-camera)" }} />
+        {!IS_TOUCH && <kbd>C</kbd>}
       </button>
-      <button className="round" onClick={() => setOverlay("journal")} aria-label={t("journal")}>
-        📖
+      <button className="round" onClick={() => setOverlay("journal")} aria-label={t("journal")} title={t("journal")}>
+        <i className="px-icon" style={{ backgroundImage: "var(--icon-book)" }} />
+        {!IS_TOUCH && <kbd>E</kbd>}
       </button>
-      <button className={`round ${lensOn ? "on" : ""} ${lensUnlocked(xp) ? "" : "locked"}`} onClick={clickLens} aria-label={t("lens")}>
-        ⏳
+      <button className={`round ${lensOn ? "on" : ""} ${lensUnlocked(xp) ? "" : "locked"}`} onClick={clickLens} aria-label={t("lens")} title={t("lens")}>
+        <i className="px-icon" style={{ backgroundImage: "var(--icon-lens)" }} />
+        {!IS_TOUCH && <kbd>T</kbd>}
       </button>
     </div>
   );
@@ -85,9 +90,27 @@ export function MayaClock() {
   }, []);
   const d = useMemo(() => mayaDate(), []);
   const night = dayClock.night > 0.5;
+  const t = useT();
+  const [open, setOpen] = useState(false);
+  // Tap to see what the three parts mean (closes on its own after a while).
+  useEffect(() => {
+    if (!open) return;
+    const id = setTimeout(() => setOpen(false), 12000);
+    return () => clearTimeout(id);
+  }, [open]);
   return (
-    <span className="chip maya-clock" title={`${d.longCount} · ${d.tzolkin} · ${d.haab}`}>
-      {night ? "☾" : "☀"} {d.tzolkin} · {d.haab} <small>{d.longCount}</small>
+    <span className="maya-clock-wrap">
+      <button className="chip maya-clock" onClick={() => setOpen(!open)} aria-expanded={open} title={t("clock.title")}>
+        <span aria-hidden="true">{night ? "☾" : "☀"}</span> {d.tzolkin} · {d.haab} <small>{d.longCount}</small>
+      </button>
+      {open && (
+        <span className="maya-clock-info" role="note">
+          <strong>{t("clock.title")}</strong>
+          <span><b>{d.tzolkin}</b> — {t("clock.tzolkin")}</span>
+          <span><b>{d.haab}</b> — {t("clock.haab")}</span>
+          <span><b>{d.longCount}</b> — {t("clock.long")}</span>
+        </span>
+      )}
     </span>
   );
 }
@@ -287,6 +310,7 @@ export function Journal() {
         {tab === "album" && <AlbumTab />}
         {tab === "museum" && <MuseumTab />}
         {tab === "rank" && <RankTab />}
+        <QuickSettings />
       </div>
     </Overlay>
   );

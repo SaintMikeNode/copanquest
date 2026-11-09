@@ -5,6 +5,7 @@
 //   --ui-wood       oak planks (panel fill)              --ui-wood-dark  dark planks (headers)
 //   --ui-paper      parchment (reading areas)            --ui-jade       Maya jade (main buttons)
 //   --ui-slot       dark inset (chips, slots)            --ui-leaves     moss + flowers strip (top trim)
+//   --ui-clay       red-ochre plaster (main buttons)      --ui-wood-btn   calm, darker planks (buttons: text stays readable)
 //   --ui-frame      9-slice frame: outline, bevel, notched corners (border-image, slice 4)
 //   --ui-frame-in   9-slice inset frame (slots, chips)
 // Self-contained (no three.js import): this runs before the 3D engine chunk loads.
@@ -68,6 +69,8 @@ const WOOD = pal("#5a3418", "#7a4a26", "#9a6234", "#b57841", "#c98c4f", "#dba465
 const WOOD_DARK = pal("#2c190c", "#3d2412", "#55331a", "#6b4224", "#80522e");
 const PAPER = pal("#cdb487", "#dcc59a", "#e8d6ae", "#f1e3c2", "#f8eed6");
 const JADE = pal("#11553a", "#1b7a4a", "#25965c", "#33ad6c", "#5cc98a", "#9be3b5");
+const CLAY = pal("#6e2416", "#842c1a", "#97361f", "#a84126", "#b84d2d", "#c95f3a");
+const WOOD_BTN = pal("#4a2a14", "#5a3418", "#653b1c", "#6f4220", "#7a4a26");
 const SLOT = pal("#1c120b", "#26180e", "#2f1f13", "#3a2717");
 const LEAVES = pal("#1d4a1c", "#28622a", "#347a33", "#479a3e", "#5cb14a", "#7dc75a");
 const OUTLINE = hex("#1f1209");
@@ -83,6 +86,29 @@ function jade(seed: number) {
   return draw(16, 16, (x, y) => {
     const vein = Math.sin((x + y * 0.6) * 0.9 + Math.sin(y * 0.7) * 1.5);
     return pick(JADE, 2.6 + vein * 0.7 + (r() - 0.5) * 0.6);
+  });
+}
+
+/** Red ochre plaster, like the painted stucco of Rosalila: soft mottling, a few darker pits. */
+function clay(seed: number) {
+  const r = rng(seed);
+  return draw(16, 16, (x, y) => {
+    const mottle = Math.sin(x * 0.7 + Math.sin(y * 0.9) * 1.2) * 0.35 + Math.sin(y * 0.55 + x * 0.2) * 0.3;
+    const pit = r() < 0.04 ? -1.4 : 0;
+    return pick(CLAY, 2.9 + mottle + pit + (r() - 0.5) * 0.5);
+  });
+}
+
+/** Button planks: same layout as planks() but low contrast, so pixel text on top stays legible. */
+function buttonPlanks(seed: number) {
+  const r = rng(seed);
+  const tone = [0, 1, 2, 3].map(() => (r() - 0.5) * 0.5);
+  return draw(16, 16, (_x, y) => {
+    const plank = Math.floor(y / 4);
+    if (y % 4 === 3) return WOOD_BTN[0];
+    let v = 2.6 + tone[plank] + (r() - 0.5) * 0.45;
+    if (y % 4 === 0) v += 0.5;
+    return pick(WOOD_BTN, v);
   });
 }
 
@@ -130,6 +156,83 @@ function frame(inset: boolean) {
   });
 }
 
+// ---------------------------------------------------------------- HUD icons (16 × 16)
+// Drawn big and bright (cream, gold, sky) with a dark outline, so they read on the wood buttons.
+const ICON_COLORS: Record<string, string> = {
+  O: "#1f1209", // outline
+  W: "#f6ead0", // cream
+  G: "#b8ab90", // grey metal
+  D: "#4a3a2c", // dark leather
+  L: "#4fa3d9", // lens glass
+  H: "#ffffff", // highlight
+  R: "#c8452c", // red
+  Y: "#f2c14e", // gold
+  B: "#8a5a32", // brown cover
+  P: "#e9d9b4", // page shade
+};
+const ICONS: Record<string, string[]> = {
+  camera: [
+    "................",
+    "................",
+    "...OOOOO...OOO..",
+    "...OGGGO...ORO..",
+    ".OOOOOOOOOOOOOO.",
+    "OWWWWWOOOOOWWWWO",
+    "OWWWWOLLLLLOWYYO",
+    "ODDDOLHHLLLLODDO",
+    "ODDDOLHLLLLLODDO",
+    "ODDDOLLLLLLLODDO",
+    "ODDDOLLLLLLLODDO",
+    "OWWWWOLLLLLOWWWO",
+    "OWWWWWOOOOOWWWWO",
+    ".OOOOOOOOOOOOOO.",
+    "................",
+    "................",
+  ],
+  book: [
+    "................",
+    "................",
+    ".OOOOOO..OOOOOO.",
+    "OWWWWWWOOWWWWWWO",
+    "OWDDDDWOOWDDDDWO",
+    "OWWWWWWOOWWWWWWO",
+    "OWDDDDWOOWDDDWWO",
+    "OWWWWWWOOWWWWWWO",
+    "OWDDDWWOOWDDDDWO",
+    "OWWWWWWOOWWWWWWO",
+    "OPPPPPPOOPPPPPPO",
+    "OBBBBBBBBBBRBBBO",
+    ".OOOOOOOOOOROOO.",
+    "...........R....",
+    "................",
+    "................",
+  ],
+  lens: [
+    "................",
+    "...OOOOOOOOOO...",
+    "...OBBBBBBBBO...",
+    "...OOOOOOOOOO...",
+    "....OLYYYYLO....",
+    "....OLYYYYLO....",
+    ".....OLYYLO.....",
+    "......OYYO......",
+    "......OLLO......",
+    ".....OLLYLO.....",
+    "....OLLYYYLO....",
+    "....OYYYYYYO....",
+    "...OOOOOOOOOO...",
+    "...OBBBBBBBBO...",
+    "...OOOOOOOOOO...",
+    "................",
+  ],
+};
+function icon(rows: string[]) {
+  return draw(16, 16, (x, y) => {
+    const ch = rows[y][x];
+    return ch === "." ? null : hex(ICON_COLORS[ch]);
+  });
+}
+
 export function installUiTextures() {
   const s = document.documentElement.style;
   const set = (k: string, url: string) => s.setProperty(k, `url("${url}")`);
@@ -138,6 +241,9 @@ export function installUiTextures() {
   set("--ui-paper", paper(13));
   set("--ui-jade", jade(14));
   set("--ui-slot", slot(15));
+  set("--ui-clay", clay(17));
+  set("--ui-wood-btn", buttonPlanks(18));
+  for (const [name, rows] of Object.entries(ICONS)) set(`--icon-${name}`, icon(rows));
   set("--ui-leaves", leaves(16));
   set("--ui-frame", frame(false));
   set("--ui-frame-in", frame(true));

@@ -9,14 +9,12 @@ import { DebugOverlay } from "./DebugOverlay";
 import { Overlay } from "./Overlay";
 import { Credits } from "./Credits";
 import { Help } from "./Help";
-import { LangToggle } from "./LangToggle";
 import { DialogueBox, Progress, TalkPrompt, Toast } from "./Dialogue";
 import { ActionPrompt, CameraOverlay, GlyphPuzzle, HudButtons, Journal } from "./GameUI";
 import { useCamera } from "../game/camera";
 import { useAction } from "../game/WorldGame";
 import { DesktopKeys, PauseMenu } from "./DesktopKeys";
 import { AudioEvents } from "../audio/AudioEvents";
-import { SoundToggle } from "./SoundToggle";
 
 /** Desktop mouse-look: free the cursor when UI needs it, and remind how to grab it. */
 function MouseLook({ needsCursor }: { needsCursor: boolean }) {
@@ -47,10 +45,7 @@ export function Hud() {
       {/* One column: the progress chips always start below the first row, however it wraps. */}
       <div className="hud-left">
         <div className="hud-top-left">
-          <LangToggle />
-          <SoundToggle />
           <button className="pill" onClick={() => setOverlay("help")}>?</button>
-          <button className="pill" onClick={() => setOverlay("credits")}>{t("credits")}</button>
           <DebugOverlay />
         </div>
         <Progress />

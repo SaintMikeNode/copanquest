@@ -12,6 +12,7 @@ import { useAction } from "../game/WorldGame";
 import { respawn } from "../player/respawn";
 import { Overlay } from "./Overlay";
 import { Help } from "./Help";
+import { QuickSettings } from "./QuickSettings";
 
 const typing = (e: KeyboardEvent) => {
   const el = e.target as HTMLElement | null;
@@ -104,8 +105,8 @@ export function PauseMenu() {
         >
           ⌂ {t("respawn")}
         </button>
-        <button onClick={() => setOverlay("credits")}>{t("credits")}</button>
       </div>
+      <QuickSettings />
       <h3>{t("help")}</h3>
       <Help />
     </Overlay>

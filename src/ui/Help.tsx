@@ -12,6 +12,7 @@ export function Help() {
           <p>{t("controls.more")}</p>
         </>
       )}
+      <p>{t("controls.settings")}</p>
       <p>{t("controls.poi")}</p>
       <p>{t("controls.talk")}</p>
       <p className="muted">{t("greybox")}</p>

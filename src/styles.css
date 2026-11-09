@@ -8,6 +8,9 @@
   --panel-text: #f6efe2;
   --ink-wood: #3a2210;
   --cream: #fff1d2;
+  /* 1 px pixel outline + 2 px drop shadow, so pixel text reads on any texture. */
+  --outline-wood: -1px -1px 0 #1f1209, 1px -1px 0 #1f1209, -1px 1px 0 #1f1209, 1px 1px 0 #1f1209, 2px 2px 0 #1f1209;
+  --outline-clay: -1px -1px 0 #3d1208, 1px -1px 0 #3d1208, -1px 1px 0 #3d1208, 1px 1px 0 #3d1208, 2px 2px 0 #3d1208;
   font-family: "Pixelify Sans", system-ui, sans-serif;
   color: var(--ink);
   -webkit-tap-highlight-color: transparent;
@@ -34,11 +37,12 @@
 }
 .px-btn, .primary, .menu-row button, .pause-menu button:not(.primary), .tabs button, .talk-prompt, .icon-btn {
   border: 8px solid transparent; border-radius: 0; border-image: var(--ui-frame) 4 / 8px stretch;
-  background: var(--ui-wood) 0 0 / 32px 32px; image-rendering: pixelated;
-  color: var(--cream); text-shadow: 2px 2px 0 var(--ink-wood); font-weight: 700; letter-spacing: .02em;
+  background: var(--ui-wood-btn) 0 0 / 32px 32px; image-rendering: pixelated;
+  color: #fff3d6; text-shadow: var(--outline-wood); font-weight: 700; letter-spacing: .03em;
   box-shadow: none;
 }
-.primary { background-image: var(--ui-jade); text-shadow: 2px 2px 0 #0d3a27; }
+/* Main buttons: red ochre plaster (the painted stucco of Copán's temples). */
+.primary { background-image: var(--ui-clay); text-shadow: var(--outline-clay); }
 :is(.px-btn, .primary, .menu-row button, .pause-menu button, .tabs button, .talk-prompt, .icon-btn, .round):hover { filter: brightness(1.1); }
 :is(.px-btn, .primary, .menu-row button, .pause-menu button, .tabs button, .talk-prompt, .icon-btn, .round):active { transform: translateY(2px); filter: brightness(.95); }
 .px-slot, .pill, .lang-toggle, .fps, .chip, .debug-panel, .mouse-hint, .vf-label {
@@ -96,7 +100,7 @@ button { font: inherit; cursor: pointer; }
 .pill, .fps { padding: 2px 8px; font-weight: 700; font-size: .9rem; }
 .lang-toggle { display: inline-flex; padding: 0; }
 .lang-toggle button { border: 0; border-radius: 0; padding: 2px 8px; background: transparent; color: var(--cream); opacity: .55; font-weight: 700; font-size: .9rem; }
-.lang-toggle button[aria-pressed="true"] { opacity: 1; background: var(--ui-jade) 0 0 / 32px 32px; text-shadow: 1px 1px 0 #0d3a27; }
+.lang-toggle button[aria-pressed="true"] { opacity: 1; background: var(--ui-clay) 0 0 / 32px 32px; text-shadow: var(--outline-clay); }
 .fps { font-variant-numeric: tabular-nums; min-width: 64px; }
 .debug { position: relative; }
 .debug-panel { position: absolute; top: 40px; left: 0; width: 260px; padding: 6px; font-size: .8rem; display: grid; gap: 6px; }
@@ -171,8 +175,8 @@ button { font: inherit; cursor: pointer; }
 .primary.small { width: auto; padding: 2px 12px; font-size: 1.05rem; }
 .toast {
   position: absolute; top: 22%; left: 50%; transform: translateX(-50%); padding: 6px 16px;
-  border: 8px solid transparent; border-image: var(--ui-frame) 4 / 8px stretch; background: var(--ui-jade) 0 0 / 32px 32px;
-  image-rendering: pixelated; color: #fff; font-weight: 700; font-size: 1.15rem; text-shadow: 2px 2px 0 #0d3a27;
+  border: 8px solid transparent; border-image: var(--ui-frame) 4 / 8px stretch; background: var(--ui-clay) 0 0 / 32px 32px;
+  image-rendering: pixelated; color: #fff3d6; font-weight: 700; font-size: 1.15rem; text-shadow: var(--outline-clay);
   text-align: center; max-width: calc(100% - 32px); animation: toast 3.2s ease forwards; pointer-events: none;
 }
 @keyframes toast { 0% { opacity: 0; transform: translate(-50%, -10px); } 10%, 80% { opacity: 1; transform: translate(-50%, 0); } 100% { opacity: 0; } }
@@ -207,15 +211,32 @@ button { font: inherit; cursor: pointer; }
 }
 .round {
   width: 52px; height: 52px; border: 8px solid transparent; border-image: var(--ui-frame) 4 / 8px stretch; border-radius: 0;
-  background: var(--ui-wood) 0 0 / 32px 32px; image-rendering: pixelated; font-size: 1.3rem;
+  background: var(--ui-wood-btn) 0 0 / 32px 32px; image-rendering: pixelated; font-size: 1.3rem;
   display: grid; place-items: center; padding: 0; box-shadow: 0 5px 0 rgba(0,0,0,.25);
 }
-.round.on { background-image: var(--ui-jade); }
+.round { position: relative; }
+.round.on { background-image: var(--ui-clay); }
+.px-icon { width: 32px; height: 32px; background: center / 32px 32px no-repeat; image-rendering: pixelated; filter: drop-shadow(0 2px 0 rgba(0,0,0,.35)); }
+/* Key that opens it (computers only): a little keycap on the button's corner. */
+.round kbd { position: absolute; left: -12px; bottom: -12px; min-width: 20px; height: 20px; padding: 0 4px; display: grid; place-items: center;
+  font: 700 .95rem/1 "Pixelify Sans", system-ui, sans-serif; color: var(--ink); background: #f6ead0;
+  box-shadow: inset 0 -3px 0 #c9b48a, 0 0 0 2px #1f1209; pointer-events: none; }
+/* Language, sound and credits inside the pause menu and the journal. */
+.quick-settings { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin-top: 14px; padding-top: 12px; border-top: 3px solid #c9ab76; }
+.quick-settings label { display: inline-flex; align-items: center; gap: 6px; font-weight: 700; }
+.quick-settings .px-btn { padding: 2px 12px; font-size: 1rem; margin-left: auto; }
 .round.locked { filter: grayscale(1); opacity: .6; }
 .rank-chip { gap: 8px; }
 .xpbar { width: 54px; height: 8px; background: #120b06; box-shadow: inset 1px 1px 0 #000; display: inline-block; }
 .xpbar i { display: block; height: 100%; background: #f2c42c; }
-.maya-clock small { opacity: .7; font-weight: 600; }
+.maya-clock-wrap { position: relative; display: inline-flex; pointer-events: auto; }
+.maya-clock { font: inherit; font-size: 1rem; font-weight: 700; letter-spacing: .04em; cursor: pointer; text-shadow: 1px 1px 0 #000; }
+.maya-clock small { opacity: .8; font-weight: 600; font-size: .85rem; }
+.maya-clock-info { position: absolute; z-index: 5; top: calc(100% + 6px); left: 0; width: min(300px, calc(100vw - 32px)); display: grid; gap: 6px;
+  padding: 8px 10px; border: 8px solid transparent; border-image: var(--ui-frame) 4 / 8px stretch;
+  background: var(--ui-paper) 0 0 / 64px 64px; image-rendering: pixelated; color: var(--ink); font-size: .9rem; line-height: 1.35; }
+.maya-clock-info strong { color: var(--red-dark); }
+.maya-clock-info b { color: var(--red); white-space: nowrap; }
 @media (max-width: 520px) { .maya-clock small { display: none; } }
 
 .viewfinder { position: absolute; inset: 0; pointer-events: none; }
@@ -237,7 +258,7 @@ button { font: inherit; cursor: pointer; }
 .journal { justify-self: stretch; }
 .tabs { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
 .tabs button { flex: 1; padding: 4px 6px; font-size: 1rem; }
-.tabs button.on { background-image: var(--ui-jade); text-shadow: 2px 2px 0 #0d3a27; }
+.tabs button.on { background-image: var(--ui-clay); text-shadow: var(--outline-clay); }
 .journal-list { display: grid; gap: 8px; }
 .quest { display: grid; gap: 2px; padding: 8px 12px; background: rgba(120, 80, 30, .1); box-shadow: inset 0 -3px 0 rgba(120,80,30,.18); border-left: 6px solid var(--red); }
 .quest.done { border-left-color: #2fae6e; opacity: .85; }
