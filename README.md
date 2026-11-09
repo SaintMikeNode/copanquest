@@ -197,6 +197,8 @@ For Blender: import the PNG as a Displace texture on a 3000 m plane subdivided 1
   - **Characters (layer 1):** the player, people, animals and the ball. A small 16 m map follows the player and is redrawn every frame (1024 / 512). It's cheap because it only contains a handful of meshes.
 - The voxel world is greedy-meshed in a Web Worker and grouped into regions (one draw call each). The POI markers and clouds are one InstancedMesh each.
 - Physics runs at a fixed 60 Hz with interpolation. A variable timestep launched the floating character into the sky after the first long frame.
+- ecctrl's character update runs once per physics step, not once per rendered frame: a small plugin in `vite.config.ts` moves its `useFrame` loop into `useBeforePhysicsStep`. Without it, on 120–165 Hz screens the hover spring ran several times per step (the kid bobbed and sank into the floor) and the jump shrank to a hop. Phones at 60 Hz didn't show it. Quick jump taps are held for 50 ms so a step always sees them.
+- The flat core's terrain collider sits at y = 0, level with the voxel block tops.
 
 To test on mobile: in Chrome DevTools, turn on device emulation (e.g. a Moto G-class phone), throttle the CPU 4–6×, use "Fast 4G", then open the debug panel (`F3`).
 

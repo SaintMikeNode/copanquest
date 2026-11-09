@@ -40,9 +40,10 @@ export function shape(grid: TerrainGrid) {
       const z = -half + row * spacing;
       const i = row * size + col;
       let h = heights[i];
-      // Flatten the core to the plaza floor (y = 0); slightly below so floors never z-fight.
+      // Flatten the core to the plaza floor (y = 0), level with the top of the voxel blocks, so
+      // the character's feet rest on the blocks instead of 5 cm inside them.
       const d = rectDistance(x, z, FLAT_CORE);
-      h = -0.05 + (h + 0.05) * smoothstep(0, FLAT_CORE.falloff, d);
+      h = h * smoothstep(0, FLAT_CORE.falloff, d);
       for (const s of TERRAIN_SCULPT) {
         const k = 1 - smoothstep(0, s.falloff, rectDistance(x, z, s));
         h = h + (s.y - h) * k;

@@ -24,6 +24,8 @@ const FEET = -(HALF_HEIGHT + RADIUS + FLOAT);
 const joystickInput = { x: 0, y: 0 };
 const LADDERS = ladderSegments();
 const CLIMB_SPEED = 2.6;
+/** How long a jump press stays "down" at least (ms): covers two physics steps. */
+const JUMP_LATCH_MS = 50;
 const euler = new THREE.Euler();
 
 
@@ -200,7 +202,24 @@ function PlayerModel({ controller }: { controller: React.RefObject<EcctrlHandle 
 
 export function Player() {
   const ref = useRef<EcctrlHandle>(null);
-  const [, getKeys] = useKeyboardControls<Control>();
+  const [subscribeKeys, getKeys] = useKeyboardControls<Control>();
+
+  // ecctrl reads input once per physics step (1/60 s), so a quick tap of Space or the jump
+  // button could start and end between two steps and be lost. Hold each press for a moment.
+  const jumpUntil = useRef(0);
+  useEffect(
+    () => subscribeKeys((s) => s.jump, (down) => {
+      if (down) jumpUntil.current = performance.now() + JUMP_LATCH_MS;
+    }),
+    [subscribeKeys],
+  );
+  useEffect(
+    () =>
+      useButtonStore.subscribe((s) => {
+        if (s.buttons.jump) jumpUntil.current = performance.now() + JUMP_LATCH_MS;
+      }),
+    [],
+  );
 
   // Dev helper: window.cqTeleport(x, y, z) from the browser console.
   useEffect(() => {
@@ -236,7 +255,7 @@ export function Player() {
       rightward: !frozen && k.rightward,
       joystick: frozen ? { x: 0, y: 0 } : joystickInput,
       run: k.run || jsRun,
-      jump: !frozen && (k.jump || !!useButtonStore.getState().buttons.jump),
+      jump: !frozen && (k.jump || !!useButtonStore.getState().buttons.jump || performance.now() < jumpUntil.current),
     });
 
     // Ladders: push toward the wall inside a ladder zone to climb.
