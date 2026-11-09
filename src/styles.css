@@ -320,3 +320,36 @@ button { font: inherit; cursor: pointer; }
   .hud-bar :is(.chip, .pill, .fps) { height: 28px; padding: 0 5px; font-size: .78rem; }
   .hud-bar .maya-clock { font-size: .82rem; }
 }
+
+/* ---------- Landing: the bedroom (src/room/) ---------- */
+.landing, .landing-loading { position: fixed; inset: 0; background: #140c08; }
+.landing-canvas { position: absolute !important; inset: 0; }
+/* The scene renders at ~720 px tall and is scaled up smoothly (PS2-era look). */
+.landing-hint {
+  position: absolute; left: 50%; bottom: max(calc(env(safe-area-inset-bottom) + 28px), 9vh); transform: translateX(-50%);
+  display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 12px; font-size: 1rem; cursor: pointer;
+  animation: hint-pulse 2.4s ease-in-out infinite; white-space: nowrap;
+}
+.landing-hint kbd { font: 700 .8rem/1 "Pixelify Sans", system-ui, sans-serif; color: var(--ink); background: #f6ead0; padding: 3px 6px;
+  box-shadow: inset 0 -2px 0 #c9b48a, 0 0 0 1px #1f1209; }
+@keyframes hint-pulse { 50% { filter: brightness(1.25); } }
+.landing-in .landing-hint, .landing-out .landing-hint { opacity: 0; transition: opacity .3s; }
+
+/* Menu "inside" the monitor: beige bezel like the 3D model, curved glass, scanlines. */
+.crt { position: fixed; inset: 0; z-index: 5; padding: clamp(10px, 2.6vmin, 26px); background: #d8ceb2;
+  box-shadow: inset 0 0 0 2px #b8ab8c, inset 0 0 40px rgba(90, 70, 40, .35); animation: crt-on .45s ease-out both; }
+.crt-glass { position: relative; width: 100%; height: 100%; overflow: hidden; border-radius: clamp(14px, 4vmin, 40px);
+  background: #06140f; box-shadow: 0 0 0 3px #1d1a17, inset 0 0 0 1px #000; }
+.crt .menu { position: absolute; }
+.crt-fx { position: absolute; inset: 0; pointer-events: none; z-index: 4; border-radius: inherit;
+  background:
+    repeating-linear-gradient(to bottom, rgba(0,0,0,.16) 0 1px, transparent 1px 3px),
+    radial-gradient(120% 100% at 50% 50%, transparent 60%, rgba(0,0,0,.55) 100%);
+  box-shadow: inset 0 0 6vmin rgba(0,0,0,.6), inset 0 0 1.5vmin rgba(150,255,200,.08);
+  animation: crt-flicker 6s steps(1) infinite; }
+.crt-back { position: absolute; z-index: 6; top: calc(clamp(10px, 2.6vmin, 26px) + 12px); left: calc(clamp(10px, 2.6vmin, 26px) + 12px);
+  height: 34px; display: inline-flex; align-items: center; cursor: pointer; }
+.crt .menu-lang { top: calc(max(0px, env(safe-area-inset-top)) + 52px); }
+@keyframes crt-on { from { filter: brightness(2.2) contrast(1.4); opacity: 0; } 35% { opacity: 1; } to { filter: none; } }
+@keyframes crt-flicker { 0%, 100% { opacity: 1; } 47% { opacity: .92; } 48% { opacity: 1; } 81% { opacity: .95; } 82% { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .crt, .crt-fx, .landing-hint { animation: none; } }

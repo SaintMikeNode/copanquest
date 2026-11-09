@@ -24,7 +24,7 @@ export const CREDITS: { heading: Key; items: CreditItem[] }[] = [
         license: "ODbL 1.0",
       },
       {
-        title: "Maya day signs (tzolk'in) — menu and loading background",
+        title: "Maya day signs (tzolk'in) — menu, loading screen and bedroom calendar poster",
         url: "https://commons.wikimedia.org/wiki/File:MAYA-g-log-cal-D20-Ajaw.svg",
         credit: {
           es: "Bluebalam (19 signos; Ok: original de CJLL Wright, vector de ExtendedPartition), Wikimedia Commons. Adaptados a pixel art.",

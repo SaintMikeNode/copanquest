@@ -81,7 +81,15 @@ export default defineConfig({
   optimizeDeps: { rolldownOptions: { plugins: [ecctrlFixedStep] } },
   build: {
     target: "es2022",
-    // The engine chunk (three + Rapier WASM) is ~3.3 MB raw / 1.1 MB gzip, loaded after the menu.
+    // Chunks: index (UI shell) → Landing (the bedroom) + engine-3d (three + R3F, shared with
+    // the game) → Game (Rapier WASM, voxel world, drei…), fetched when the computer is turned on.
     chunkSizeWarningLimit: 3500,
+    rolldownOptions: {
+      output: {
+        advancedChunks: {
+          groups: [{ name: "engine-3d", test: /node_modules[\\/](three|@react-three[\\/]fiber|react-reconciler|its-fine|suspend-react)[\\/]/ }],
+        },
+      },
+    },
   },
 });
