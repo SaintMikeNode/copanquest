@@ -13,7 +13,10 @@ import { useGame } from "../state/useGame";
 import { IS_TOUCH } from "../config";
 import { play } from "../audio/sound";
 
-type Phase = "room" | "in" | "screen" | "out";
+/** room → in (camera moves) → screen (menu shown) → leaving (menu fades) → out (camera moves back) → room */
+type Phase = "room" | "in" | "screen" | "leaving" | "out";
+/** Menu crossfade over the CRT, both ways (matches .crt / .crt-leave in styles.css). */
+const FADE_MS = 380;
 
 /** Render height in pixels: PS2-era detail, scaled up smoothly (also keeps phones fast). */
 const RENDER_HEIGHT = 720;
@@ -69,7 +72,7 @@ function CameraRig({ phase, on, onArrive, power, boost }: { phase: Phase; on: bo
     // The screen powers up once when the page appears.
     power.current = on ? Math.min(1, power.current + d * 1.1) : 0;
     psxLights.uScreenColor.value.copy(SCREEN_GLOW).multiplyScalar(power.current);
-    const target = phase === "in" || phase === "screen" ? 1 : 0;
+    const target = phase === "in" || phase === "screen" || phase === "leaving" ? 1 : 0;
     const before = t.current;
     t.current = THREE.MathUtils.clamp(t.current + (target ? d : -d) / ZOOM_SECONDS, 0, 1);
     if (phase === "in" && before < 1 && t.current >= 1) onArrive("screen");
@@ -144,11 +147,15 @@ export default function Landing({ onIntent }: { onIntent: () => void }) {
     const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
     setPhase(reduce ? "screen" : "in");
   }, [onIntent]);
+  const leaveTimer = useRef(0);
   const zoomOut = useCallback(() => {
     if (phaseRef.current !== "screen") return;
     play("close");
-    setPhase("out");
+    // Fade the menu out over the 3D screen first, then pull the camera back.
+    setPhase("leaving");
+    leaveTimer.current = window.setTimeout(() => setPhase("out"), FADE_MS);
   }, []);
+  useEffect(() => () => clearTimeout(leaveTimer.current), []);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -189,7 +196,11 @@ export default function Landing({ onIntent }: { onIntent: () => void }) {
           {IS_TOUCH ? "👆" : <kbd>{t("room.key")}</kbd>} {t("room.hint")}
         </button>
       )}
-      {phase === "screen" && <Menu crt onBack={zoomOut} />}
+      {(phase === "screen" || phase === "leaving") && (
+        <div className={phase === "leaving" ? "crt-wrap crt-leave" : "crt-wrap"}>
+          <Menu crt onBack={zoomOut} />
+        </div>
+      )}
     </div>
   );
 }

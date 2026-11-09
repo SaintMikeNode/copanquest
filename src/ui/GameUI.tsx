@@ -310,7 +310,7 @@ export function Journal() {
         {tab === "album" && <AlbumTab />}
         {tab === "museum" && <MuseumTab />}
         {tab === "rank" && <RankTab />}
-        <QuickSettings controls />
+        <QuickSettings controls home />
       </div>
     </Overlay>
   );

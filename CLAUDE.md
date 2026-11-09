@@ -31,7 +31,7 @@ build**, or the page asks for new script files the server doesn't know and the g
 - `src/player/` — ecctrl character, input bridge (keyboard + ecctrl joystick store → `setMovement`), collision-aware follow camera, `playerState` (mutable per-frame data, never React state).
 - `src/poi/` — point-of-interest data and tracker. **Every fact needs a source.**
 - `src/room/` — the landing page: a PS2-era 3D bedroom whose CRT shows the menu (`Landing.tsx` flow and camera, `RoomScene.tsx` models, `psx.ts` shared material + light rig, `roomTextures.ts` painted textures, `Crt.tsx` CRT shader). Keep it light: it is the first thing every phone loads.
-- `src/ui/` — HUD, minimap, info card, credits, debug overlay, pause menu / journal (language, sound and credits live there, not in the HUD), menu + loading background (`MayaBackground.tsx`). Pixel UI textures and HUD icons are drawn in `uiTextures.ts`.
+- `src/ui/` — HUD, minimap, info card, credits, debug overlay, pause menu / journal (language, sound and Ir al inicio live there, not in the HUD; credits only in the start menu), menu + loading background (`MayaBackground.tsx`). Pixel UI textures and HUD icons are drawn in `uiTextures.ts`.
 - `src/npc/` — villagers, trail walkers and jaguars (`People.tsx`, data in `npcData.ts`). Their ground ray only sees fixed colliders; they step up ≤ 0.6 m and keep ~1.1 m apart.
 - `src/game/` — quests, pickups, digging, ballgame, camera, time lens, Maya calendar.
 - `src/audio/` — Web Audio engine (`sound.ts`: music playlist, effect list `SFX`) and `AudioEvents.tsx` (plays effects by watching the stores). Files in `public/audio/` are 128 kbps MP3 made from the Ovani Sound packs in `../sfx/` with LAME (`brew install lame`; `lame -b 128 --cbr -q 2`).
