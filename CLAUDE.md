@@ -30,7 +30,11 @@ build**, or the page asks for new script files the server doesn't know and the g
 - `src/voxel/` — block engine: block types, procedural pixel textures, voxel world, greedy mesher with AO (Web Worker), block shader. Visuals are voxels; physics uses the smooth invisible colliders.
 - `src/player/` — ecctrl character, input bridge (keyboard + ecctrl joystick store → `setMovement`), collision-aware follow camera, `playerState` (mutable per-frame data, never React state).
 - `src/poi/` — point-of-interest data and tracker. **Every fact needs a source.**
-- `src/ui/` — HUD, minimap, info card, credits, debug overlay.
+- `src/ui/` — HUD, minimap, info card, credits, debug overlay, pause menu / journal (language, sound and credits live there, not in the HUD), menu + loading background (`MayaBackground.tsx`). Pixel UI textures and HUD icons are drawn in `uiTextures.ts`.
+- `src/npc/` — villagers, trail walkers and jaguars (`People.tsx`, data in `npcData.ts`). Their ground ray only sees fixed colliders; they step up ≤ 0.6 m and keep ~1.1 m apart.
+- `src/game/` — quests, pickups, digging, ballgame, camera, time lens, Maya calendar.
+- `src/audio/` — Web Audio engine (`sound.ts`: music playlist, effect list `SFX`) and `AudioEvents.tsx` (plays effects by watching the stores). Files in `public/audio/` are 128 kbps MP3 made from the Ovani Sound packs in `../sfx/` with LAME (`brew install lame`; `lame -b 128 --cbr -q 2`).
+- `src/components/PixelBlast/` — React Bits background (MIT + Commons Clause, header kept; added by hand: the project has no shadcn/Tailwind).
 - `src/i18n/` — `es.json` (source of truth) and `en.json`.
 
 ## Rules
@@ -39,5 +43,8 @@ build**, or the page asks for new script files the server doesn't know and the g
 - Visual meshes and colliders stay separate; each staircase gets one invisible ramp wedge.
 - Keep draw calls low: voxel chunks are merged into 64 m regions; check the debug panel (F3) for draw calls / triangles / voxel build time.
 - Dev console helpers: `cqTeleport(x, y, z)`, `cqView(yaw, pitch, distance)`, `cqFreeCam(x, y, z, lookX, lookY, lookZ)` (no args releases it; from inside a solid mound you can see into chambers).
+- Changing voxel generation (`decorate.ts`, `village.ts`, `mesher.ts`, `REGION`) needs a bump of `VOXEL_CODE_VERSION` in `voxelStream.ts`, or the cached voxels are reused.
+- Performance budget: compare the F3 numbers (near tris, plants, voxel ms, Auto quality) before and after anything that adds geometry; trees are the costliest voxels. The detailed voxel world (`REGION`) reaches past the fence only where needed (60 m west for the entrance forest).
+- The horizon mountains (`Background.tsx`) are framed, not exact geography (see README, Horizon); keep them low (~2–6° above the horizon) with dips, never a wall.
 - Player-facing text: Spanish first, add English at the same time.
 - Dev tools: `?debug` in the URL (or `npm run dev`) enables the collider view; `F3` toggles the debug panel; `window.cqTeleport(x, y, z)` in dev.
