@@ -9,6 +9,7 @@ import { checkRankUp, questCheck } from "../game/questLogic";
 import { mayaDate, dayClock } from "../game/time";
 import { useLens } from "../game/lens";
 import { Overlay } from "./Overlay";
+import { playerState } from "../player/playerState";
 import { ballHit, finishDig, useAction } from "../game/WorldGame";
 
 // ---------------------------------------------------------------- HUD buttons + rank
@@ -380,40 +381,45 @@ export function ActionPrompt() {
   const talk = useGame((s) => s.talkTarget);
   const [progress, setProgress] = useState(0);
   const timer = useRef<number | null>(null);
+  const digSite = useRef<string | null>(null);
+  const stop = () => {
+    if (timer.current !== null) window.clearInterval(timer.current);
+    timer.current = null;
+    digSite.current = null;
+    playerState.frozen = false;
+    setProgress(0);
+  };
+  // Tap once to dig: the player kneels still while the bar fills, then the find appears.
   const start = () => {
     if (kind === "ball") {
       ballHit.pending = true;
       return;
     }
-    if (kind !== "dig" || timer.current !== null) return;
+    if (kind !== "dig" || !id || timer.current !== null) return;
+    digSite.current = id;
+    playerState.frozen = true;
     const t0 = performance.now();
     timer.current = window.setInterval(() => {
       const k = (performance.now() - t0) / 1000 / DIG_SECONDS;
       setProgress(Math.min(1, k));
       if (k >= 1) {
+        const site = digSite.current;
         stop();
-        if (id) finishDig(id);
+        if (site) finishDig(site);
       }
     }, 50);
   };
-  const stop = () => {
-    if (timer.current !== null) window.clearInterval(timer.current);
-    timer.current = null;
-    setProgress(0);
-  };
+  // Walking away (or a dialogue opening) cancels a dig in progress.
+  useEffect(() => {
+    if (timer.current !== null && (kind !== "dig" || id !== digSite.current)) stop();
+  }, [kind, id]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => () => stop(), []); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
       if (e.code === "KeyE" && !e.repeat && !useGame.getState().talkTarget) start();
     };
-    const up = (e: KeyboardEvent) => {
-      if (e.code === "KeyE") stop();
-    };
     window.addEventListener("keydown", down);
-    window.addEventListener("keyup", up);
-    return () => {
-      window.removeEventListener("keydown", down);
-      window.removeEventListener("keyup", up);
-    };
+    return () => window.removeEventListener("keydown", down);
   });
   if (found) {
     const a = ARTIFACTS.find((x) => x.id === found)!;
@@ -442,9 +448,8 @@ export function ActionPrompt() {
   return (
     <button
       className="talk-prompt action-prompt"
-      onPointerDown={start}
-      onPointerUp={stop}
-      onPointerLeave={stop}
+      onClick={start}
+      onContextMenu={(e) => e.preventDefault()}
       style={{ ["--p" as string]: `${progress * 100}%` }}
     >
       <span className="talk-key">E</span> {kind === "dig" ? (progress > 0 ? t("dig.hold") : `⛏ ${t("dig")}`) : `🏐 ${t("hit")}`}

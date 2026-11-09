@@ -229,7 +229,7 @@ button { font: inherit; cursor: pointer; }
 .options .primary.small { min-width: 64px; font-size: 1.3rem; }
 .glyph-msg { font-weight: 800; color: var(--red-dark); }
 
-.action-prompt { position: absolute; overflow: hidden; }
+.action-prompt { position: absolute; overflow: hidden; min-width: 220px; -webkit-touch-callout: none; touch-action: manipulation; }
 .dig-bar { position: absolute; left: 0; bottom: 0; height: 6px; width: var(--p, 0%); background: #2fae6e; }
 .found-card .quest { margin-top: 6px; }
 
