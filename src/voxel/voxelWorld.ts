@@ -41,6 +41,13 @@ export function valueNoise(x: number, z: number, seed = 0) {
 /** Far terrain quantizes heights to whole meters; the voxel region uses this outside itself. */
 export const quantFar = (h: number) => Math.round(h);
 
+/**
+ * Layered fill under platforms, top to bottom (one entry per block, repeating every 3.5 m):
+ * a plaster floor, earth, rubble fill, more earth. El Corte shows the Acropolis built this way,
+ * floor over floor.
+ */
+const STRATA: B[] = [B.Sand, B.Earth, B.Earth, B.Rubble, B.Dirt, B.Dirt, B.Gravel];
+
 export class VoxelWorld {
   /** Number of solid ground blocks per column (top block index + 1). */
   ground = new Int16Array(NX * NZ);
@@ -248,6 +255,7 @@ export class VoxelWorld {
             continue;
           }
           for (let iy = y0; iy <= top; iy++) this.setBlock(ix, iy, iz, b);
+          if (s.skirt) for (let iy = this.groundAt(ix, iz); iy < y0; iy++) this.setBlock(ix, iy, iz, STRATA[(y0 - 1 - iy) % STRATA.length]);
           if (s.erode && top < y1 && hash2(ix + 3, iz) < 0.6) this.setBlock(ix, top, iz, B.Rubble);
         }
       return;

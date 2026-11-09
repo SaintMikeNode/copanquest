@@ -397,10 +397,17 @@ const waterFragment = /* glsl */ `
   varying vec3 vWorld;
   varying float vDepth;
   void main() {
-    vec2 uv = vWorld.xz / 0.5 + vec2(time * 0.25, time * 0.6);
-    float frame = mod(floor(time * 5.0), 8.0);
-    vec4 tex = textureGrad(water, vec3(fract(uv), frame), dFdx(uv), dFdy(uv));
-    vec3 c = tex.rgb * 1.05 + skyColor * 0.06;
+    // Slow drift downstream (south). Frames cross-fade instead of switching all at once,
+    // which made the whole river blink 5 times a second.
+    vec2 uv = vWorld.xz / 0.5 + vec2(time * 0.05, time * 0.18);
+    float f = time * 2.0;
+    float f0 = mod(floor(f), 8.0);
+    float f1 = mod(f0 + 1.0, 8.0);
+    vec2 gx = dFdx(uv);
+    vec2 gy = dFdy(uv);
+    vec3 a = textureGrad(water, vec3(fract(uv), f0), gx, gy).rgb;
+    vec3 b = textureGrad(water, vec3(fract(uv), f1), gx, gy).rgb;
+    vec3 c = mix(a, b, smoothstep(0.0, 1.0, fract(f))) * 1.05 + skyColor * 0.06;
     c = mix(c, fogColor, 1.0 - exp(-vDepth / fogDist));
     gl_FragColor = vec4(c, 0.86);
     #include <colorspace_fragment>

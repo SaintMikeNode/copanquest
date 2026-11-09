@@ -18,6 +18,11 @@ export interface Shape {
   erode?: number;
   /** Remove blocks instead of adding them (tunnels, chambers). */
   carve?: boolean;
+  /**
+   * Foundation: wherever the terrain is lower than the box bottom, fill down to it with
+   * layered fill (earth, plaster floors, rubble), as in El Corte, so nothing floats.
+   */
+  skirt?: boolean;
 }
 
 type Box = [number, number, number, number, number, number]; // minX, minY, minZ, maxX, maxY, maxZ
@@ -150,7 +155,13 @@ function buildMound(g: Greybox, m: Mound) {
     const w = m.size[0] - 2 * i * m.setback;
     const d = m.size[1] - 2 * i * m.setback;
     const top = baseY + (i + 1) * m.tierHeight;
-    pushSolid(g, { position: [cx, top - m.tierHeight / 2, cz], size: [w, m.tierHeight, d], material });
+    pushSolid(g, { position: [cx, top - m.tierHeight / 2, cz], size: [w, m.tierHeight, d], material, skirt: i === 0 });
+    if (i === 0) {
+      // Foundation collider down to the bottom of the world, so the river's banks can never
+      // leave a walkable hollow under a platform (the Acropolis east edge by El Corte).
+      const bottom = -12;
+      g.cuboids.push({ position: [cx, (bottom + baseY) / 2, cz], halfExtents: [w / 2, (baseY - bottom) / 2, d / 2] });
+    }
     // Grass grows on top of every restored terrace today.
     g.shapes.push({ position: [cx, top, cz], size: [w, 0, d], material: "grassStone" });
   }
