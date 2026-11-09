@@ -87,8 +87,7 @@ export function VoxelTerrain() {
   }, [count]);
 
   useEffect(() => {
-    shared.fogNear.value = level === "low" ? 160 : 220;
-    shared.fogFar.value = level === "low" ? 620 : 1000;
+    shared.fogDist.value = level === "low" ? 1800 : 3200;
   }, [level]);
 
   useFrame((_, dt) => {

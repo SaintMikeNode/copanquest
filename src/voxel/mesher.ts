@@ -1,7 +1,7 @@
 // Greedy meshing with per-vertex ambient occlusion (the soft corner shading that makes
 // block worlds read well), plus a coarse blocky mesher for the distant terrain.
 import { B, BLOCK, FACE_LAYERS, LAYERS } from "./blocks";
-import { CS, NCX, NCY, NCZ, REGION, VoxelWorld, quantFar } from "./voxelWorld";
+import { CS, NCX, NCY, NCZ, REGION, VoxelWorld, quantFar, valueNoise } from "./voxelWorld";
 import { sampleHeight, type TerrainGrid } from "../world/terrainData";
 import { FLAT_CORE } from "../world/siteData";
 
@@ -309,8 +309,11 @@ export function meshFarTerrain(grid: TerrainGrid, world: VoxelWorld, extent = 10
       // Steepness from neighbors decides grass or rock.
       const nb = [colHeight(x1 + 1, czm), colHeight(x0 - 1, czm), colHeight(cxm, z1 + 1), colHeight(cxm, z0 - 1)];
       const steep = Math.max(...nb.map((v) => (v > -999 ? Math.abs(v - h) : 0))) > 7;
-      const top = steep ? L("rock") : h < -4 ? L("gravel") : L("grassTop");
-      const sideL = steep ? L("rock") : L("dirt");
+      // The hills around Copán are mostly forested: canopy with patches of pasture.
+      const forest = valueNoise(cxm * 0.012, czm * 0.012, 21) * 0.75 + hash(x0 + 1, z0 - 1) * 0.25 > 0.42;
+      const canopy = valueNoise(cxm * 0.03, czm * 0.03, 22) > 0.5 ? L("fig") : L("leaves");
+      const top = steep ? L("rock") : forest ? canopy : L("grassTop");
+      const sideL = steep ? L("rock") : forest ? canopy : L("grassTop");
       // Tops: merge runs of equal height/texture along the row into one quad.
       if (run && run.h === h && run.top === top && run.mb === mb && run.x1 === x0) run.x1 = x1;
       else {
@@ -339,7 +342,7 @@ export function meshFarTerrain(grid: TerrainGrid, world: VoxelWorld, extent = 10
       // Trees on gentle ground outside the city core (the core was cleared around 800 AD).
       const coreDist = Math.max(FLAT_CORE.minX - cxm, cxm - FLAT_CORE.maxX, FLAT_CORE.minZ - czm, czm - FLAT_CORE.maxZ);
       const chance = s === 10 ? 0.16 : 0.07;
-      if (!steep && h > -3 && coreDist > 25 && hash(x0, z0) < chance) {
+      if (!steep && !forest && h > -3 && coreDist > 25 && hash(x0, z0) < chance) {
         const k = 0.8 + hash(z0, x0) * 0.6;
         const tx = cxm + (hash(x0 + 7, z0) - 0.5) * (s - 8);
         const tz = czm + (hash(x0, z0 + 7) - 0.5) * (sz - 8);

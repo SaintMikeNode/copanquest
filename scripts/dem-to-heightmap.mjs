@@ -9,6 +9,7 @@
 // Usage:
 //   npm run heightmap                       # defaults below
 //   node scripts/dem-to-heightmap.mjs --size 3000 --spacing 30 --lat 14.8400755 --lon -89.1420256
+//   node scripts/dem-to-heightmap.mjs --size 30000 --spacing 150 --name copan-region   # horizon mountains
 //
 // Outputs (in public/terrain/):
 //   copan-heightmap.png   16-bit grayscale PNG (for Blender's Displace modifier / inspection)
@@ -40,6 +41,8 @@ const LAT = Number(args.lat ?? 14.8400755);
 const LON = Number(args.lon ?? -89.1420256);
 const SIZE = Number(args.size ?? 3000); // meters, square
 const SPACING = Number(args.spacing ?? 30); // meters per sample
+// Output base name (e.g. "copan-heightmap" for the site, "copan-region" for the horizon).
+const NAME = String(args.name ?? "copan-heightmap");
 const N = Math.round(SIZE / SPACING) + 1;
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -132,12 +135,12 @@ for (let i = 0; i < u16.length; i++) u16[i] = Math.round(((elev[i] - min) / rang
 
 await mkdir(outDir, { recursive: true });
 await writeFile(
-  path.join(outDir, "copan-heightmap.png"),
+  path.join(outDir, `${NAME}.png`),
   encodePNG({ width: N, height: N, bitDepth: 16, colorType: 0, data: u16 }),
 );
 const bin = Buffer.alloc(u16.length * 2);
 u16.forEach((v, i) => bin.writeUInt16LE(v, i * 2));
-await writeFile(path.join(outDir, "copan-heightmap.bin"), bin);
+await writeFile(path.join(outDir, `${NAME}.bin`), bin);
 
 const meta = {
   source: "Copernicus DEM GLO-30 (copernicus-dem-30m, AWS Open Data)",
@@ -155,7 +158,7 @@ const meta = {
   encoding: "uint16; elevation_m = minElevation + value/65535 * (maxElevation - minElevation)",
   axes: "row 0 = north, col 0 = west; game x = east, z = south, y = elevation - datumElevation",
 };
-await writeFile(path.join(outDir, "copan-heightmap.json"), JSON.stringify(meta, null, 2) + "\n");
+await writeFile(path.join(outDir, `${NAME}.json`), JSON.stringify(meta, null, 2) + "\n");
 
 console.log(
   `Wrote ${N}×${N} heightmap, ${SPACING} m/px, elevation ${min.toFixed(1)}–${max.toFixed(1)} m, datum ${datum.toFixed(1)} m`,

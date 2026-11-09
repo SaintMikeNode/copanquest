@@ -1,0 +1,24 @@
+{
+  "source": "Copernicus DEM GLO-30 (copernicus-dem-30m, AWS Open Data)",
+  "tile": "Copernicus_DSM_COG_10_N14_00_W090_00_DEM",
+  "attribution": "produced using Copernicus WorldDEM-30 © DLR e.V. 2010-2014 and © Airbus Defence and Space GmbH 2014-2018 provided under COPERNICUS by the European Union and ESA; all rights reserved",
+  "origin": {
+    "lat": 14.8400755,
+    "lon": -89.1420256,
+    "note": "Stela C, Great Plaza (OSM node 3889488600); game origin (0,0,0)"
+  },
+  "bounds": {
+    "north": 14.975641582036955,
+    "south": 14.704509417963044,
+    "west": -89.281392023952,
+    "east": -89.002659176048
+  },
+  "size": 201,
+  "spacingMeters": 150,
+  "extentMeters": 30000,
+  "minElevation": 505.5,
+  "maxElevation": 1875.02,
+  "datumElevation": 607.89,
+  "encoding": "uint16; elevation_m = minElevation + value/65535 * (maxElevation - minElevation)",
+  "axes": "row 0 = north, col 0 = west; game x = east, z = south, y = elevation - datumElevation"
+}

@@ -12,6 +12,8 @@ import { SiteColliders } from "./world/Greybox";
 import { VoxelTerrain } from "./voxel/VoxelTerrain";
 import { Monuments } from "./world/Monuments";
 import { Macaws } from "./world/Macaws";
+import { Background } from "./world/Background";
+import { Ambient } from "./world/Ambient";
 import { People } from "./npc/People";
 import { Jades } from "./poi/Jades";
 import { Boundary } from "./world/Boundary";
@@ -69,6 +71,9 @@ export default function Game() {
         />
         <Environment />
         <Suspense fallback={null}>
+          <Background />
+        </Suspense>
+        <Suspense fallback={null}>
           <Physics debug={physicsDebug} timeStep={1 / 60} interpolate>
             <TerrainCollider />
             <SiteColliders />
@@ -80,6 +85,7 @@ export default function Game() {
           <Monuments />
           <Macaws />
           <Jades />
+          <Ambient />
           <PoiMarkers />
           <PoiTracker />
         </Suspense>
