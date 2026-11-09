@@ -344,13 +344,20 @@ const monumentVertex = /* glsl */ `
 const monumentFragment = /* glsl */ `
   ${lightingPars}
   uniform sampler2D map;
+  /** Painted stucco that should still read in dark interiors (Rosalila). */
+  uniform float glow;
   varying vec2 vUv;
   varying vec3 vNormal;
   varying float vDepth;
   varying vec3 vWorld;
   void main() {
     vec4 tex = texture2D(map, vUv);
-    gl_FragColor = vec4(shade(tex.rgb, normalize(vNormal), 1.0, vDepth, vWorld), 1.0);
+    if (tex.a < 0.5) discard; // cut-out cards
+    vec3 n = normalize(vNormal);
+    if (!gl_FrontFacing) n = -n;
+    vec3 c = shade(tex.rgb, n, 1.0, vDepth, vWorld);
+    c += tex.rgb * glow * interior(vWorld) * (0.75 + 0.25 * max(n.y, 0.0));
+    gl_FragColor = vec4(c, 1.0);
     #include <colorspace_fragment>
   }
 `;
@@ -360,7 +367,7 @@ export function createMonumentMaterial(map: THREE.Texture) {
     vertexShader: monumentVertex,
     fragmentShader: monumentFragment,
     lights: true,
-    uniforms: makeUniforms({ map: { value: null } }),
+    uniforms: makeUniforms({ map: { value: null }, glow: { value: 0 } }),
   });
   m.uniforms.map.value = map;
   return m;

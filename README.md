@@ -48,7 +48,9 @@ Dev tools: `npm run dev` or `?debug` in the URL enables the collider view. `F3` 
   - A domed temazcal (sweat bath).
   - Maize, bean and squash milpas, an agave field, and fruit trees.
   - A market along the trail. (`src/world/villageData.ts`, `src/voxel/village.ts`)
-- **People you can talk to** (E key / *Hablar* button): a weaver, a farmer, a cacao merchant, a scribe, a ballplayer, a sculptor at an unfinished stela, a village girl, and the guide. Every line is sourced (`src/npc/npcData.ts`). Townspeople also walk the trails, some carrying baskets.
+- **Two more wards** fill the open ground east of the Great Plaza (along the road to the Las Sepulturas sacbe) and southwest of the Acropolis, with patio groups, temazcales, fields, fruit trees, hearth smoke and neighbors walking their lanes. Around AD 750–800 about 20,000 people lived in the Copán valley, most in patio groups like these (Webster & Freter 1990, *Latin American Antiquity*). Their layout is a game layout.
+- **Trails skip the ball court:** from the entrance the trail runs down the west side of the middle plaza and passes west of the ball court; a spur crosses the Court of the Hieroglyphic Stairway to its foot.
+- **People you can talk to** (E key / *Hablar* button): a weaver, a farmer, a cacao merchant, a scribe, a ballplayer, a sculptor at an unfinished stela, a potter making Copador pottery, an obsidian knapper, a village girl, and the guide. Every line is sourced (`src/npc/npcData.ts`). Townspeople also walk the trails, some carrying baskets.
 - **Jaguars** prowl three edges of the woods. Get close and they sit and watch you; *Observar* teaches about b'alam.
 - **Ladders:** wooden ladders up stepped walls, terrace by terrace (Acropolis north wall, Temples 16, 22 and 26, and the ball court's Structure 10). Walk into the wall to climb (`src/world/ladders.ts`).
 - **10 jade beads** to find, many only reachable by ladder. Progress (jade, places visited, people met) is saved in the browser.
@@ -76,11 +78,16 @@ Everything feeds **XP** and four **ranks** (`src/state/progress.ts`): Turista �
 - **Fixed time of day** (`src/game/time.ts`, `FIXED_TIME`): a bright morning with readable shadows. The night code (stars, Venus, fireflies) is still there; `cqTime()` previews it. A HUD chip shows **today's real date in the Maya calendar** (Long Count, Tzolk'in, Haab'; GMT correlation 584283, checked against 21 Dec 2012 = 13.0.0.0.0 4 Ajaw 3 K'ank'in).
 - **Rosalila:**
   - A torch-lit tunnel from Temple 16's east face, near the tunnel entrances in OpenStreetMap, leads to a chamber with Rosalila inside.
-  - The chamber has corridors around the temple, and you come out at its painted west front.
-  - It's true to the published size: three stories, about 12.9 m, base 18.5 × 12.5 m.
-  - The facade is red stucco with green and yellow cornices and sun-bird mask friezes.
-  - The interior is dark, with flickering torchlight built into the shared shader.
-  - Colliders are carved by box subtraction.
+  - You come out in the north corridor, turn the corner, and find the painted west front, with room in front of it to see the whole façade. Two clay censers flank the door (censers were found inside Rosalila).
+  - It's true to the published size: three levels, about 12.9 m, base 18.5 × 12.5 m. Proportions are measured from front photos of the full-size replica in the Copán Sculpture Museum (Wikimedia Commons).
+  - It is not voxels but a painted stucco relief model (`src/voxel/rosalilaArt.ts`) at the same 32 px/m as the blocks, drawn from the replica:
+    - Level 1: doorways, and giant green-feathered bird masks with the red Sun God face coming out of the beak.
+    - The projecting frieze: a Sun God mask with a jade column over each door, serpent bodies ending in big white scrolls, green cartouches, and cut-out serpent crests at the corners.
+    - Level 2: the earth-monster (witz) mask on the west and east, and serpent heads at the sides.
+    - Level 3: vents, the skeletal censer face, and white braided serpent bands rising like smoke.
+  - Masks and crests are real boxes and cut-out cards, so the façade has depth. Everything is one atlas (1024 px wide) and two draw calls. Massing and colliders live in `src/world/rosalilaShape.ts`.
+  - The interior is dark, with flickering torchlight built into the shared shader; the stucco keeps a faint glow so its colors read.
+  - Colliders are carved by box subtraction. The chamber stays inside Temple 16's fourth terrace so the darkness never reaches the outside.
   - The info card notes that the real tunnels are much narrower.
 - **Life around the city:**
   - Animals: agoutis that scurry off, turkeys, butterflies, pollen and fireflies.
@@ -223,6 +230,8 @@ All player-facing facts must be verifiable. Each POI in `src/poi/poiData.ts` has
   - Ball court alley: about 28.4 × 7 m, running north–south.
 - **Estimates** (marked "est." in `siteData.ts`): the other heights and platform sizes, the Acropolis court height (12 m) and Altar Q's exact spot. Check them against the UNAH 2016 survey before the art pass.
 
+- **Villager facts:** Copador polychrome (Copán + El Salvador; used by villagers at Joya de Cerén): Alfaro Moisa 2011, *Cerámica polícroma Copador en El Salvador*. Copán's obsidian almost all from Ixtepeque, ~80 km away, imported as large flakes and nodules: Aoyama (Mesoweb Simposio 1999, 2009). Valley population ~20,000 in AD 750–800: Webster & Freter 1990, "Settlement history and the Classic collapse at Copán", *Latin American Antiquity*.
+
 **Known simplifications:**
 - On the 0.5 m grid, the Hieroglyphic Stairway shows about 46 block steps, not its real 62.
 - El Corte is the present-day river cut. The game shows it even though the scene is set around 800 AD.
@@ -245,6 +254,7 @@ The in-game **Créditos** screen (`src/ui/creditsData.ts`) must stay in sync wit
 - Mused 3D scans: https://mused.com/copan/about
 - T. Proskouriakoff, *An Album of Maya Architecture*; D. R. Holloway reconstructions: https://www.dennisrhollowayarchitect.com/Copan.html
 - Rosalila colors: https://www.worldhistory.org/image/4066/rosalila-temple-copan/
+- Rosalila replica photos: https://commons.wikimedia.org/wiki/File:CPN_Rosalila_01.jpg, https://commons.wikimedia.org/wiki/File:Rosalila_Temple.jpg, https://commons.wikimedia.org/wiki/File:Honduras-0385B_(4260008116).jpg
 - Getty Hieroglyphic Stairway project: https://www.getty.edu/projects/maya-initiative/hieroglyphic-stairway-at-copan/
 
 **Software:** three.js (MIT), React (MIT), pmndrs React Three Fiber / drei / react-three-rapier / ecctrl / zustand (MIT), Rapier (Apache-2.0), Vite (MIT), vite-plugin-pwa (MIT), geotiff.js (MIT).

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef } from "react";
 import { buildGreybox } from "../world/buildGreybox";
 import { BOUNDS, BLOCKS, MAP_LABELS, OPEN_AREAS, PATHS, TERRAIN_SCULPT } from "../world/siteData";
 import { POIS } from "../poi/poiData";
+import { HOUSEHOLDS } from "../world/villageData";
 import { playerState } from "../player/playerState";
 import { useGame } from "../state/useGame";
 import { useL10n } from "../i18n";
@@ -72,6 +73,10 @@ export function Minimap({ large = false }: { large?: boolean }) {
       b.fillRect(X(x0), Z(z0), (x1 - x0) * k, (z1 - z0) * k);
       b.strokeRect(X(x0), Z(z0), (x1 - x0) * k, (z1 - z0) * k);
     }
+    // Thatched houses of the wards.
+    b.fillStyle = "#c9a24e";
+    for (const hh of HOUSEHOLDS)
+      for (const h of hh.houses) b.fillRect(X(h.at[0] - h.size[0] / 2), Z(h.at[1] - h.size[1] / 2), h.size[0] * k, h.size[1] * k);
     b.fillStyle = "#f2c14e";
     for (const p of POIS) {
       b.beginPath();

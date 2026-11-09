@@ -3,6 +3,7 @@
 // gets one invisible convex wedge (ramp) the character walks on.
 import { BLOCKS, MONUMENTS, MOUNDS, ROSALILA, type Face, type Material, type Mound, type Stair } from "./siteData";
 import { BLOCK, MATERIAL_COLOR } from "../voxel/blocks";
+import { rosalilaColliders } from "./rosalilaShape";
 
 /** A box to rasterize into voxels. Later shapes overwrite earlier ones. */
 export interface Shape {
@@ -40,11 +41,10 @@ function subtract(b: Box, h: Box): Box[] {
 /** Rosalila's chamber and access tunnel (as boxes). */
 export function rosalilaHoles(): Box[] {
   const R = ROSALILA;
-  const [cx, cz] = R.center;
-  const [w, h, d] = R.chamber;
+  const C = R.chamber;
   const T = R.tunnel;
   return [
-    [cx - w / 2, R.baseY, cz - d / 2, cx + w / 2, R.baseY + h, cz + d / 2],
+    [C.x0, R.baseY, C.z0, C.x1, R.baseY + C.height, C.z1],
     [T.toX, R.baseY, T.z - T.width / 2, T.fromX, R.baseY + T.height, T.z + T.width / 2],
   ];
 }
@@ -239,24 +239,8 @@ export function buildGreybox(): Greybox {
         halfExtents: [(b[3] - b[0]) / 2, (b[4] - b[1]) / 2, (b[5] - b[2]) / 2] as [number, number, number],
       }));
   });
-  const R = ROSALILA;
-  let y = R.baseY;
-  let [sx, sz] = R.size;
-  pushSolid(g, { position: [R.center[0], y + 0.25, R.center[1]], size: [sx + 1, 0.5, sz + 1], material: "rosaGreen" });
-  y += 0.5;
-  R.stories.forEach((h, i) => {
-    pushSolid(g, { position: [R.center[0], y + h / 2, R.center[1]], size: [sx, h, sz], material: "rosaRed" });
-    // Mask frieze and green/yellow cornice.
-    g.shapes.push({ position: [R.center[0], y + h * 0.55, R.center[1]], size: [sx, h * 0.4, sz], material: "rosaMask" });
-    g.shapes.push({ position: [R.center[0], y + h - 0.25, R.center[1]], size: [sx + 0.5, 0.5, sz + 0.5], material: i % 2 ? "rosaYellow" : "rosaGreen" });
-    y += h;
-    sx -= R.inset * 2;
-    sz -= R.inset * 2;
-  });
-  // Roof crest with masks.
-  pushSolid(g, { position: [R.center[0], y + 0.5, R.center[1]], size: [1, 1, 6], material: "rosaMask" });
-  // Doorway on the west face (dark, 2 m wide).
-  g.shapes.push({ position: [R.center[0] - R.size[0] / 2 + 0.5, R.baseY + 2, R.center[1]], size: [1.5, 3, 2], material: "stone", carve: true });
+  // Rosalila itself is a painted relief model (Rosalila.tsx); here only its colliders.
+  g.cuboids.push(...rosalilaColliders());
   cached = g;
   return g;
 }

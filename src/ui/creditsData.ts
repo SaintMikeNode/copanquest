@@ -56,7 +56,11 @@ export const CREDITS: { heading: Key; items: CreditItem[] }[] = [
       { title: "Copán Altar Q & Kings (A. Hutnick)", url: "https://ahutnick.github.io/copanaltarqkings/" },
       { title: "Sugiyama et al. (2018), PLOS ONE", url: "https://pmc.ncbi.nlm.nih.gov/articles/PMC6135383" },
       { title: "Asociación Copán — Rosalila", url: "https://asociacioncopan.org/rosalila-rescue/" },
+      { title: "Asociación Copán — The Importance of Rosalila", url: "https://www.asociacioncopan.org/the-importance-of-rosalila/" },
       { title: "Mesoweb — Copán tour", url: "https://www.mesoweb.com/copan/tour/08.html" },
+      { title: "Aoyama (1999), obsidiana de Ixtepeque en Copán — Mesoweb", url: "https://www.mesoweb.com/Simposio/pdf/12/Aoyama.1999.pdf" },
+      { title: "Alfaro Moisa (2011), cerámica polícroma Copador en El Salvador", url: "https://antharky.ucalgary.ca/caadb/sites/antharky.ucalgary.ca.caadb/files/_Moisa_2011_Cer__mica_pol__croma_Copador_en_El_Salvador__An__lisis_de_los_contextos_de_Tazumal__San_Andr__s_y_Joya_de_Cer__n.pdf" },
+      { title: "Webster & Freter (1990), Latin American Antiquity", url: "https://www.cambridge.org/core/journals/latin-american-antiquity/article/settlement-history-and-the-classic-collapse-at-copan-a-redefined-chronological-perspective/064579A73D12BC3BA7FDB6EE7763A827" },
     ],
   },
   {
@@ -69,6 +73,7 @@ export const CREDITS: { heading: Key; items: CreditItem[] }[] = [
       { title: "Tatiana Proskouriakoff, An Album of Maya Architecture", url: "https://archive.org/search?query=album+of+maya+architecture" },
       { title: "Getty — Hieroglyphic Stairway at Copán", url: "https://www.getty.edu/projects/maya-initiative/hieroglyphic-stairway-at-copan/" },
       { title: "Rosalila Temple (World History Encyclopedia)", url: "https://www.worldhistory.org/image/4066/rosalila-temple-copan/" },
+      { title: "Wikimedia Commons — Rosalila replica photos (CPN Rosalila 01, Rosalila Temple, Honduras-0385B)", url: "https://commons.wikimedia.org/wiki/File:CPN_Rosalila_01.jpg" },
     ],
   },
   {

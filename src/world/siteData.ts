@@ -372,7 +372,7 @@ export const BLOCKS: Block[] = [
   { id: "ballcourt-marker-c", position: [22, 0, 169], size: [1.5, 0, 1.5], material: "stone" },
   { id: "ballcourt-marker-s", position: [22, 0, 179], size: [1.5, 0, 1.5], material: "stone" },
 
-  // Sacbe (causeway) toward Las Sepulturas, ~800 m east (OSM) — future zone, stub only
+  // Sacbe (causeway) toward Las Sepulturas, ~800 m east (OSM) — leads off the playable area
   { id: "sacbe", position: [176, 0, 15], size: [50, 0, 8], rotation: [0, 0.187, 0], material: "gravel" },
 ];
 
@@ -382,13 +382,22 @@ export const PATHS: PathLine[] = [
   { y: 0, width: 3, points: [[-150, 82], [-100, 80], [-62, 74], [-32, 66], [-22, 50], [-20, 30], [-8, 10], [-4, -12], [-2, -20]] },
   // Plaza loop past Stelae F and H
   { y: 0, width: 2.5, points: [[-8, 10], [14, 12], [26, 30], [24, 44], [14, 56]] },
-  // South past Structure 4 to the ball court and the Hieroglyphic Stairway
-  { y: 0, width: 3, points: [[14, 56], [13, 90], [14, 130], [22, 150], [22, 186], [32, 200], [50, 204]] },
-  // To the Acropolis west stair
-  { y: 0, width: 3, points: [[22, 190], [-8, 200], [-30, 215], [-44, 240], [-56, 290], [-58, 328], [-52, 328]] },
+  // 2: From the entrance trail down the west side of the middle plaza, west of the ball court
+  // (the court itself stays off the trails), on to the Acropolis west stair.
+  { y: 0, width: 3, points: [[-32, 66], [-42, 84], [-39, 101], [-30, 118], [-24, 136], [-20, 158], [-22, 182], [-27, 206], [-36, 222], [-44, 240], [-56, 290], [-58, 328], [-52, 328]] },
+  // 3: South past Structure 4, then across the middle plaza to join trail 2
+  { y: 0, width: 3, points: [[14, 56], [13, 90], [12, 102], [-4, 118], [-24, 136]] },
+  // 4: Spur east across the Court of the Hieroglyphic Stairway, south of the ball court
+  { y: 0, width: 2.5, points: [[-27, 206], [-4, 210], [20, 208], [38, 205], [50, 204]] },
   // Across the West Court to Altar Q, then around Temple 16 to the East Court
   { y: 12, width: 2.5, points: [[-30, 328], [0, 324], [30, 326], [43, 330]] },
   { y: 12, width: 2.5, points: [[30, 326], [44, 300], [62, 293], [80, 292], [100, 288], [112, 270], [106, 250]] },
+  // 7: East ward: from the Great Plaza around the south end of the east stands to the sacbe
+  { y: 0, width: 2.5, points: [[24, 44], [36, 62], [56, 62], [80, 52], [100, 40], [124, 28], [151, 20]] },
+  // 8: East ward, south lane between the houses
+  { y: 0, width: 2, points: [[100, 40], [104, 70], [100, 100], [90, 118]] },
+  // 9: West ward loop, off trail 2
+  { y: 0, width: 2, points: [[-50, 265], [-74, 266], [-98, 276], [-112, 298], [-104, 322], [-80, 334], [-58, 328]] },
 ];
 
 /** Lawns kept open (no trees, short grass only). [minX, minZ, maxX, maxZ] */
@@ -446,22 +455,25 @@ export const MONUMENTS: Monument[] = [
 ];
 
 /**
- * Rosalila (AD 571), buried inside Temple 16. Real size: 3 stories, ~12.9 m tall, base
- * 18.5 × 12.5 m (Asociación Copán). In the game it sits in a chamber inside Temple 16 with
- * corridors around it (the real tunnels are much narrower), reached by a tunnel from the east,
- * near the tunnel entrances mapped in OpenStreetMap.
+ * Rosalila (late 6th century, Asociación Copán), buried intact inside Temple 16. Three levels,
+ * ~12.9 m tall, base 18.5 × 12.5 m, main façade to the west. The model follows the full-size
+ * replica in the Copán Sculpture Museum (photos on Wikimedia Commons): see `rosalilaArt.ts`.
+ * In the game it stands in a chamber inside Temple 16 (the real tunnels are much narrower),
+ * with room in front of the west façade to see it whole, reached by a tunnel from the East
+ * Court near the tunnel entrances mapped in OpenStreetMap. The chamber stays inside the 4th
+ * terrace of the mound (x 60.5–83.5 at that height) so the outside isn't darkened.
  */
 export const ROSALILA = {
-  center: [72, 330] as [number, number],
+  /** Center of the building's base [x, z]; the west façade faces −x. */
+  center: [75.75, 330] as [number, number],
   baseY: ACROPOLIS_TOP,
-  /** Chamber [width x, height, depth z]. */
-  chamber: [19, 15, 26] as [number, number, number],
+  /** Chamber as [minX, maxX, minZ, maxZ] and its height. */
+  chamber: { x0: 61.5, x1: 82.5, z0: 312, z1: 348, height: 15 },
   /** Tunnel along x at this z, from Temple 16's east face to the chamber. */
-  tunnel: { z: 321, width: 2.5, height: 3.5, fromX: 92, toX: 81 },
-  /** Footprint [x (east–west), z (north–south)] and story heights. */
-  size: [12.5, 18.5] as [number, number],
-  stories: [5, 4, 3],
-  inset: 1.5,
+  tunnel: { z: 316, width: 2.5, height: 3.5, fromX: 92, toX: 82.5 },
+  /** Façade width (north–south) and depth (east–west) of the first level. */
+  width: 18.5,
+  depth: 12.5,
 };
 
 /** Labels for the minimap. */
@@ -473,4 +485,6 @@ export const MAP_LABELS: { position: [number, number]; text: L10n }[] = [
   { position: [13, 305], text: { es: "Patio Occ.", en: "West Court" } },
   { position: [116, 300], text: { es: "Patio Or.", en: "East Court" } },
   { position: [170, -5], text: { es: "→ Las Sepulturas", en: "→ Las Sepulturas" } },
+  { position: [100, -6], text: { es: "Barrio este", en: "East ward" } },
+  { position: [-100, 228], text: { es: "Barrio oeste", en: "West ward" } },
 ];

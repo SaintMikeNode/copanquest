@@ -3,7 +3,7 @@
 import { B, BLOCK, PL } from "./blocks";
 import { CS, NX, NZ, REGION, VoxelWorld, hash2, valueNoise } from "./voxelWorld";
 import { BOUNDS, FIXED_TREES, OPEN_AREAS, PATHS } from "../world/siteData";
-import { VILLAGE_RECT, WORKSHOP } from "../world/villageData";
+import { VILLAGE_RECTS, WORKSHOP } from "../world/villageData";
 import { ladderSegments } from "../world/ladders";
 
 /** Ladder feet must stay clear of bushes and rubble. */
@@ -241,7 +241,7 @@ export function plantTrees(w: VoxelWorld) {
       const iz = gz + Math.floor(hash2(gz, gx + 9) * (step - 4));
       const x = toX(ix);
       const z = toZ(iz);
-      if (inOpen(x, z, 2) || inRect(x, z, VILLAGE_RECT, 4)) continue;
+      if (inOpen(x, z, 2) || VILLAGE_RECTS.some((r) => inRect(x, z, r, 4))) continue;
       if (Math.hypot(x - WORKSHOP[0], z - WORKSHOP[1]) < 10) continue;
       const forest = !inBounds(x, z);
       const ring = inOpen(x, z, 14);
@@ -283,7 +283,7 @@ export function scatterPlants(
       if (w.get(ix, s.y, iz) !== B.Air) continue;
       const x = toX(ix);
       const z = toZ(iz);
-      if (inRect(x, z, VILLAGE_RECT) && h > 0.05) continue; // tidy around the houses
+      if (VILLAGE_RECTS.some((r) => inRect(x, z, r)) && h > 0.05) continue; // tidy around the houses
       const open = inOpen(x, z);
       // Near walls / trunks / path edges → lush.
       const n1 = w.surface(ix + 2, iz, true);

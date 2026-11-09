@@ -180,6 +180,48 @@ export const TALKERS: Talker[] = [
     ],
   },
   {
+    id: "potter",
+    name: { es: "Ix Kab', alfarera", en: "Ix Kab', potter" },
+    home: [80, 26],
+    wander: 2,
+    outfit: { skin: SKIN[3], hair: "#1d1410", top: "#f2ede0", accent: "#c46a3a", bottom: "#c0392b", female: true, head: "turban" },
+    lines: [
+      {
+        es: "Hago vasijas de barro y las pinto de rojo y negro sobre crema: es la cerámica copador, típica de Copán.",
+        en: "I make clay pots and paint them red and black on cream: it's Copador pottery, typical of Copán.",
+      },
+      {
+        es: "El nombre «copador» junta Copán y El Salvador, porque estas vasijas llegaron hasta allá. ¡Hasta en Joya de Cerén las usaban!",
+        en: "The name “Copador” joins Copán and El Salvador, because these pots traveled that far. Even the villagers of Joya de Cerén used them!",
+      },
+      {
+        es: "Por este camino se llega al sacbé que va a Las Sepulturas, el barrio de las familias nobles y los escribas.",
+        en: "This road leads to the sacbe that goes to Las Sepulturas, the ward of the noble families and scribes.",
+      },
+    ],
+  },
+  {
+    id: "knapper",
+    name: { es: "Tok', tallador de obsidiana", en: "Tok', obsidian knapper" },
+    home: [-124, 298],
+    wander: 1.5,
+    outfit: { skin: SKIN[1], hair: "#1d1410", top: "#f2ede0", accent: "#2f6b4f", bottom: "#f2ede0", head: "headband" },
+    lines: [
+      {
+        es: "Tallo obsidiana, un vidrio volcánico negro. Con ella hago navajas con un filo muy fino.",
+        en: "I work obsidian, a black volcanic glass. I make blades from it with a very fine edge.",
+      },
+      {
+        es: "Casi toda la obsidiana de Copán viene de Ixtepeque, un volcán en Guatemala a unos 80 km. La traen en lascas y nódulos.",
+        en: "Almost all of Copán's obsidian comes from Ixtepeque, a volcano in Guatemala about 80 km away. It arrives as flakes and nodules.",
+      },
+      {
+        es: "Hacia el año 800 vivían unas 20,000 personas en el valle de Copán. Casi todas en grupos de casas alrededor de un patio, como este.",
+        en: "Around the year 800 about 20,000 people lived in the Copán valley. Most lived in groups of houses around a patio, like this one.",
+      },
+    ],
+  },
+  {
     id: "kid",
     name: { es: "Nikte', niña de la aldea", en: "Nikte', village girl" },
     home: [-90, 142],
@@ -266,6 +308,9 @@ const PLAZA_LOOPS: { pts: [number, number][]; y: number }[] = [
   { pts: loop(116, 286, 14, 22), y: 12 }, // East Court
 ];
 
+// Neighbors strolling around the patio groups of the east and west wards.
+const WARD_LOOPS: [number, number][][] = [loop(80, 22, 5, 4), loop(122, 60, 5, 4), loop(-84, 248, 5, 4), loop(-128, 296, 4, 5), loop(-84, 304, 5, 4)];
+
 export const WALKERS: WalkerDef[] = [
   // Ancient Copanecos, seen only through the time lens.
   ...PLAZA_LOOPS.flatMap((l, li) =>
@@ -295,8 +340,17 @@ export const WALKERS: WalkerDef[] = [
   { path: 2, t: 0.2, side: -0.6, speed: 1.1, outfit: { skin: SKIN[3], hair: "#3a332e", top: "#f2ede0", accent: "#2f6b4f", bottom: "#7a2a6a", female: true, head: "none" } },
   { path: 2, t: 0.7, side: 0.6, speed: 1.0, outfit: { skin: SKIN[1], hair: "#1d1410", top: "#c46a3a", accent: "#f2c42c", bottom: "#f2ede0", head: "turban", basket: true } },
   { path: 3, t: 0.4, side: 0.7, speed: 0.95, outfit: { skin: SKIN[2], hair: "#1d1410", top: "#f2ede0", accent: "#c0392b", bottom: "#c0392b", female: true, head: "turban" } },
-  { path: 4, t: 0.5, side: -0.5, speed: 0.9, outfit: { skin: SKIN[0], hair: "#1d1410", top: "#2a5ca8", accent: "#f2ede0", bottom: "#f2ede0", head: "headband" } },
-  { path: 5, t: 0.3, side: 0.5, speed: 1.05, outfit: { skin: SKIN[3], hair: "#1d1410", top: "#f2ede0", accent: "#d69a1c", bottom: "#5a3a22", female: true, head: "none", basket: true } },
+  { path: 5, t: 0.5, side: -0.5, speed: 0.9, outfit: { skin: SKIN[0], hair: "#1d1410", top: "#2a5ca8", accent: "#f2ede0", bottom: "#f2ede0", head: "headband" } },
+  { path: 6, t: 0.3, side: 0.5, speed: 1.05, outfit: { skin: SKIN[3], hair: "#1d1410", top: "#f2ede0", accent: "#d69a1c", bottom: "#5a3a22", female: true, head: "none", basket: true } },
+  // The east and west wards.
+  { path: 2, t: 0.85, side: 0.6, speed: 1.0, outfit: PAST[4] },
+  { path: 4, t: 0.4, side: -0.5, speed: 0.95, outfit: PAST[3] },
+  { path: 7, t: 0.15, side: 0.6, speed: 1.0, outfit: PAST[1] },
+  { path: 7, t: 0.6, side: -0.6, speed: 1.1, outfit: PAST[2] },
+  { path: 8, t: 0.5, side: 0.5, speed: 0.85, outfit: PAST[0] },
+  { path: 9, t: 0.2, side: 0.5, speed: 0.95, outfit: PAST[3] },
+  { path: 9, t: 0.7, side: -0.5, speed: 1.05, outfit: PAST[4] },
+  ...WARD_LOOPS.map((l, i) => ({ points: l, t: i * 0.37, side: 0.4, speed: 0.75, outfit: PAST[(i + 2) % PAST.length] })),
 ];
 
 /** Name and lines for anything talkable (villager or jaguar). */

@@ -40,20 +40,29 @@ export function FollowCamera({ target }: { target: RefObject<EcctrlHandle | null
   const wantDist = useRef(7);
   const dist = useRef(7);
   const focus = useMemo(() => new THREE.Vector3(), []);
+  const freeCam = useRef<number[] | null>(null);
   const dir = useMemo(() => new THREE.Vector3(), []);
   const ray = useMemo(() => new rapier.Ray({ x: 0, y: 0, z: 0 }, { x: 0, y: 0, z: 1 }), [rapier]);
 
   // Dev helper: window.cqView(yaw, pitch, distance) from the browser console.
   useEffect(() => {
     if (!DEV_TOOLS) return;
-    const w = window as unknown as { cqView?: (y: number, p: number, d: number) => void };
+    const w = window as unknown as {
+      cqView?: (y: number, p: number, d: number) => void;
+      cqFreeCam?: (...v: number[]) => void;
+    };
     w.cqView = (y, p, d) => {
       yaw.current = y;
       pitch.current = p;
       wantDist.current = d;
     };
+    // cqFreeCam(x, y, z, lookX, lookY, lookZ) parks the camera anywhere; cqFreeCam() releases it.
+    w.cqFreeCam = (...v) => {
+      freeCam.current = v.length >= 6 ? v : null;
+    };
     return () => {
       delete w.cqView;
+      delete w.cqFreeCam;
     };
   }, []);
 
@@ -143,6 +152,12 @@ export function FollowCamera({ target }: { target: RefObject<EcctrlHandle | null
   useFrame((_, delta) => {
     const c = target.current;
     if (!c) return;
+    const fc = freeCam.current;
+    if (fc) {
+      camera.position.set(fc[0], fc[1], fc[2]);
+      camera.lookAt(fc[3], fc[4], fc[5]);
+      return;
+    }
     const dt = Math.min(delta, 0.1);
     const k = getKeys();
     if (k.lookLeft) yaw.current += dt * 2;

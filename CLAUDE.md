@@ -33,6 +33,6 @@ connecting Workers Builds, the build command must build the app first: `npm run 
 - Content must be factual about the real site. Cite the source for each POI text; mark estimates as estimates.
 - Visual meshes and colliders stay separate; each staircase gets one invisible ramp wedge.
 - Keep draw calls low: voxel chunks are merged into 64 m regions; check the debug panel (F3) for draw calls / triangles / voxel build time.
-- Dev console helpers: `cqTeleport(x, y, z)`, `cqView(yaw, pitch, distance)`.
+- Dev console helpers: `cqTeleport(x, y, z)`, `cqView(yaw, pitch, distance)`, `cqFreeCam(x, y, z, lookX, lookY, lookZ)` (no args releases it; from inside a solid mound you can see into chambers).
 - Player-facing text: Spanish first, add English at the same time.
 - Dev tools: `?debug` in the URL (or `npm run dev`) enables the collider view; `F3` toggles the debug panel; `window.cqTeleport(x, y, z)` in dev.
