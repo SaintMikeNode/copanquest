@@ -42,13 +42,16 @@ export function Hud() {
   const close = () => setOverlay(null);
   return (
     <div className="hud">
-      {/* One column: the progress chips always start below the first row, however it wraps. */}
+      {/* One row of same-height chips (wraps on narrow screens): menu, help, progress, FPS. */}
       <div className="hud-left">
-        <div className="hud-top-left">
-          <button className="pill" onClick={() => setOverlay("help")}>?</button>
+        <div className="hud-bar">
+          <button className="pill menu-btn" onClick={() => setOverlay("pause")} aria-label={t("menu")}>
+            {IS_TOUCH ? <span aria-hidden="true">☰</span> : <kbd>Esc</kbd>} {t("menu")}
+          </button>
+          <button className="pill" onClick={() => setOverlay("help")} aria-label={t("help")}>?</button>
+          <Progress />
           <DebugOverlay />
         </div>
-        <Progress />
       </div>
       <button className="hud-map" onClick={() => setOverlay("map")} aria-label={t("map")}>
         <Minimap />

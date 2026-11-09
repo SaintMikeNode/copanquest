@@ -96,14 +96,22 @@ button { font: inherit; cursor: pointer; }
   display: grid; gap: 6px; justify-items: start; max-width: calc(100% - 180px); pointer-events: none;
 }
 .hud-left > * { pointer-events: auto; }
-.hud-top-left { display: flex; gap: 6px; align-items: flex-start; flex-wrap: wrap; }
+/* HUD top bar: every chip the same height, in one row that wraps only when it must. */
+.hud-bar { display: flex; flex-wrap: wrap; gap: 6px; align-items: flex-start; }
+.hud-bar .progress { display: contents; }
+.hud-bar :is(.chip, .pill, .fps) { height: 32px; border-width: 6px; border-image-width: 6px; padding: 0 7px; font-size: .9rem;
+  display: inline-flex; align-items: center; gap: 6px; line-height: 1; white-space: nowrap; }
+.hud-bar .maya-clock { font-size: .95rem; }
+.menu-btn { cursor: pointer; }
+.menu-btn kbd { font: 700 .78rem/1 "Pixelify Sans", system-ui, sans-serif; color: var(--ink); background: #f6ead0; padding: 2px 4px;
+  box-shadow: inset 0 -2px 0 #c9b48a, 0 0 0 1px #1f1209; }
 .pill, .fps { padding: 2px 8px; font-weight: 700; font-size: .9rem; }
 .lang-toggle { display: inline-flex; padding: 0; }
 .lang-toggle button { border: 0; border-radius: 0; padding: 2px 8px; background: transparent; color: var(--cream); opacity: .55; font-weight: 700; font-size: .9rem; }
 .lang-toggle button[aria-pressed="true"] { opacity: 1; background: var(--ui-clay) 0 0 / 32px 32px; text-shadow: var(--outline-clay); }
 .fps { font-variant-numeric: tabular-nums; min-width: 64px; }
 .debug { position: relative; }
-.debug-panel { position: absolute; top: 40px; left: 0; width: 260px; padding: 6px; font-size: .8rem; display: grid; gap: 6px; }
+.debug-panel { position: absolute; top: 38px; left: 0; width: 260px; padding: 6px; font-size: .8rem; display: grid; gap: 6px; }
 .hud-map {
   position: absolute; top: calc(max(10px, env(safe-area-inset-top)) + 16px); right: max(12px, env(safe-area-inset-right));
   padding: 0; line-height: 0; border: 10px solid transparent; border-image: var(--ui-frame) 4 / 10px stretch;
@@ -307,5 +315,7 @@ button { font: inherit; cursor: pointer; }
   .chip, .pill, .fps, .lang-toggle { border-width: 6px; border-image-width: 6px; }
   .chip { padding: 0 4px; gap: 4px; }
   .xpbar { width: 36px; }
-  .progress, .hud-top-left, .hud-left { gap: 4px; }
+  .progress, .hud-bar, .hud-left { gap: 4px; }
+  .hud-bar :is(.chip, .pill, .fps) { height: 28px; padding: 0 5px; font-size: .78rem; }
+  .hud-bar .maya-clock { font-size: .82rem; }
 }
