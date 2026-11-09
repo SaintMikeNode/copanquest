@@ -1,35 +1,13 @@
-import { use, useEffect, useMemo, useRef } from "react";
+import { use, useEffect, useMemo, useRef, useSyncExternalStore } from "react";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
 import { createBlockTextures, createPlantTextures } from "./textures";
 import { createBlockMaterial, createPlantMaterial, shared } from "./material";
 import { VARIANTS } from "./blocks";
 import type { MeshData } from "./mesher";
-import type { PlantGroup, VoxelRequest, VoxelResponse } from "./voxel.worker";
-import { terrainPromise } from "../world/Terrain";
+import type { PlantGroup } from "./voxel.worker";
+import { regionStore, voxelPromise, voxelStats } from "./voxelStream";
 import { useQualityLevel } from "../state/useGame";
-import { IS_TOUCH } from "../config";
-
-/** Stats from the last build (shown in the debug panel). */
-export const voxelStats = { ms: 0, triangles: 0, nearTriangles: 0, plants: 0 };
-
-const voxelPromise: Promise<VoxelResponse> = terrainPromise.then(
-  (grid) =>
-    new Promise((resolve, reject) => {
-      const worker = new Worker(new URL("./voxel.worker.ts", import.meta.url), { type: "module" });
-      worker.onmessage = (e: MessageEvent<VoxelResponse>) => {
-        resolve(e.data);
-        worker.terminate();
-      };
-      worker.onerror = (e) => reject(e);
-      const req: VoxelRequest = {
-        grid: { size: grid.size, spacing: grid.spacing, heights: grid.heights.slice() },
-        // Phones get a smaller distant ring (fog hides the edge).
-        farExtent: IS_TOUCH ? 800 : 1000,
-      };
-      worker.postMessage(req);
-    }),
-);
 
 function toGeometry(m: MeshData) {
   const g = new THREE.BufferGeometry();
@@ -98,15 +76,15 @@ export function VoxelTerrain() {
   const data = use(voxelPromise);
   const level = useQualityLevel();
   const material = useMemo(() => createBlockMaterial(createBlockTextures(), VARIANTS), []);
-  const near = useMemo(() => data.near.map(toGeometry), [data]);
   const far = useMemo(() => data.far.map(toGeometry), [data]);
-
-  useEffect(() => {
-    voxelStats.ms = data.stats.ms;
-    voxelStats.triangles = data.stats.triangles;
-    voxelStats.nearTriangles = data.stats.nearTriangles;
-    voxelStats.plants = data.plants.reduce((n, p) => n + p.data.length / 4, 0);
-  }, [data]);
+  // Near-field regions stream in (nearest first); geometries are cached per region.
+  const count = useSyncExternalStore(regionStore.subscribe, regionStore.getSnapshot);
+  const nearCache = useRef<THREE.BufferGeometry[]>([]);
+  const near = useMemo(() => {
+    const all = regionStore.get();
+    for (let i = nearCache.current.length; i < all.length; i++) nearCache.current.push(toGeometry(all[i]));
+    return nearCache.current.slice(0, count);
+  }, [count]);
 
   useEffect(() => {
     shared.fogNear.value = level === "low" ? 160 : 220;
@@ -129,3 +107,5 @@ export function VoxelTerrain() {
     </group>
   );
 }
+
+export { voxelStats, voxelPromise };

@@ -10,7 +10,14 @@ Web 3D exploration game: Honduran kids walk around the Maya city of Copán as it
 - `npm run heightmap` — regenerate `public/terrain/` from the Copernicus DEM
 - `npm run icons` — regenerate PWA icons
 
-Node: local machine has 22.11, so Vite is pinned to 6.x (Vite 7+ needs ≥ 22.12).
+Node 24 (matches Cloudflare Workers Builds; `.nvmrc` / `.node-version` / `engines`). On this Mac it is
+installed keg-only by Homebrew: prefix commands with `PATH="/opt/homebrew/opt/node@24/bin:$PATH"`
+(the default `node` is still 22.11). Vite 8 + @vitejs/plugin-react 6. npm 11 install scripts are
+allow-listed in package.json (`allowScripts`: esbuild, workerd, fsevents).
+
+Cloudflare: `cloudflare.config.ts` (Worker `copanquest`, domain copanquest.todosenlaweb.com, SPA
+fallback) + `wrangler.config.ts` (assets = `dist/`). Not deployed; no Worker/trigger yet. When
+connecting Workers Builds, the build command must build the app first: `npm run build && npx cf build`.
 
 ## Layout
 

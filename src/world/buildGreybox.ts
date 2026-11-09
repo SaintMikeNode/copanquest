@@ -85,9 +85,19 @@ function buildStair(g: Greybox, m: Mound, s: Stair) {
     });
   }
 
-  // Invisible ramp wedge (slightly inset at the top so it overlaps the platform).
+  // Invisible ramp wedge. It is lifted half a block so it runs along the step tips (the
+  // player walks ON the steps, not through them) and extended so its slope is unchanged.
   const w = s.width / 2;
-  const pts = [P(-0.6, -w, H), P(-0.6, w, H), P(-0.6, -w, 0), P(-0.6, w, 0), P(run, -w, 0), P(run, w, 0)];
+  const lift = BLOCK * 0.6;
+  const runOut = run * (1 + lift / H);
+  const pts = [
+    P(-0.6, -w, H + lift),
+    P(-0.6, w, H + lift),
+    P(-0.6, -w, 0),
+    P(-0.6, w, 0),
+    P(runOut, -w, 0),
+    P(runOut, w, 0),
+  ];
   g.ramps.push(new Float32Array(pts.flat()));
 }
 

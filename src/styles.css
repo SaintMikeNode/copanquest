@@ -107,3 +107,66 @@ button { font: inherit; cursor: pointer; }
 .credits a { color: var(--red-dark); }
 .license { opacity: .7; }
 .muted { opacity: .7; font-style: italic; }
+
+/* ---------- Game layer: progress, talk, dialogue, toast ---------- */
+.progress {
+  position: absolute; top: calc(max(10px, env(safe-area-inset-top)) + 40px); left: max(10px, env(safe-area-inset-left));
+  display: flex; gap: 6px; flex-wrap: wrap; pointer-events: none;
+}
+.chip { padding: 4px 10px; border-radius: 999px; background: var(--panel); color: var(--panel-text); font-size: .8rem; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; }
+.jade-icon { width: 12px; height: 12px; background: #2fae6e; box-shadow: inset -3px -3px 0 #1b7a4a, inset 2px 2px 0 #8fe0b0; display: inline-block; }
+.talk-prompt {
+  position: absolute; left: 50%; transform: translateX(-50%); bottom: calc(max(16px, env(safe-area-inset-bottom)) + 8px);
+  padding: 12px 20px; border: 0; border-radius: 14px; font-weight: 800; font-size: 1rem;
+  background: #fffaf0; color: var(--red-dark); box-shadow: 0 5px 0 #c9b98f, 0 8px 20px rgba(0,0,0,.3);
+}
+.talk-key { display: inline-grid; place-items: center; width: 24px; height: 24px; border-radius: 6px; background: var(--red); color: #fff; margin-right: 6px; font-size: .85rem; }
+.dialogue {
+  position: absolute; left: 50%; transform: translateX(-50%); bottom: max(16px, env(safe-area-inset-bottom));
+  width: min(560px, calc(100% - 24px)); padding: 14px 16px 12px; border-radius: 16px;
+  background: #fffaf0; border: 4px solid #6b4a2e; box-shadow: 0 8px 0 rgba(0,0,0,.18), 0 12px 30px rgba(0,0,0,.35);
+  z-index: 5;
+}
+.dialogue header { position: relative; padding-right: 32px; }
+.dialogue h2 { margin: 0 0 6px; font-size: 1.05rem; color: var(--red-dark); }
+.dialogue p { margin: 0; font-size: 1.02rem; line-height: 1.45; }
+.dialogue footer { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
+.dots { display: flex; gap: 5px; }
+.dots i { width: 8px; height: 8px; background: #d8cba9; display: block; }
+.dots i.on { background: var(--red); }
+.primary.small { width: auto; padding: 8px 16px; font-size: 1rem; }
+.toast {
+  position: absolute; top: 22%; left: 50%; transform: translateX(-50%); padding: 12px 20px; border-radius: 14px;
+  background: #1b7a4a; color: #fff; font-weight: 800; text-align: center; max-width: calc(100% - 32px);
+  box-shadow: 0 6px 0 #145c38; animation: toast 3.2s ease forwards; pointer-events: none;
+}
+@keyframes toast { 0% { opacity: 0; transform: translate(-50%, -10px); } 10%, 80% { opacity: 1; transform: translate(-50%, 0); } 100% { opacity: 0; } }
+@media (pointer: coarse) {
+  .talk-prompt { bottom: calc(205px + env(safe-area-inset-bottom)); }
+  .dialogue { bottom: calc(10px + env(safe-area-inset-bottom)); }
+}
+
+/* ---------- Loading screen ---------- */
+.loader {
+  position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 16px;
+  background: linear-gradient(180deg, #93b4ee 0%, #cdd6f2 55%, #4f9a3c 55.3%, #3b7d2e 100%);
+  transition: opacity .6s ease; image-rendering: pixelated;
+}
+.loader-done { opacity: 0; pointer-events: none; }
+.loader-card {
+  width: min(420px, 100%); padding: 22px 20px; text-align: center; border-radius: 16px;
+  background: #fffaf0; border: 4px solid #6b4a2e; box-shadow: 0 8px 0 rgba(0,0,0,.2);
+}
+.loader-card h1 { margin: 6px 0 2px; color: var(--red); font-size: 2rem; }
+.loader-logo { animation: bob 1.4s ease-in-out infinite; }
+@keyframes bob { 50% { transform: translateY(-6px); } }
+.loader-stage { margin: 0 0 10px; font-weight: 700; color: #5a3a22; }
+.loader-bar { height: 18px; border: 3px solid #6b4a2e; background: #e9dfc6; padding: 2px; }
+.loader-bar div {
+  height: 100%; transition: width .3s ease;
+  background: repeating-linear-gradient(90deg, #2fae6e 0 8px, #27965e 8px 16px);
+}
+.loader-fact { margin-top: 14px; text-align: left; font-size: .9rem; line-height: 1.4; min-height: 6.5em; }
+.loader-fact .eyebrow { margin: 0; font-size: .7rem; text-transform: uppercase; letter-spacing: .08em; opacity: .65; }
+.loader-fact strong { color: var(--red-dark); }
+.loader-fact p { margin: 4px 0 0; }

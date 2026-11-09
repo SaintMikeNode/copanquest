@@ -7,6 +7,7 @@ import type { EcctrlHandle } from "ecctrl";
 import type { Control } from "./controls";
 import { playerState } from "./playerState";
 import { DEV_TOOLS } from "../config";
+import { SPAWN_YAW } from "../world/siteData";
 
 const MIN_DIST = 2.5;
 const MAX_DIST = DEV_TOOLS ? 120 : 14;
@@ -25,7 +26,7 @@ export function FollowCamera({ target }: { target: RefObject<EcctrlHandle | null
   const { world, rapier } = useRapier();
   const [, getKeys] = useKeyboardControls<Control>();
 
-  const yaw = useRef(0); // 0 = camera south of the player, looking north
+  const yaw = useRef(SPAWN_YAW); // 0 = camera south of the player, looking north
   const pitch = useRef(0.35);
   const wantDist = useRef(7);
   const dist = useRef(7);

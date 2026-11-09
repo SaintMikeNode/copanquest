@@ -35,6 +35,7 @@ export default defineConfig({
   ],
   build: {
     target: "es2022",
-    chunkSizeWarningLimit: 3000,
+    // The engine chunk (three + Rapier WASM) is ~3.3 MB raw / 1.1 MB gzip, loaded after the menu.
+    chunkSizeWarningLimit: 3500,
   },
 });

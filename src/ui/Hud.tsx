@@ -9,10 +9,12 @@ import { Overlay } from "./Overlay";
 import { Credits } from "./Credits";
 import { Help } from "./Help";
 import { LangToggle } from "./LangToggle";
+import { DialogueBox, Progress, TalkPrompt, Toast } from "./Dialogue";
 
 export function Hud() {
   const t = useT();
   const overlay = useGame((s) => s.overlay);
+  const dialogue = useGame((s) => s.dialogue);
   const setOverlay = useGame((s) => s.setOverlay);
   const close = () => setOverlay(null);
   return (
@@ -26,8 +28,12 @@ export function Hud() {
       <button className="hud-map" onClick={() => setOverlay("map")} aria-label={t("map")}>
         <Minimap />
       </button>
-      <InfoCard />
-      {IS_TOUCH && !overlay && <TouchControls />}
+      <Progress />
+      {!dialogue && <InfoCard />}
+      <TalkPrompt />
+      <DialogueBox />
+      <Toast />
+      {IS_TOUCH && !overlay && !dialogue && <TouchControls />}
       {overlay === "map" && (
         <Overlay title={t("map")} onClose={close}>
           <Minimap large />

@@ -22,7 +22,9 @@ npm run build      # typecheck + production build in dist/
 npm run preview    # serve dist/ (service worker active)
 ```
 
-Node 20.19+ / 22.12+ is recommended. Vite is pinned to 6.x because the current dev machine runs Node 22.11. Moving to Vite 7/8 only needs a Node upgrade.
+Requires **Node 24** (same as Cloudflare Workers Builds; see `.nvmrc`). Built with Vite 8.
+
+Hosting: a Cloudflare static-assets Worker (`cloudflare.config.ts`, `wrangler.config.ts` → `dist/`), like the other todosenlaweb.com sites. `npm run deploy` builds and deploys. Only deploy when the user asks.
 
 ### Controls
 
@@ -36,6 +38,27 @@ Node 20.19+ / 22.12+ is recommended. Vite is pinned to 6.x because the current d
 | Map | Click the minimap | Tap the minimap |
 
 Dev tools: `npm run dev` or `?debug` in the URL enables the collider view. `F3` (or tapping the FPS counter) opens the debug panel: draw calls, triangles, position and quality. `?touch` forces the touch controls on desktop. In dev, `cqTeleport(x, y, z)` in the console moves the player.
+
+## Game features
+
+- **Start at the visitor entrance**, next to Don Mateo, a Ch'orti' Maya guide. The Ch'orti' live in the Copán region today.
+- **A living Maya ward** west of the Great Plaza, toward El Bosque, modeled on Joya de Cerén (El Salvador, buried by ash around AD 600):
+  - Patio groups of earthen, thatched houses on low platforms, with sleeping benches.
+  - Open kitchens with three-stone hearths, and storehouses with maize and pots.
+  - A domed temazcal (sweat bath).
+  - Maize, bean and squash milpas, an agave field, and fruit trees.
+  - A market along the trail. (`src/world/villageData.ts`, `src/voxel/village.ts`)
+- **People you can talk to** (E key / *Hablar* button): a weaver, a farmer, a cacao merchant, a scribe, a ballplayer, a sculptor at an unfinished stela, a village girl, and the guide. Every line is sourced (`src/npc/npcData.ts`). Townspeople also walk the trails, some carrying baskets.
+- **Jaguars** prowl three edges of the woods. Get close and they sit and watch you; *Observar* teaches about b'alam.
+- **Ladders:** wooden ladders up stepped walls, terrace by terrace (Acropolis north wall, Temples 16, 22 and 26, and the ball court's Structure 10). Walk into the wall to climb (`src/world/ladders.ts`).
+- **10 jade beads** to find, many only reachable by ladder. Progress (jade, places visited, people met) is saved in the browser.
+
+## Loading and streaming
+
+- **Loading screen:** shows real progress and rotating facts. It stays up until everything within 150 m of the player is meshed *and* the world has rendered a few frames.
+- **World partition:** the worker first sends colliders, plants and the distant hills, then streams 64 m regions **nearest-first** (`meshVoxelWorld` + `voxelStream.ts`).
+- **Cache:** production builds keep the finished world in **IndexedDB**, keyed by a hash of the site data plus `VOXEL_CODE_VERSION`. Repeat visits skip the build entirely. Bump the version when meshing or decoration code changes.
+- **Distance culling:** plants beyond about 75 m and people and jaguars beyond 95 m are not drawn. Regions are frustum-culled, and the fog hides the far edge.
 
 ## Tech stack
 

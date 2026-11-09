@@ -46,7 +46,7 @@ export function DebugOverlay() {
             draw calls {perfStats.calls} · tris {(perfStats.triangles / 1000).toFixed(1)}k · dpr {perfStats.dpr.toFixed(2)}
           </div>
           <div>
-            voxels {voxelStats.ms} ms · near {(voxelStats.nearTriangles / 1000).toFixed(0)}k / all{" "}
+            voxels {voxelStats.cached ? "cache" : `${voxelStats.ms} ms`} · near {(voxelStats.nearTriangles / 1000).toFixed(0)}k / all{" "}
             {(voxelStats.triangles / 1000).toFixed(0)}k tris · {(voxelStats.plants / 1000).toFixed(1)}k plants
           </div>
           <div>

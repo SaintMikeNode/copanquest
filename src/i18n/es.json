@@ -30,5 +30,18 @@
   "debug.title": "Depuración",
   "debug.physics": "Ver colisiones",
   "comingSoon": "Próximamente",
-  "fps": "FPS"
+  "fps": "FPS",
+  "jade.found": "¡Encontraste una cuenta de jade!",
+  "jade.all": "¡Encontraste las 10 cuentas de jade! Eres una gran exploradora, un gran explorador.",
+  "talk": "Hablar",
+  "observe": "Observar",
+  "next": "Siguiente",
+  "jade": "Jade",
+  "places": "Lugares",
+  "people": "Gente",
+  "controls.talk": "Acércate a las personas y presiona E (o el botón Hablar) para conversar. Para subir por una escalera de madera, camina hacia la pared.",
+  "loading.terrain": "Preparando el valle de Copán…",
+  "loading.city": "Construyendo la ciudad…",
+  "loading.ready": "¡Listo!",
+  "loading.didYouKnow": "¿Sabías que…?"
 }

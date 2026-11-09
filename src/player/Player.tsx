@@ -9,6 +9,7 @@ import { JOYSTICK_RUN_THRESHOLD, type Control } from "./controls";
 import { playerState } from "./playerState";
 import { PLAYER_SPAWN } from "../world/siteData";
 import { FollowCamera } from "./FollowCamera";
+import { ladderSegments } from "../world/ladders";
 import { DEV_TOOLS } from "../config";
 import { buildPixelModel, hex, solid, type FaceName } from "../voxel/pixelModel";
 import type { Tile } from "../voxel/textures";
@@ -20,6 +21,8 @@ const FLOAT = 0.2;
 const FEET = -(HALF_HEIGHT + RADIUS + FLOAT);
 
 const joystickInput = { x: 0, y: 0 };
+const LADDERS = ladderSegments();
+const CLIMB_SPEED = 2.6;
 const euler = new THREE.Euler();
 
 function blobShadowTexture() {
@@ -144,6 +147,16 @@ function PlayerModel({ controller }: { controller: React.RefObject<EcctrlHandle 
     const c = controller.current;
     const speed = c ? c.moveSpeed : 0;
     const air = c ? !c.isOnGround : false;
+    if (playerState.climbing) {
+      // Hand over hand.
+      phase.current += dt * 9;
+      const s = Math.sin(phase.current);
+      if (armL.current) armL.current.rotation.x = -2.6 + s * 0.4;
+      if (armR.current) armR.current.rotation.x = -2.6 - s * 0.4;
+      if (legL.current) legL.current.rotation.x = -0.5 - s * 0.4;
+      if (legR.current) legR.current.rotation.x = -0.5 + s * 0.4;
+      return;
+    }
     phase.current += dt * (4 + speed * 2.2);
     const amp = air ? 0.5 : Math.min(1, speed / 3) * 0.85;
     const s = Math.sin(phase.current) * amp;
@@ -215,15 +228,40 @@ export function Player() {
     joystickInput.x = jsActive ? js.x : 0;
     joystickInput.y = jsActive ? js.y : 0;
     const jsRun = jsActive && Math.hypot(js.x, js.y) >= JOYSTICK_RUN_THRESHOLD;
+    const frozen = playerState.frozen;
     c.setMovement({
-      forward: k.forward,
-      backward: k.backward,
-      leftward: k.leftward,
-      rightward: k.rightward,
-      joystick: joystickInput,
+      forward: !frozen && k.forward,
+      backward: !frozen && k.backward,
+      leftward: !frozen && k.leftward,
+      rightward: !frozen && k.rightward,
+      joystick: frozen ? { x: 0, y: 0 } : joystickInput,
       run: k.run || jsRun,
-      jump: k.jump || !!useButtonStore.getState().buttons.jump,
+      jump: !frozen && (k.jump || !!useButtonStore.getState().buttons.jump),
     });
+
+    // Ladders: push toward the wall inside a ladder zone to climb.
+    let climbing = false;
+    const feet = c.currPos.y + FEET;
+    const dir = c.inputDir;
+    for (const seg of LADDERS) {
+      const dx = c.currPos.x - seg.base[0];
+      const dz = c.currPos.z - seg.base[2];
+      const outD = dx * seg.out[0] + dz * seg.out[1];
+      const lat = dx * seg.along[0] + dz * seg.along[1];
+      const top = seg.base[1] + seg.height;
+      if (Math.abs(lat) > 0.8 || outD < -0.4 || outD > 1.2) continue;
+      if (feet < seg.base[1] - 0.6 || feet > top + 0.25) continue;
+      const into = -(dir.x * seg.out[0] + dir.z * seg.out[1]);
+      if (into < 0.4 || frozen) continue;
+      climbing = true;
+      const nearTop = feet > top - 0.5;
+      c.body.setLinvel(
+        { x: -seg.out[0] * (nearTop ? 2.4 : 0.5), y: CLIMB_SPEED, z: -seg.out[1] * (nearTop ? 2.4 : 0.5) },
+        true,
+      );
+      break;
+    }
+    playerState.climbing = climbing;
 
     // Share state with the minimap / POIs.
     playerState.position.copy(c.currPos);

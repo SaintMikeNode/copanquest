@@ -41,6 +41,10 @@ export const P = {
   wood: pal("#5f3d22", "#78502c", "#916236", "#a87542"),
   rock: pal("#4f4d48", "#66645e", "#7e7b74", "#98958e"),
   water: pal("#1b55a3", "#2368bf", "#2f80d8", "#4b9ceb", "#79bdf6"),
+  adobe: pal("#9c7a52", "#b8956a", "#cdab7f", "#dcbf95", "#e9d2ab"),
+  thatch: pal("#6e5124", "#8c6a30", "#a9843e", "#c49e4f", "#dab865"),
+  clay: pal("#8a3e22", "#a6502c", "#c46a3a", "#d9854e"),
+  maize: pal("#b07a12", "#d69a1c", "#f0bd2e", "#ffd95a"),
 };
 
 class Tile {
@@ -267,6 +271,72 @@ const painters: Record<LayerName, (t: Tile, r: () => number, variant: number) =>
     t.fill(P.rock, 2, 0.8, r);
     pebbles(t, r, P.rock, 5);
   },
+  adobe(t, r) {
+    // Earthen daub over a pole frame: smooth plaster with faint post lines and cracks.
+    t.fill(P.adobe, 2.6, 0.7, r);
+    for (const x of [3, 11]) for (let y = 0; y < TEX; y++) if (r() < 0.7) t.set(x, y, pick(P.adobe, 1.4));
+    for (let i = 0; i < 2; i++) {
+      let x = Math.floor(r() * TEX);
+      for (let y = Math.floor(r() * 8); y < TEX && r() < 0.9; y++) {
+        t.set(x, y, P.adobe[0]);
+        x += r() < 0.3 ? 1 : 0;
+      }
+    }
+    for (let x = 0; x < TEX; x++) if (r() < 0.5) t.set(x, TEX - 1, pick(P.adobe, 1));
+  },
+  thatch(t, r) {
+    // Palm thatch: overlapping rows of drooping strands.
+    for (let y = 0; y < TEX; y++)
+      for (let x = 0; x < TEX; x++) {
+        const row = y % 5;
+        const strand = (x + Math.floor(y / 5) * 2) % 3 === 0 ? -0.8 : 0;
+        t.set(x, y, pick(P.thatch, 3.2 - row * 0.45 + strand + (r() - 0.5) * 0.9));
+      }
+    for (let x = 0; x < TEX; x++) for (const y of [4, 9, 14]) if (r() < 0.8) t.set(x, y, P.thatch[0]);
+  },
+  ladder(t, r) {
+    // Two rails and three rungs on a dark (see-through-looking) background.
+    for (let y = 0; y < TEX; y++) for (let x = 0; x < TEX; x++) t.set(x, y, pick(P.stone, 1.2 + (r() - 0.5) * 0.6));
+    for (let y = 0; y < TEX; y++)
+      for (const x of [2, 3, 12, 13]) t.set(x, y, pick(P.wood, x === 2 || x === 12 ? 3 : 1.6));
+    for (const y of [2, 7, 12]) for (let x = 2; x < 14; x++) {
+      t.set(x, y, pick(P.wood, 3));
+      t.set(x, y + 1, pick(P.wood, 1));
+    }
+  },
+  cloth(t, r) {
+    const stripes = [hex("#d23a2e"), hex("#f2c42c"), hex("#f4f1e8"), hex("#1f62d0")];
+    for (let y = 0; y < TEX; y++)
+      for (let x = 0; x < TEX; x++) {
+        const c = stripes[Math.floor(x / 4) % 4];
+        const k = 0.92 + r() * 0.12 - ((x + y) % 2) * 0.04;
+        t.set(x, y, [c[0] * k, c[1] * k, c[2] * k]);
+      }
+  },
+  pottery(t, r) {
+    t.fill(P.clay, 2, 0.6, r);
+    for (let x = 0; x < TEX; x++) {
+      t.set(x, 4, hex("#2a1a12"));
+      if (x % 4 < 2) t.set(x, 6, hex("#f1e6cf"));
+      t.set(x, 8, hex("#2a1a12"));
+    }
+  },
+  earth(t, r) {
+    t.fill(P.adobe, 1.6, 0.8, r);
+    pebbles(t, r, P.adobe, 3);
+  },
+  maize(t, r) {
+    // Cobs lying in a pile.
+    t.fill(P.maize, 1, 0.5, r);
+    for (let i = 0; i < 6; i++) {
+      const x0 = Math.floor(r() * 12);
+      const y = Math.floor(r() * 15);
+      for (let x = x0; x < x0 + 5; x++) {
+        t.set(x, y, pick(P.maize, x % 2 ? 3 : 2.4));
+        t.set(x, y + 1, pick(P.maize, 1.5));
+      }
+    }
+  },
 };
 
 /** Block textures: LAYERS × VARIANTS tiles in a mipmapped, nearest-filtered texture array. */
@@ -406,7 +476,63 @@ const plantPainters: Record<PlantName, (t: Tile, r: () => number) => void> = {
     }
     void r;
   },
+  maizeLow(t, r) {
+    for (let y = 0; y < PH; y++) {
+      t.set(7, y, P.grass[1]);
+      t.set(8, y, P.grass[2]);
+    }
+    for (let k = 0; k < 4; k++) maizeLeaf(t, 8, PH - 6 - k * 7, k % 2 ? 1 : -1, 8);
+    // An ear of maize in its husk.
+    for (let y = 10; y < 16; y++) {
+      t.set(9, y, hex("#b9c46a"));
+      t.set(10, y, hex("#a7b45a"));
+    }
+    t.set(10, 9, hex("#c98a3a"));
+    void r;
+  },
+  maizeTop(t, r) {
+    for (let y = 12; y < PH; y++) {
+      t.set(7, y, P.grass[1]);
+      t.set(8, y, P.grass[2]);
+    }
+    for (let k = 0; k < 2; k++) maizeLeaf(t, 8, PH - 4 - k * 8, k % 2 ? -1 : 1, 7);
+    // Tassel.
+    for (let i = 0; i < 6; i++) {
+      t.set(8 - Math.floor(i / 2), 12 - i, hex("#d9b45a"));
+      t.set(8 + Math.floor(i / 2), 12 - i, hex("#e6c46a"));
+      t.set(8, 12 - i, hex("#c9a04a"));
+    }
+    void r;
+  },
+  agave(t, r) {
+    // Maguey: stiff blue-green leaves fanning from the ground.
+    const A = pal("#3f6f5e", "#4f8a74", "#66a38a", "#86bca2");
+    for (let k = -3; k <= 3; k++) {
+      const len = 12 - Math.abs(k) * 2 + Math.floor(r() * 2);
+      for (let i = 0; i < len; i++) {
+        const x = 8 + Math.round(k * i * 0.32);
+        const y = PH - 1 - i;
+        t.set(x, y, pick(A, 1 + (i / len) * 2.5));
+        if (i < len - 3) t.set(x + (k >= 0 ? 1 : -1), y, A[0]);
+      }
+    }
+  },
+  squash(t, r) {
+    // Squash vine: big round leaves and a yellow flower near the ground.
+    for (let k = 0; k < 4; k++) {
+      const cx = 3 + Math.floor(r() * 10);
+      const cy = PH - 3 - Math.floor(r() * 5);
+      for (let y = -2; y <= 2; y++) for (let x = -2; x <= 2; x++) if (x * x + y * y <= 5) t.set(cx + x, cy + y, pick(P.grass, 2 + (x + y) * 0.3));
+    }
+    flowerHead(t, 8, PH - 6, pal("#e8a812", "#f2c42c", "#ffe36a"), hex("#e07a12"));
+  },
 };
+
+function maizeLeaf(t: Tile, x: number, y: number, dir: number, len: number) {
+  for (let i = 0; i < len; i++) {
+    t.set(x + dir * i, y - Math.floor(i / 2) + Math.floor((i * i) / 18), P.grass[2 + (i % 2)]);
+  }
+}
 
 /** Plant textures (RGBA cutout, 16 × 32 px = 0.5 × 1 m), texture array. */
 export function createPlantTextures(): THREE.DataArrayTexture {

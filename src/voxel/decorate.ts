@@ -3,6 +3,7 @@
 import { B, BLOCK, PL } from "./blocks";
 import { CS, NX, NZ, REGION, VoxelWorld, hash2, valueNoise } from "./voxelWorld";
 import { BOUNDS, FIXED_TREES, OPEN_AREAS, PATHS } from "../world/siteData";
+import { VILLAGE_RECT, WORKSHOP } from "../world/villageData";
 
 const toIx = (x: number) => Math.floor((x - REGION.minX) / BLOCK);
 const toIz = (z: number) => Math.floor((z - REGION.minZ) / BLOCK);
@@ -81,6 +82,8 @@ export function growTree(w: VoxelWorld, ix: number, iy: number, iz: number, kind
     const t = 4;
     const H = 34 + Math.floor(r(1) * 10);
     for (let y = -2; y < H; y++) for (let a = 0; a < t; a++) for (let b = 0; b < t; b++) w.setIfAir(ix + a, iy + y, iz + b, B.Log);
+    w.addCollider(ix, iy - 2, iz, ix + t - 1, iy + H - 1, iz + t - 1);
+    w.addCollider(ix - 3, iy - 1, iz - 3, ix + t + 2, iy + 3, iz + t + 2); // buttress roots
     const fins: [number, number][] = [[1, 0], [-1, 0], [0, 1], [0, -1]];
     for (const [fx, fz] of fins)
       for (let k = 1; k <= 4; k++) {
@@ -100,6 +103,8 @@ export function growTree(w: VoxelWorld, ix: number, iy: number, iz: number, kind
     const t = 3;
     const H = 18 + Math.floor(r(1) * 8);
     for (let y = -2; y < H; y++) for (let a = 0; a < t; a++) for (let b = 0; b < t; b++) w.setIfAir(ix + a, iy + y, iz + b, B.Log);
+    w.addCollider(ix, iy - 2, iz, ix + t - 1, iy + H - 1, iz + t - 1);
+    w.addCollider(ix - 2, iy - 1, iz - 2, ix + t + 1, iy + 2, iz + t + 1);
     for (const [fx, fz] of [[1, 1], [-1, 1], [1, -1], [-1, -1]] as const)
       for (let k = 1; k <= 3; k++) for (let y = -1; y < 5 - k; y++) w.setIfAir(ix + 1 + fx * (k + 1), iy + y, iz + 1 + fz * (k + 1), B.Log);
     const cy = iy + H - 4;
@@ -111,6 +116,7 @@ export function growTree(w: VoxelWorld, ix: number, iy: number, iz: number, kind
     const t = 2;
     const H = 12 + Math.floor(r(1) * 8);
     for (let y = -2; y < H; y++) for (let a = 0; a < t; a++) for (let b = 0; b < t; b++) w.setIfAir(ix + a, iy + y, iz + b, B.Log);
+    w.addCollider(ix, iy - 2, iz, ix + t - 1, iy + H - 1, iz + t - 1);
     const cy = iy + H - 3;
     const big = 5 + r(2) * 3;
     const leaf = r(4) < 0.35 ? B.Fig : B.Leaves;
@@ -150,6 +156,7 @@ export function plantBushes(w: VoxelWorld) {
       if (!wall) continue;
       const leaf = hash2(ix, iz) < 0.5 ? B.Leaves : B.Fig;
       const r = 1 + Math.floor(hash2(iz, ix) * 2);
+      w.addCollider(ix - r, s.y, iz - r, ix + r, s.y + 2, iz + r);
       for (let dz = -r; dz <= r; dz++)
         for (let dx = -r; dx <= r; dx++) {
           if (Math.abs(dx) + Math.abs(dz) > r + 1) continue;
@@ -175,7 +182,8 @@ export function plantTrees(w: VoxelWorld) {
       const iz = gz + Math.floor(hash2(gz, gx + 9) * (step - 4));
       const x = toX(ix);
       const z = toZ(iz);
-      if (inOpen(x, z, 2)) continue;
+      if (inOpen(x, z, 2) || inRect(x, z, VILLAGE_RECT, 4)) continue;
+      if (Math.hypot(x - WORKSHOP[0], z - WORKSHOP[1]) < 10) continue;
       const forest = !inBounds(x, z);
       const ring = inOpen(x, z, 14);
       const p = forest ? 0.4 : ring ? 0.4 : 0.1;
@@ -192,7 +200,11 @@ export function plantTrees(w: VoxelWorld) {
  * Plant sprites, grouped by 64 m region. Each instance = [x, y, z, plant + 16 × rotation].
  * Runs after the trees (surfaces see through leaves, so plants grow in the shade too).
  */
-export function scatterPlants(w: VoxelWorld, group = 4): { data: Float32Array; center: [number, number] }[] {
+export function scatterPlants(
+  w: VoxelWorld,
+  extra: [number, number, number, number][] = [],
+  group = 4,
+): { data: Float32Array; center: [number, number] }[] {
   const groups = new Map<number, number[]>();
   const add = (ix: number, iz: number, y: number, plant: number) => {
     const key = Math.floor(ix / CS / group) * 1000 + Math.floor(iz / CS / group);
@@ -201,6 +213,7 @@ export function scatterPlants(w: VoxelWorld, group = 4): { data: Float32Array; c
     const rot = Math.floor(hash2(ix * 3, iz * 5) * 4);
     g.push(toX(ix) + (hash2(ix, iz * 3) - 0.5) * 0.3, REGION.minY + y * BLOCK, toZ(iz) + (hash2(ix * 7, iz) - 0.5) * 0.3, plant + 16 * rot);
   };
+  for (const [eix, eiy, eiz, plant] of extra) add(eix, eiz, eiy, plant);
   const flowers = [PL("flowerRed"), PL("flowerYellow"), PL("flowerPink"), PL("flowerWhite"), PL("flowerBlue")];
   for (let iz = 1; iz < NZ - 1; iz++)
     for (let ix = 1; ix < NX - 1; ix++) {
@@ -211,6 +224,7 @@ export function scatterPlants(w: VoxelWorld, group = 4): { data: Float32Array; c
       if (w.get(ix, s.y, iz) !== B.Air) continue;
       const x = toX(ix);
       const z = toZ(iz);
+      if (inRect(x, z, VILLAGE_RECT) && h > 0.05) continue; // tidy around the houses
       const open = inOpen(x, z);
       // Near walls / trunks / path edges → lush.
       const n1 = w.surface(ix + 2, iz, true);

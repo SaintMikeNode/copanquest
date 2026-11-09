@@ -47,6 +47,18 @@ export class VoxelWorld {
   /** Top block of each ground column. */
   topKind = new Uint8Array(NX * NZ);
   chunks = new Map<number, Uint8Array>();
+  /** Solid boxes added by decoration (tree trunks, bushes, houses): [x, y, z, hx, hy, hz] in meters. */
+  colliders: number[] = [];
+  /** Add a collider for blocks [ix0..ix1] × [iy0..iy1] × [iz0..iz1] (inclusive). */
+  addCollider(ix0: number, iy0: number, iz0: number, ix1: number, iy1: number, iz1: number) {
+    const x0 = REGION.minX + ix0 * BLOCK;
+    const y0 = REGION.minY + iy0 * BLOCK;
+    const z0 = REGION.minZ + iz0 * BLOCK;
+    const x1 = REGION.minX + (ix1 + 1) * BLOCK;
+    const y1 = REGION.minY + (iy1 + 1) * BLOCK;
+    const z1 = REGION.minZ + (iz1 + 1) * BLOCK;
+    this.colliders.push((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2, (x1 - x0) / 2, (y1 - y0) / 2, (z1 - z0) / 2);
+  }
   /** Highest struct block + 1 per column (upper bound for surface scans). */
   structTop = new Int16Array(NX * NZ);
 

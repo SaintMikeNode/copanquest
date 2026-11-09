@@ -85,14 +85,31 @@ const P = CS + 2; // padded chunk size
  * Meshes the voxel region. Chunks are grouped into regions of `group` × `group` chunk
  * columns, one mesh (one draw call) per region.
  */
-export function meshVoxelWorld(world: VoxelWorld, group = 4): MeshData[] {
+export function meshVoxelWorld(
+  world: VoxelWorld,
+  onRegion: (m: MeshData) => void,
+  origin: [number, number] = [0, 0],
+  group = 4,
+  onStep?: (done: number, total: number, distance: number) => void,
+) {
   const pad = new Uint8Array(P * P * P);
   const mask = new Int32Array(CS * CS);
-  const builders = new Map<number, MeshBuilder>();
   const STRIDE = [1, P, P * P];
+  // World partition: regions of group × group chunk columns, meshed nearest-first so the
+  // area around the player appears immediately and the rest streams in.
+  const regionSize = group * CS * BLOCK;
+  const regions: [number, number][] = [];
+  for (let rz = 0; rz * group < NCZ; rz++) for (let rx = 0; rx * group < NCX; rx++) regions.push([rx, rz]);
+  const dist = ([rx, rz]: [number, number]) =>
+    Math.hypot(REGION.minX + (rx + 0.5) * regionSize - origin[0], REGION.minZ + (rz + 0.5) * regionSize - origin[1]);
+  regions.sort((a, b) => dist(a) - dist(b));
 
-  for (let cz = 0; cz < NCZ; cz++)
-    for (let cx = 0; cx < NCX; cx++) {
+  let step = 0;
+  for (const [rx, rz] of regions) {
+  onStep?.(step++, regions.length, dist([rx, rz]));
+  const mb = new MeshBuilder();
+  for (let cz = rz * group; cz < Math.min(NCZ, (rz + 1) * group); cz++)
+    for (let cx = rx * group; cx < Math.min(NCX, (rx + 1) * group); cx++) {
       // Vertical range of ground surfaces in this chunk column (with a 1-block border).
       let gMin = Infinity;
       let gMax = -Infinity;
@@ -117,9 +134,6 @@ export function meshVoxelWorld(world: VoxelWorld, group = 4): MeshData[] {
         const any = world.fillPadded(pad, bx, y0, bz);
         if (!any) continue;
 
-        const gkey = Math.floor(cx / group) * 1000 + Math.floor(cz / group);
-        let mb = builders.get(gkey);
-        if (!mb) builders.set(gkey, (mb = new MeshBuilder()));
 
         for (let d = 0; d < 3; d++) {
           const u = (d + 1) % 3;
@@ -224,7 +238,8 @@ export function meshVoxelWorld(world: VoxelWorld, group = 4): MeshData[] {
         }
       }
     }
-  return [...builders.values()].filter((b) => b.idx.length).map((b) => b.build());
+  if (mb.idx.length) onRegion(mb.build());
+  }
 }
 
 const L = (name: (typeof LAYERS)[number]) => LAYERS.indexOf(name);

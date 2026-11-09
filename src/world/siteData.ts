@@ -30,7 +30,14 @@ export type Material =
   | "path"
   | "gravel"
   | "sand"
-  | "wood";
+  | "wood"
+  | "adobe"
+  | "thatch"
+  | "ladder"
+  | "cloth"
+  | "pottery"
+  | "earth"
+  | "maize";
 
 export interface Stair {
   face: Face;
@@ -113,7 +120,10 @@ export const EXTRA_WALLS: [number, number, number, number][] = [[143.5, 299, 1, 
 /** Height of the Acropolis courts above the Great Plaza (est.). */
 export const ACROPOLIS_TOP = 12;
 
-export const PLAYER_SPAWN: [number, number, number] = [-24, 2, 58];
+/** Start at the visitor entrance (west), next to the guide, looking east toward the city. */
+export const PLAYER_SPAWN: [number, number, number] = [-144, 2, 80];
+/** Camera yaw at spawn (FollowCamera convention: 0 = looking north, −π/2 = looking east). */
+export const SPAWN_YAW = -Math.PI / 2;
 
 export const MOUNDS: Mound[] = [
   // ---------- Great Plaza (north) ----------

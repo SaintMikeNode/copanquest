@@ -3,9 +3,19 @@
   "configurations": [
     {
       "name": "copanquest",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev", "--", "--port", "5180", "--strictPort"],
-      "port": 5180
+      "runtimeExecutable": "/opt/homebrew/opt/node@24/bin/npm",
+      "runtimeArgs": [
+        "run",
+        "dev",
+        "--",
+        "--port",
+        "5180",
+        "--strictPort"
+      ],
+      "port": 5180,
+      "env": {
+        "PATH": "/opt/homebrew/opt/node@24/bin:/usr/local/bin:/usr/bin:/bin"
+      }
     }
   ]
 }

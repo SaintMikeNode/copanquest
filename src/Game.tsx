@@ -1,4 +1,7 @@
-import { Suspense, useMemo } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import { useFrame } from "@react-three/fiber";
+import { LoadingScreen } from "./ui/LoadingScreen";
+import { loadStore } from "./voxel/voxelStream";
 import { Canvas } from "@react-three/fiber";
 import { KeyboardControls, PerformanceMonitor } from "@react-three/drei";
 import { Physics } from "@react-three/rapier";
@@ -9,6 +12,8 @@ import { SiteColliders } from "./world/Greybox";
 import { VoxelTerrain } from "./voxel/VoxelTerrain";
 import { Monuments } from "./world/Monuments";
 import { Macaws } from "./world/Macaws";
+import { People } from "./npc/People";
+import { Jades } from "./poi/Jades";
 import { Boundary } from "./world/Boundary";
 import { Environment } from "./world/Environment";
 import { PerfProbe } from "./world/PerfProbe";
@@ -17,7 +22,26 @@ import { PoiMarkers } from "./poi/PoiMarkers";
 import { useGame, useQualityLevel } from "./state/useGame";
 import { Hud } from "./ui/Hud";
 
+/** Calls onVisible after the world has rendered a few frames (shaders compiled, regions uploaded). */
+function FirstFrames({ ready, onVisible }: { ready: boolean; onVisible: () => void }) {
+  const frames = useRef(0);
+  useFrame(() => {
+    if (!ready || frames.current < 0) return;
+    if (++frames.current > 4) {
+      frames.current = -1;
+      onVisible();
+    }
+  });
+  return null;
+}
+
 export default function Game() {
+  const progress = useSyncExternalStore(loadStore.subscribe, loadStore.getProgress);
+  const ready = useSyncExternalStore(loadStore.subscribe, loadStore.getReady);
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    if (!ready) setVisible(false);
+  }, [ready]);
   const mountedAt = useMemo(() => performance.now(), []);
   const level = useQualityLevel();
   const physicsDebug = useGame((s) => s.physicsDebug);
@@ -50,15 +74,21 @@ export default function Game() {
             <SiteColliders />
             <Boundary />
             <Player />
+            <People />
           </Physics>
           <VoxelTerrain />
           <Monuments />
           <Macaws />
+          <Jades />
           <PoiMarkers />
           <PoiTracker />
         </Suspense>
         <PerfProbe />
+        <Suspense fallback={null}>
+          <FirstFrames ready={ready} onVisible={() => setVisible(true)} />
+        </Suspense>
       </Canvas>
+      <LoadingScreen progress={visible ? 1 : progress} done={visible} />
       <Hud />
     </KeyboardControls>
   );

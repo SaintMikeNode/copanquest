@@ -15,6 +15,12 @@ export function useT() {
   return (key: Key) => dictionaries[lang][key] ?? dictionaries.es[key] ?? key;
 }
 
+/** Non-hook translator (for code outside React render). */
+export function getT() {
+  const lang = useGame.getState().lang;
+  return (key: Key) => dictionaries[lang][key] ?? dictionaries.es[key] ?? key;
+}
+
 export function useL10n() {
   const lang = useGame((s) => s.lang);
   return (text: L10n) => text[lang] || text.es;

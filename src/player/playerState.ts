@@ -11,4 +11,7 @@ export const playerState = {
   /** Player body yaw (radians). */
   facingYaw: 0,
   grounded: false,
+  climbing: false,
+  /** Set by the dialogue UI: freezes movement while talking. */
+  frozen: false,
 };

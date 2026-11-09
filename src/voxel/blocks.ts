@@ -23,8 +23,15 @@ export enum B {
   Leaves,
   Fig, // dark fig / ceiba foliage
   Log,
-  Canvas, // protective roof over the Hieroglyphic Stairway
+  Canvas, // unused
   Wood,
+  Adobe, // earthen (wattle-and-daub) house walls, like Joya de Cerén
+  Thatch, // palm-thatch roofs
+  Ladder, // wooden ladders on tall walls (climbable zones are in siteData)
+  Cloth, // striped market awnings
+  Pottery,
+  Earth, // packed-earth house patios
+  Maize, // baskets / piles of maize cobs
 }
 
 /** Texture layer names (each has VARIANTS tiles), in texture-array order. */
@@ -49,6 +56,13 @@ export const LAYERS = [
   "canvas",
   "wood",
   "rock",
+  "adobe",
+  "thatch",
+  "ladder",
+  "cloth",
+  "pottery",
+  "earth",
+  "maize",
 ] as const;
 export type LayerName = (typeof LAYERS)[number];
 export const L = (name: LayerName) => LAYERS.indexOf(name);
@@ -71,6 +85,13 @@ FACE_LAYERS[B.Fig] = [L("fig"), L("fig"), L("fig")];
 FACE_LAYERS[B.Log] = [L("logTop"), L("logSide"), L("logTop")];
 FACE_LAYERS[B.Canvas] = [L("canvas"), L("canvas"), L("canvas")];
 FACE_LAYERS[B.Wood] = [L("wood"), L("wood"), L("wood")];
+FACE_LAYERS[B.Adobe] = [L("earth"), L("adobe"), L("adobe")];
+FACE_LAYERS[B.Thatch] = [L("thatch"), L("thatch"), L("thatch")];
+FACE_LAYERS[B.Ladder] = [L("wood"), L("ladder"), L("wood")];
+FACE_LAYERS[B.Cloth] = [L("cloth"), L("cloth"), L("cloth")];
+FACE_LAYERS[B.Pottery] = [L("pottery"), L("pottery"), L("pottery")];
+FACE_LAYERS[B.Earth] = [L("earth"), L("dirt"), L("dirt")];
+FACE_LAYERS[B.Maize] = [L("maize"), L("maize"), L("maize")];
 
 export const MATERIAL_BLOCK: Record<Material, B> = {
   stone: B.Stone,
@@ -83,6 +104,13 @@ export const MATERIAL_BLOCK: Record<Material, B> = {
   gravel: B.Gravel,
   sand: B.Sand,
   wood: B.Wood,
+  adobe: B.Adobe,
+  thatch: B.Thatch,
+  ladder: B.Ladder,
+  cloth: B.Cloth,
+  pottery: B.Pottery,
+  earth: B.Earth,
+  maize: B.Maize,
 };
 
 /** Minimap colors per material. */
@@ -97,6 +125,13 @@ export const MATERIAL_COLOR: Record<Material, string> = {
   gravel: "#cdc2aa",
   sand: "#e1c896",
   wood: "#916236",
+  adobe: "#d2b48a",
+  thatch: "#c9a45a",
+  ladder: "#916236",
+  cloth: "#d23a2e",
+  pottery: "#c46a3a",
+  earth: "#b89466",
+  maize: "#f2c42c",
 };
 
 /** Cutout plant sprites (16 × 32 px, 0.5 × 1 m). */
@@ -110,6 +145,10 @@ export const PLANTS = [
   "flowerWhite",
   "flowerBlue",
   "heliconia",
+  "maizeLow",
+  "maizeTop",
+  "agave",
+  "squash",
 ] as const;
 export type PlantName = (typeof PLANTS)[number];
 export const PL = (name: PlantName) => PLANTS.indexOf(name);

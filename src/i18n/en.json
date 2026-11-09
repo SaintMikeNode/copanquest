@@ -30,5 +30,18 @@
   "debug.title": "Debug",
   "debug.physics": "Show colliders",
   "comingSoon": "Coming soon",
-  "fps": "FPS"
+  "fps": "FPS",
+  "jade.found": "You found a jade bead!",
+  "jade.all": "You found all 10 jade beads! You're a great explorer.",
+  "talk": "Talk",
+  "observe": "Observe",
+  "next": "Next",
+  "jade": "Jade",
+  "places": "Places",
+  "people": "People",
+  "controls.talk": "Walk up to people and press E (or the Talk button) to chat. To climb a wooden ladder, walk into the wall.",
+  "loading.terrain": "Preparing the Copán valley…",
+  "loading.city": "Building the city…",
+  "loading.ready": "Ready!",
+  "loading.didYouKnow": "Did you know…?"
 }

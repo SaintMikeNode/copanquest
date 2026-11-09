@@ -1,56 +1,82 @@
-// Builds and meshes the voxel world off the main thread.
+// Builds the voxel world off the main thread and streams it back:
+//   1. "base": colliders, plant sprites and the distant hills (fast)
+//   2. "region" × N: near-field meshes, nearest to the player first
+//   3. "done": stats
 import { buildGreybox } from "../world/buildGreybox";
 import type { TerrainGrid } from "../world/terrainData";
 import { VoxelWorld } from "./voxelWorld";
 import { meshFarTerrain, meshVoxelWorld, type MeshData } from "./mesher";
 import { paintPaths, plantBushes, plantTrees, scatterPlants } from "./decorate";
+import { buildVillage } from "./village";
 
 export interface VoxelRequest {
   grid: TerrainGrid;
   farExtent: number;
+  origin: [number, number];
 }
 export interface PlantGroup {
   data: Float32Array;
   center: [number, number];
 }
-export interface VoxelResponse {
-  near: MeshData[];
+export interface VoxelBase {
   far: MeshData[];
   plants: PlantGroup[];
-  stats: { ms: number; triangles: number; nearTriangles: number; shapes: number };
+  /** Decoration colliders [x, y, z, hx, hy, hz]… (trees, bushes, village). */
+  colliders: Float32Array;
 }
+export type VoxelMessage =
+  | { type: "base"; base: VoxelBase }
+  | { type: "region"; mesh: MeshData }
+  | { type: "progress"; done: number; total: number }
+  /** Everything within READY_RADIUS of the player is meshed: safe to show the world. */
+  | { type: "ready" }
+  | { type: "done"; stats: { ms: number; triangles: number; nearTriangles: number; shapes: number } };
+
+const READY_RADIUS = 150;
+
+const buffers = (m: MeshData) => [m.position.buffer, m.normal.buffer, m.uv.buffer, m.vdata.buffer, m.index.buffer];
+const post = (msg: VoxelMessage, transfer: ArrayBufferLike[]) =>
+  (self as unknown as Worker).postMessage(msg, transfer as Transferable[]);
 
 self.onmessage = (e: MessageEvent<VoxelRequest>) => {
   const t0 = performance.now();
-  const { grid, farExtent } = e.data;
+  const { grid, farExtent, origin } = e.data;
   const world = new VoxelWorld(grid);
-  const t1 = performance.now();
   const { shapes } = buildGreybox();
   for (const s of shapes) world.addShape(s);
   paintPaths(world);
+  const crops: [number, number, number, number][] = [];
+  buildVillage(world, (x, y, z, p) => crops.push([x, y, z, p]));
   plantTrees(world);
   plantBushes(world);
-  const plants = scatterPlants(world);
-  const t2 = performance.now();
-  const near = meshVoxelWorld(world);
-  const t3 = performance.now();
+  const plants = scatterPlants(world, crops);
   const far = meshFarTerrain(grid, world, farExtent);
-  const t4 = performance.now();
-  console.log(
-    `[voxels] ground ${Math.round(t1 - t0)} ms, shapes+trees+plants ${Math.round(t2 - t1)} ms (${plants.reduce((n, p) => n + p.data.length / 4, 0)} plants), near mesh ${Math.round(t3 - t2)} ms, far mesh ${Math.round(t4 - t3)} ms`,
-  );
-  const all = [...near, ...far];
-  const triangles = all.reduce((n, m) => n + m.index.length / 3, 0);
-  const transfer = [
-    ...all.flatMap((m) => [m.position.buffer, m.normal.buffer, m.uv.buffer, m.vdata.buffer, m.index.buffer]),
+  const colliders = new Float32Array(world.colliders);
+  let triangles = far.reduce((n, m) => n + m.index.length / 3, 0);
+  post({ type: "base", base: { far, plants, colliders } }, [
+    ...far.flatMap(buffers),
     ...plants.map((p) => p.data.buffer),
-  ];
-  const nearTriangles = near.reduce((n, m) => n + m.index.length / 3, 0);
-  const res: VoxelResponse = {
-    near,
-    far,
-    plants,
-    stats: { ms: Math.round(performance.now() - t0), triangles, nearTriangles, shapes: shapes.length },
-  };
-  (self as unknown as Worker).postMessage(res, transfer);
+    colliders.buffer,
+  ]);
+  let nearTriangles = 0;
+  let ready = false;
+  meshVoxelWorld(
+    world,
+    (mesh) => {
+      nearTriangles += mesh.index.length / 3;
+      post({ type: "region", mesh }, buffers(mesh));
+    },
+    origin,
+    4,
+    (done, total, distance) => {
+      if (!ready && distance > READY_RADIUS) {
+        ready = true;
+        post({ type: "ready" }, []);
+      }
+      post({ type: "progress", done, total }, []);
+    },
+  );
+  if (!ready) post({ type: "ready" }, []);
+  triangles += nearTriangles;
+  post({ type: "done", stats: { ms: Math.round(performance.now() - t0), triangles, nearTriangles, shapes: shapes.length } }, []);
 };
