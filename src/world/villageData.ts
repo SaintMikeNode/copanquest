@@ -39,43 +39,46 @@ export const HOUSEHOLDS: Household[] = [
       { at: [-118, 128.5], size: [6, 4], door: "n", kind: "house" },
     ],
   },
+  // A real patio group (house platforms mapped in OSM; siteData "patio-*"): the houses of this
+  // household stand on its platforms around the patio, as Maya houses did.
   {
     name: "kitchen-temazcal",
-    patio: [-88, 140, 16, 14],
+    patio: [-95, 140, 18, 12],
     houses: [
-      { at: [-88, 128.5], size: [6.5, 4.5], door: "s", kind: "house" },
-      { at: [-99.5, 140], size: [4.5, 5], door: "e", kind: "kitchen" },
-      { at: [-76.5, 142], size: [4, 5], door: "w", kind: "store" },
+      { at: [-94.5, 129], size: [9, 4.5], door: "s", kind: "house" },
+      { at: [-112, 144], size: [4.5, 6], door: "e", kind: "kitchen" },
+      { at: [-77, 140], size: [4.5, 6], door: "w", kind: "store" },
+      { at: [-100, 155.5], size: [8, 4.5], door: "n", kind: "house" },
     ],
   },
   {
     name: "farmers",
-    patio: [-120, 160, 14, 12],
+    patio: [-121, 180, 14, 12],
     houses: [
-      { at: [-120, 150.5], size: [6, 4], door: "s", kind: "house" },
-      { at: [-130.5, 161], size: [4, 4.5], door: "e", kind: "store" },
-      { at: [-109.5, 161], size: [4, 4.5], door: "w", kind: "kitchen" },
+      { at: [-121, 170.5], size: [6, 4], door: "s", kind: "house" },
+      { at: [-131, 181], size: [4, 4.5], door: "e", kind: "store" },
+      { at: [-111, 181], size: [4, 4.5], door: "w", kind: "kitchen" },
     ],
   },
   // East ward, along the road to Las Sepulturas.
   {
     name: "east-potters",
-    patio: [80, 22, 16, 14],
+    patio: [82, 30, 16, 14],
     houses: [
-      { at: [80, 12.5], size: [7, 4.5], door: "s", kind: "house" },
-      { at: [70.5, 22], size: [4, 5], door: "e", kind: "store" },
-      { at: [89.5, 22], size: [4.5, 5], door: "w", kind: "kitchen" },
-      { at: [80, 31], size: [6, 4], door: "n", kind: "house" },
+      { at: [82, 20.5], size: [7, 4.5], door: "s", kind: "house" },
+      { at: [72.5, 30], size: [4, 5], door: "e", kind: "store" },
+      { at: [91.5, 30], size: [4.5, 5], door: "w", kind: "kitchen" },
+      { at: [82, 39], size: [6, 4], door: "n", kind: "house" },
     ],
   },
   {
     name: "east-lane",
-    patio: [122, 60, 16, 14],
+    patio: [118, 64, 16, 14],
     houses: [
-      { at: [122, 51], size: [6.5, 4.5], door: "s", kind: "house" },
-      { at: [111.5, 60], size: [4.5, 5], door: "e", kind: "kitchen" },
-      { at: [132.5, 60], size: [4, 5], door: "w", kind: "store" },
-      { at: [122, 69], size: [6, 4], door: "n", kind: "house" },
+      { at: [118, 55], size: [6.5, 4.5], door: "s", kind: "house" },
+      { at: [107.5, 64], size: [4.5, 5], door: "e", kind: "kitchen" },
+      { at: [128.5, 64], size: [4, 5], door: "w", kind: "store" },
+      { at: [118, 73], size: [6, 4], door: "n", kind: "house" },
     ],
   },
   {
@@ -111,18 +114,18 @@ export const HOUSEHOLDS: Household[] = [
   },
   {
     name: "west-south",
-    patio: [-84, 304, 16, 14],
+    patio: [-104, 330, 16, 14],
     houses: [
-      { at: [-84, 295], size: [6.5, 4.5], door: "s", kind: "house" },
-      { at: [-94.5, 304], size: [4.5, 5], door: "e", kind: "kitchen" },
-      { at: [-73.5, 304], size: [4, 5], door: "w", kind: "store" },
-      { at: [-84, 313], size: [6, 4], door: "n", kind: "house" },
+      { at: [-104, 321], size: [6.5, 4.5], door: "s", kind: "house" },
+      { at: [-114.5, 330], size: [4.5, 5], door: "e", kind: "kitchen" },
+      { at: [-93.5, 330], size: [4, 5], door: "w", kind: "store" },
+      { at: [-104, 339], size: [6, 4], door: "n", kind: "house" },
     ],
   },
 ];
 
 /** Domed sweat baths. */
-export const TEMAZCALS: [number, number][] = [[-86, 156], [92, 78], [-104, 252]];
+export const TEMAZCALS: [number, number][] = [[-87, 158], [92, 78], [-98, 268]];
 
 /** Fields: rectangles planted in rows. */
 export const FIELDS: { rect: [number, number, number, number]; crop: "maize" | "agave" }[] = [
@@ -131,10 +134,10 @@ export const FIELDS: { rect: [number, number, number, number]; crop: "maize" | "
   { rect: [-80, 98, -66, 118], crop: "agave" }, // agave (maguey) for fiber, as at Joya de Cerén
   // East ward
   { rect: [108, 84, 134, 122], crop: "maize" },
-  { rect: [62, 124, 88, 146], crop: "maize" },
+  { rect: [70, 124, 96, 146], crop: "maize" },
   // West ward
   { rect: [-140, 232, -112, 268], crop: "maize" },
-  { rect: [-132, 318, -112, 346], crop: "agave" },
+  { rect: [-140, 318, -120, 346], crop: "agave" },
   { rect: [-100, 340, -66, 352], crop: "maize" },
 ];
 
@@ -148,21 +151,21 @@ export const STALLS: { at: [number, number]; goods: "pottery" | "maize" | "cloth
 
 /** Fruit / cacao trees around the houses. */
 export const ORCHARD: [number, number][] = [
-  [-66, 128],
-  [-64, 136],
-  [-70, 146],
+  [-70, 124],
+  [-69, 156],
+  [-68.5, 146],
   [-140, 104],
   [-100, 104],
   // East ward
   [70, 40],
   [64, 50],
-  [96, 8],
-  [110, 14],
-  [130, 40],
+  [98, 22],
+  [104, 26],
+  [134, 58],
   [66, 80],
   // West ward
   [-70, 236],
-  [-66, 296],
+  [-92, 296],
   [-100, 290],
   [-118, 276],
   [-140, 314],

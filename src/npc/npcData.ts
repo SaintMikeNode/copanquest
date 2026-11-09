@@ -77,7 +77,7 @@ export const TALKERS: Talker[] = [
   {
     id: "farmer",
     name: { es: "Balam, agricultor", en: "Balam, farmer" },
-    home: [-131, 150],
+    home: [-138, 160],
     wander: 4,
     outfit: { skin: SKIN[2], hair: "#1d1410", top: "#f2ede0", accent: "#d69a1c", bottom: "#f2ede0", head: "headband" },
     lines: [
@@ -182,7 +182,7 @@ export const TALKERS: Talker[] = [
   {
     id: "potter",
     name: { es: "Ix Kab', alfarera", en: "Ix Kab', potter" },
-    home: [80, 26],
+    home: [82, 33],
     wander: 2,
     outfit: { skin: SKIN[3], hair: "#1d1410", top: "#f2ede0", accent: "#c46a3a", bottom: "#c0392b", female: true, head: "turban" },
     lines: [
@@ -309,7 +309,7 @@ const PLAZA_LOOPS: { pts: [number, number][]; y: number }[] = [
 ];
 
 // Neighbors strolling around the patio groups of the east and west wards.
-const WARD_LOOPS: [number, number][][] = [loop(80, 22, 5, 4), loop(122, 60, 5, 4), loop(-84, 248, 5, 4), loop(-128, 296, 4, 5), loop(-84, 304, 5, 4)];
+const WARD_LOOPS: [number, number][][] = [loop(82, 30, 5, 4), loop(118, 64, 5, 4), loop(-84, 248, 5, 4), loop(-128, 296, 4, 5), loop(-104, 330, 5, 4)];
 
 export const WALKERS: WalkerDef[] = [
   // Ancient Copanecos, seen only through the time lens.

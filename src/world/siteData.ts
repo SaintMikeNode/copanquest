@@ -248,20 +248,78 @@ export const MOUNDS: Mound[] = [
     material: "stone",
   },
 
-  // Low stepped platform closing the north end of the ball court, crowned by Stela 2 with
-  // Altar L (Mesoweb Copán tour; FLAAR: steps across the whole north end, wider than the
-  // playing alley). Size and height est.
+  // Stepped platform at the north end of the ball court, crowned by Stela 2 with Altar L
+  // (Mesoweb Copán tour; FLAAR). Footprint from the OSM outlines (ways 384158423 and 384552931:
+  // x 24–50, z 121–139, upper level x 27–50, z 124–136). It lies east of the alley's axis; from
+  // Temple 11 (the classic photo viewpoint) it appears right behind the court. Height est.
   {
     id: "ballcourt-north",
     name: { es: "Plataforma norte del Juego de Pelota", en: "Ball Court north platform" },
-    center: [22, 137],
-    size: [44, 22],
-    tiers: 1,
-    tierHeight: 2.5,
-    setback: 1,
-    stairs: [{ face: "s", width: 40, run: 4 }],
+    center: [37, 130],
+    size: [26, 18],
+    tiers: 2,
+    tierHeight: 1.25,
+    setback: 2.5,
+    stairs: [{ face: "s", width: 18, run: 3 }],
     material: "stone",
   },
+  // Raised terrace east of the ball court that runs south to the base of Temple 26: the stepped
+  // terrace beside Structure 10 in photos from the south. Footprint from OSM way 384158423
+  // (x 50–66, z 121–154 and x 44.5–67, z 154–183.5). Heights est.
+  {
+    id: "ballcourt-ne",
+    center: [58, 137.5],
+    size: [16, 33],
+    tiers: 2,
+    tierHeight: 1.5,
+    setback: 1.5,
+    material: "stone",
+  },
+  {
+    id: "ballcourt-east",
+    center: [55.75, 168.75],
+    size: [22.5, 29.5],
+    tiers: 1,
+    tierHeight: 3,
+    setback: 1,
+    stairs: [{ face: "w", width: 18, run: 3 }],
+    material: "stone",
+  },
+
+  // ---------- Other ruins mapped in OpenStreetMap (wall outlines; heights est.) ----------
+  // Western complex: a large platform with a stepped mound at each end (ways 384324704,
+  // 384324739, 384324726…; also on the park's scale model).
+  { id: "west-platform", center: [-117.3, 30.45], size: [43.2, 60.5], tiers: 1, tierHeight: 1.5, setback: 1, material: "stone" },
+  { id: "west-mound-n", center: [-117.4, -14.2], size: [20.6, 22.5], tiers: 3, tierHeight: 1.5, setback: 2.5, stairs: [{ face: "s", width: 6, run: 3 }], material: "stone" },
+  { id: "west-mound-s", center: [-116.4, 58.4], size: [18.7, 26], tiers: 3, tierHeight: 1.5, setback: 2.5, stairs: [{ face: "n", width: 6, run: 3 }], material: "stone" },
+  // Long platform west of the middle plaza (way 384552932).
+  { id: "west-long-platform", center: [-59.25, 133.45], size: [13.5, 56.7], tiers: 2, tierHeight: 1, setback: 2, material: "stone" },
+  // Patio group by the entrance: house platforms around a patio (ways 384552846, 384552882,
+  // 384552885, 384552867, 384552850). The village's houses stand on them (villageData.ts).
+  { id: "patio-w1", center: [-126.4, 144.8], size: [7.2, 11.8], tiers: 1, tierHeight: 0.5, setback: 1, material: "stone" },
+  { id: "patio-w2", center: [-114, 144.35], size: [13.2, 25.1], tiers: 2, tierHeight: 0.5, setback: 2, material: "stone" },
+  { id: "patio-n", center: [-94.7, 129.25], size: [18.8, 7.9], tiers: 1, tierHeight: 0.5, setback: 1, material: "stone" },
+  { id: "patio-s", center: [-96.3, 156.4], size: [27, 17.4], tiers: 1, tierHeight: 0.5, setback: 1, material: "stone" },
+  { id: "patio-e", center: [-77.25, 140.3], size: [12.1, 18.2], tiers: 1, tierHeight: 0.5, setback: 1, material: "stone" },
+  // Small mound west of the Court of the Hieroglyphic Stairway (way 384552875).
+  { id: "west-small-mound", center: [-96.65, 209.3], size: [12.7, 15], tiers: 2, tierHeight: 1, setback: 2, material: "stone" },
+  // Mound 7 with Altar O, and Mound 8 (OSM names; ways 384552920/384552924, 384324740…).
+  { id: "mound7", center: [-44.55, 212.6], size: [13.7, 21.6], tiers: 2, tierHeight: 0.75, setback: 2.5, stairs: [{ face: "e", width: 9, run: 6 }], material: "stone" },
+  { id: "mound8", center: [-51.45, 261.55], size: [19.1, 23.3], tiers: 2, tierHeight: 1.25, setback: 3, material: "stone" },
+  // Platforms west of the Acropolis (ways 384552922/384552903, 384552916/384552852).
+  { id: "west-acropolis-a", center: [-73.25, 291.85], size: [23.9, 31.3], tiers: 2, tierHeight: 1, setback: 5, material: "stone" },
+  { id: "west-acropolis-b", center: [-57.85, 313.8], size: [12.5, 12.6], tiers: 2, tierHeight: 1, setback: 2.5, material: "stone" },
+  // Northeast of the Great Plaza: a long gallery platform and Mound 3 by Stela J
+  // (ways 384324723, 386256673, 384324761; 384324735, 389063808…).
+  { id: "ne-gallery", center: [90.8, -5.35], size: [69.6, 25.7], tiers: 1, tierHeight: 1.5, setback: 1, material: "stone" },
+  { id: "ne-gallery-s1", center: [87, 9.5], size: [23.8, 10.4], tiers: 1, tierHeight: 1, setback: 1, material: "stone" },
+  { id: "ne-gallery-s2", center: [114.6, 7.4], size: [29.2, 14], tiers: 1, tierHeight: 1, setback: 1, material: "stone" },
+  { id: "mound3", center: [134.2, 35.1], size: [20.6, 27], tiers: 3, tierHeight: 1.5, setback: 2.5, material: "stone" },
+  // Small house platforms near the east edge (ways 389063820, 389063835, 389063830, 389063834).
+  { id: "east-house-a", center: [180.85, 131.65], size: [12.1, 19.1], tiers: 1, tierHeight: 0.75, setback: 1, material: "stone" },
+  { id: "east-house-b", center: [178.75, 150.1], size: [14.7, 12.8], tiers: 1, tierHeight: 0.75, setback: 1, material: "stone" },
+  { id: "east-house-c", center: [192, 116.1], size: [8, 4.8], tiers: 1, tierHeight: 0.5, setback: 1, material: "stone" },
+  { id: "east-house-d", center: [182.1, 106.9], size: [5.8, 21.4], tiers: 1, tierHeight: 0.5, setback: 1, material: "stone" },
 
   // ---------- Temple 26 and the Hieroglyphic Stairway (west face, x 59 → 82) ----------
   {
@@ -446,20 +504,23 @@ export const PATHS: PathLine[] = [
   { y: 0, width: 2.5, points: [[-8, 10], [14, 12], [26, 30], [24, 44], [14, 56]] },
   // 2: From the entrance trail down the west side of the middle plaza, west of the ball court
   // (the court itself stays off the trails), on to the Acropolis west stair.
-  { y: 0, width: 3, points: [[-32, 66], [-42, 84], [-39, 101], [-30, 118], [-24, 136], [-20, 158], [-22, 182], [-27, 206], [-36, 222], [-44, 240], [-56, 290], [-58, 328], [-52, 328]] },
+  // Passes between Mound 7, the big ceiba and the Acropolis' northwest corner, then between
+  // Mound 8 and the Acropolis, ending at the foot of the Acropolis' west stair (z 280–296).
+  { y: 0, width: 3, points: [[-32, 66], [-42, 84], [-39, 101], [-30, 118], [-24, 136], [-20, 158], [-22, 182], [-22, 206], [-24, 221], [-34, 224.5], [-38, 236], [-39, 248], [-39, 276], [-54, 277], [-55, 288]] },
   // 3: South past Structure 4, then across the middle plaza to join trail 2
   { y: 0, width: 3, points: [[14, 56], [13, 90], [12, 102], [-4, 118], [-24, 136]] },
   // 4: Spur east across the Court of the Hieroglyphic Stairway, south of the ball court
-  { y: 0, width: 2.5, points: [[-27, 206], [-4, 210], [20, 208], [38, 205], [50, 204]] },
+  { y: 0, width: 2.5, points: [[-22, 206], [-4, 210], [20, 208], [38, 205], [50, 204]] },
   // Across the West Court to Altar Q, then around Temple 16 to the East Court
   { y: 12, width: 2.5, points: [[-30, 328], [0, 324], [30, 326], [43, 330]] },
   { y: 12, width: 2.5, points: [[30, 326], [44, 300], [62, 293], [80, 292], [100, 288], [112, 270], [106, 250]] },
-  // 7: East ward: from the Great Plaza around the south end of the east stands to the sacbe
-  { y: 0, width: 2.5, points: [[24, 44], [36, 62], [56, 62], [80, 52], [100, 40], [124, 28], [151, 20]] },
+  // 7: East ward: from the Great Plaza around the south end of the east stands to the sacbe,
+  // passing between the northeast gallery and Mound 3
+  { y: 0, width: 2.5, points: [[24, 44], [36, 62], [56, 62], [80, 52], [100, 40], [114, 19], [146, 17], [151, 20]] },
   // 8: East ward, south lane between the houses
   { y: 0, width: 2, points: [[100, 40], [104, 70], [100, 100], [90, 118]] },
-  // 9: West ward loop, off trail 2
-  { y: 0, width: 2, points: [[-50, 265], [-74, 266], [-98, 276], [-112, 298], [-104, 322], [-80, 334], [-58, 328]] },
+  // 9: West ward lane, off trail 2 (between Mound 7 and Mound 8, west of the real platforms)
+  { y: 0, width: 2, points: [[-38, 236], [-60, 231], [-82, 231], [-102, 236], [-108, 262], [-110, 290], [-106, 312]] },
 ];
 
 /** Lawns kept open (no trees, short grass only). [minX, minZ, maxX, maxZ] */
@@ -477,8 +538,8 @@ export const FIXED_TREES: { position: [number, number]; kind: "ceiba" | "fig" | 
   { position: [-28.2, 228.5], kind: "ceiba", note: "OSM node 3878873479 'Guanacaste tree'" },
   { position: [-62, -40], kind: "ceiba" },
   { position: [60, 70], kind: "ceiba" },
-  { position: [-55, 150], kind: "fig" },
-  { position: [48, 160], kind: "fig" },
+  { position: [-48, 176], kind: "fig" },
+  { position: [72, 152], kind: "fig" },
   { position: [128, 330], kind: "ceiba" },
 ];
 
@@ -508,7 +569,7 @@ export const MONUMENTS: Monument[] = [
   { id: "stela-m", kind: "stela", position: [55.1, 204.9], height: 3.5, width: 1, rotY: -Math.PI / 2 },
   { id: "altar-m", kind: "altar", position: [52.3, 204.9], height: 1, width: 1.5 },
   { id: "stela-n", kind: "stela", position: [15.4, 229.6], height: 3.5, width: 1, rotY: Math.PI },
-  { id: "altar-o", kind: "altar", position: [-41.7, 212.4], height: 1, width: 1.5 },
+  { id: "altar-o", kind: "altar", position: [-41.7, 212.4], baseY: 1.5, height: 1, width: 1.5 },
 
   // Acropolis
   { id: "stela-p", kind: "stela", position: [42.6, 307.2], baseY: ACROPOLIS_TOP, height: 3, width: 1 },

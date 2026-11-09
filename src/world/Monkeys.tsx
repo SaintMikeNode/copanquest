@@ -56,12 +56,12 @@ const TROOP_SPOTS: [number, number][] = [
   [-130, 100], // entrance and village
   [-62, -40], // ceiba west of the Great Plaza
   [60, 70], // ceiba east of Structure 4
-  [-55, 150], // fig west of the ball court
-  [48, 160], // fig east of the ball court
+  [-48, 176], // fig west of the ball court
+  [72, 152], // fig east of the ball court terrace
   [-28, 228], // ceiba by the Hieroglyphic Stairway
   [128, 330], // ceiba by the East Court
   [70, 45], // east ward
-  [-80, 290], // west ward
+  [-115, 290], // west ward
 ];
 const PER_TROOP = 3;
 
