@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
 import { useKeyboardControls } from "@react-three/drei";
-import { useRapier } from "@react-three/rapier";
+
 import { Ecctrl, type EcctrlHandle } from "ecctrl";
 import { useButtonStore, useJoystickStore } from "ecctrl/input";
 import { JOYSTICK_RUN_THRESHOLD, type Control } from "./controls";
@@ -10,6 +10,7 @@ import { playerState } from "./playerState";
 import { PLAYER_SPAWN } from "../world/siteData";
 import { FollowCamera } from "./FollowCamera";
 import { ladderSegments } from "../world/ladders";
+import { CharacterLayer } from "../game/layers";
 import { DEV_TOOLS } from "../config";
 import { buildPixelModel, hex, solid, type FaceName } from "../voxel/pixelModel";
 import type { Tile } from "../voxel/textures";
@@ -25,18 +26,6 @@ const LADDERS = ladderSegments();
 const CLIMB_SPEED = 2.6;
 const euler = new THREE.Euler();
 
-function blobShadowTexture() {
-  const size = 64;
-  const canvas = document.createElement("canvas");
-  canvas.width = canvas.height = size;
-  const ctx = canvas.getContext("2d")!;
-  const g = ctx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
-  g.addColorStop(0, "rgba(0,0,0,0.55)");
-  g.addColorStop(1, "rgba(0,0,0,0)");
-  ctx.fillStyle = g;
-  ctx.fillRect(0, 0, size, size);
-  return new THREE.CanvasTexture(canvas);
-}
 
 // ---------------------------------------------------------------- explorer kid (pixel art)
 
@@ -183,6 +172,7 @@ function PlayerModel({ controller }: { controller: React.RefObject<EcctrlHandle 
   );
   // Feet at y = FEET (capsule bottom minus float height).
   return (
+    <CharacterLayer>
     <group ref={body} position={[0, FEET, 0]}>
       <group ref={legL} position={[-0.085, 0.43, 0]}>
         {part(0, [0, -0.2, 0])}
@@ -204,16 +194,13 @@ function PlayerModel({ controller }: { controller: React.RefObject<EcctrlHandle 
       {part(6, [0, 1.215, 0])}
       {part(5, [0, 1.29, 0])}
     </group>
+    </CharacterLayer>
   );
 }
 
 export function Player() {
   const ref = useRef<EcctrlHandle>(null);
-  const shadowRef = useRef<THREE.Mesh>(null);
   const [, getKeys] = useKeyboardControls<Control>();
-  const { world, rapier } = useRapier();
-  const shadowTex = useMemo(blobShadowTexture, []);
-  const ray = useMemo(() => new rapier.Ray({ x: 0, y: 0, z: 0 }, { x: 0, y: -1, z: 0 }), [rapier]);
 
   // Dev helper: window.cqTeleport(x, y, z) from the browser console.
   useEffect(() => {
@@ -289,21 +276,6 @@ export function Player() {
       c.body.setLinvel({ x: 0, y: 0, z: 0 }, true);
     }
 
-    // Blob shadow: project straight down onto whatever is below.
-    const shadow = shadowRef.current;
-    if (shadow) {
-      ray.origin = { x: c.currPos.x, y: c.currPos.y, z: c.currPos.z };
-      const hit = world.castRay(ray, 20, true, rapier.QueryFilterFlags.EXCLUDE_SENSORS, undefined, undefined, c.body);
-      if (hit) {
-        const dist = hit.timeOfImpact;
-        shadow.visible = true;
-        shadow.position.set(c.currPos.x, c.currPos.y - dist + 0.04, c.currPos.z);
-        const s = THREE.MathUtils.clamp(1.1 - (dist + FEET) * 0.15, 0.4, 1.1);
-        shadow.scale.setScalar(s);
-      } else {
-        shadow.visible = false;
-      }
-    }
   });
 
   return (
@@ -328,10 +300,6 @@ export function Player() {
       >
         <PlayerModel controller={ref} />
       </Ecctrl>
-      <mesh ref={shadowRef} rotation-x={-Math.PI / 2} renderOrder={1}>
-        <planeGeometry args={[1.1, 1.1]} />
-        <meshBasicMaterial map={shadowTex} transparent depthWrite={false} />
-      </mesh>
       <FollowCamera target={ref} />
     </>
   );

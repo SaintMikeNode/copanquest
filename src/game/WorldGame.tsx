@@ -14,7 +14,7 @@ import { ARTIFACTS, DIG_SITES, ITEM_NAMES, PICKUPS, type Item } from "./gameData
 import { checkRankUp } from "./questLogic";
 import { trackSubject } from "./subjects";
 import { getT } from "../i18n";
-import { Blob } from "./blob";
+import { CharacterLayer } from "./layers";
 
 // ---------------------------------------------------------------- shared helpers
 
@@ -297,11 +297,10 @@ export function Animals() {
     });
   });
   return (
-    <>
+    <CharacterLayer>
       {AGOUTI_SPOTS.map((_, i) => (
         <group key={`a${i}`} ref={(g) => void (agRefs.current[i] = g)}>
           <mesh geometry={ag.geometries[0]} material={ag.material} position={[0, 0.18, 0]} />
-          <Blob size={0.6} />
           <mesh geometry={ag.geometries[1]} material={ag.material} position={[0, 0.24, 0.26]} />
           {[-0.07, 0.07].map((x) =>
             [-0.13, 0.13].map((z) => <mesh key={`${x}${z}`} geometry={ag.geometries[2]} material={ag.material} position={[x, 0.06, z]} />),
@@ -311,14 +310,13 @@ export function Animals() {
       {TURKEY_SPOTS.map((_, i) => (
         <group key={`t${i}`} ref={(g) => void (tkRefs.current[i] = g)}>
           <mesh geometry={tk.geometries[0]} material={tk.material} position={[0, 0.34, 0]} />
-          <Blob size={0.6} />
           <mesh geometry={tk.geometries[1]} material={tk.material} position={[0, 0.55, 0.2]} />
           <mesh geometry={tk.geometries[2]} material={tk.material} position={[0, 0.5, -0.21]} rotation-x={-0.3} />
           <mesh geometry={tk.geometries[3]} material={tk.material} position={[-0.07, 0.08, 0]} />
           <mesh geometry={tk.geometries[3]} material={tk.material} position={[0.07, 0.08, 0]} />
         </group>
       ))}
-    </>
+    </CharacterLayer>
   );
 }
 
@@ -439,7 +437,9 @@ export function BallGame() {
     <>
       <RigidBody ref={ball} colliders={false} position={[COURT.cx, 1.5, COURT.cz]} ccd linearDamping={0.25} angularDamping={0.4}>
         <BallCollider args={[0.2]} restitution={0.8} friction={0.6} density={60} />
-        <mesh geometry={model.geometries[2]} material={model.material} />
+        <CharacterLayer>
+          <mesh geometry={model.geometries[2]} material={model.material} />
+        </CharacterLayer>
       </RigidBody>
       {MARKERS.map(([x, y, z, side], i) => (
         <group key={i} ref={(g) => void (flash.current[i] = g)} position={[x, y, z]} rotation={[0, 0, side * 0.6]}>

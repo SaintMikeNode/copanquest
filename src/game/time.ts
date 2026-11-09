@@ -6,7 +6,7 @@ import { shared } from "../voxel/material";
 export const DAY_SECONDS = 20 * 60;
 
 /** Time of day: 0 = midnight, 0.25 = sunrise, 0.5 = noon, 0.75 = sunset. */
-export const dayClock = { t: 0.34, night: 0, daylight: 1 };
+export const dayClock = { t: 0.35, night: 0, daylight: 1 };
 
 const C = (h: string) => new THREE.Color(h);
 const DAY = { top: C("#4f86e8"), horizon: C("#c3d6f0"), sky: C("#b4cff7"), ground: C("#8f8a6a"), sun: C("#ffe6bf") };
@@ -21,9 +21,12 @@ function blend(a: typeof DAY, b: typeof DAY, k: number, key: keyof typeof DAY, o
   return out.copy(a[key]).lerp(b[key], k);
 }
 
-/** Advance the clock and update every shared light/sky uniform. */
-export function tickDay(dt: number) {
-  dayClock.t = (dayClock.t + dt / DAY_SECONDS) % 1;
+/** Fixed time of day (no cycle): bright morning light with soft, readable shadows. */
+export const FIXED_TIME = 0.35;
+
+/** Update every shared light/sky uniform for the current (fixed) time of day. */
+export function tickDay(_dt: number) {
+  void _dt;
   const a = (dayClock.t - 0.25) * Math.PI * 2;
   // Sun rises in the east (+x), sets in the west (−x); Copán is at 15° N so it passes a little south.
   sunDir.set(Math.cos(a), Math.sin(a), 0.32).normalize();

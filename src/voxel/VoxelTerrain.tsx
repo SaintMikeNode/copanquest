@@ -8,6 +8,7 @@ import type { MeshData } from "./mesher";
 import type { PlantGroup } from "./voxel.worker";
 import { regionStore, voxelPromise, voxelStats } from "./voxelStream";
 import { useQualityLevel } from "../state/useGame";
+import { LAYER_WORLD } from "../game/layers";
 
 function toGeometry(m: MeshData) {
   const g = new THREE.BufferGeometry();
@@ -97,7 +98,7 @@ export function VoxelTerrain() {
   return (
     <group>
       {near.map((g, i) => (
-        <mesh key={`n${i}`} geometry={g} material={material} castShadow receiveShadow />
+        <mesh key={`n${i}`} geometry={g} material={material} castShadow receiveShadow layers-mask={1 | (1 << LAYER_WORLD)} />
       ))}
       {far.map((g, i) => (
         <mesh key={`f${i}`} geometry={g} material={material} receiveShadow />

@@ -73,7 +73,7 @@ Everything feeds **XP** and four **ranks** (`src/state/progress.ts`): Turista �
 - **Digging:** hold to dig at staked squares. Each square gives an artifact with a fact (Copador pottery, Ixtepeque obsidian, shell bead, spindle whorl, greenstone axe), which goes to the journal's **museum**.
 - **Ballgame:** a physics rubber ball, a hip-bump action, and six macaw-head markers on the sloped walls.
 - **Time lens** (⏳ / T): blends the world toward Copán around AD 800 in the shaders. Stone becomes red-painted stucco, plazas and terrace tops become cream plaster, wild plants fade from the city core, and ancient townspeople fill the plazas while today's tourists disappear (`src/game/lens.ts`).
-- **Day and night** (`src/game/time.ts`): a 20-minute day with the sun rising east and setting west, a little to the south (15° N). Sunset colors, then stars, Venus and moonlight, and fireflies at night. A HUD chip shows **today's real date in the Maya calendar** (Long Count, Tzolk'in, Haab'; GMT correlation 584283, checked against 21 Dec 2012 = 13.0.0.0.0 4 Ajaw 3 K'ank'in).
+- **Fixed time of day** (`src/game/time.ts`, `FIXED_TIME`): a bright morning with readable shadows. The night code (stars, Venus, fireflies) is still there; `cqTime()` previews it. A HUD chip shows **today's real date in the Maya calendar** (Long Count, Tzolk'in, Haab'; GMT correlation 584283, checked against 21 Dec 2012 = 13.0.0.0.0 4 Ajaw 3 K'ank'in).
 - **Rosalila:**
   - A torch-lit tunnel from Temple 16's east face, near the tunnel entrances in OpenStreetMap, leads to a chamber with Rosalila inside.
   - The chamber has corridors around the temple, and you come out at its painted west front.
@@ -185,7 +185,9 @@ For Blender: import the PNG as a Displace texture on a 3000 m plane subdivided 1
 
 - The menu loads first (~74 kB gzip). The 3D engine chunk is fetched while the player reads it.
 - `dpr` is `[1, 1.5]` on High and `[0.75, 1]` on Low. drei's `PerformanceMonitor` drives the *Auto* setting; it ignores the first 4 s to avoid the shader-compile hitch.
-- **Cached ("baked on demand") sun shadows** work at every quality level. The world is static, so the shadow map (2048 on High, 1024 on Low) is only redrawn when the player moves more than 8 m or every ~2 s as the sun moves, not every frame. Characters, animals and pickups don't cast into it; they use soft blob shadows.
+- **Shadows on every device, split between two shadow maps by render layer** (`src/game/layers.tsx`):
+  - **World (layer 2):** scenery and monuments. The time of day is fixed, so this map is effectively baked. It is redrawn only when the player has moved about 10 m (2048 on High, 1024 on Low).
+  - **Characters (layer 1):** the player, people, animals and the ball. A small 16 m map follows the player and is redrawn every frame (1024 / 512). It's cheap because it only contains a handful of meshes.
 - The voxel world is greedy-meshed in a Web Worker and grouped into regions (one draw call each). The POI markers and clouds are one InstancedMesh each.
 - Physics runs at a fixed 60 Hz with interpolation. A variable timestep launched the floating character into the sky after the first long frame.
 

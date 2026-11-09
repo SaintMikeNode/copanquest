@@ -9,7 +9,7 @@ import { playerState } from "../player/playerState";
 import { useGame } from "../state/useGame";
 import { trackSubject } from "../game/subjects";
 import { lensMix } from "../game/lens";
-import { Blob } from "../game/blob";
+import { CharacterLayer } from "../game/layers";
 
 const DRAW_DIST = 95;
 const TALK_DIST = 2.8;
@@ -49,9 +49,9 @@ function Person({
 }) {
   const r = useMemo(() => personRig(outfit), [outfit]);
   return (
+    <CharacterLayer>
     <group ref={root}>
       <mesh geometry={r.body} material={r.material} />
-      <Blob size={0.85} />
       <group ref={(g) => void (limbs.current.legL = g)} position={[-r.legX, r.hip, 0]}>
         <mesh geometry={r.legL} material={r.material} />
       </group>
@@ -65,6 +65,7 @@ function Person({
         <mesh geometry={r.armR} material={r.material} />
       </group>
     </group>
+    </CharacterLayer>
   );
 }
 
@@ -309,6 +310,7 @@ function Jaguar({ index }: { index: number }) {
       <RigidBody ref={body} type="kinematicPosition" colliders={false} position={[cx, -50, cz]}>
         <CuboidCollider args={[0.25, 0.45, 0.75]} position={[0, 0.5, 0]} />
       </RigidBody>
+      <CharacterLayer>
       <group ref={root}>
         <group ref={torso}>
           <mesh geometry={rig.body} material={rig.material} />
@@ -316,13 +318,13 @@ function Jaguar({ index }: { index: number }) {
             <mesh geometry={rig.tail} material={rig.material} />
           </group>
         </group>
-        <Blob size={1.5} />
         {legPos.map((lp, i) => (
           <group key={i} ref={(g) => void (legs.current[i] = g)} position={lp}>
             <mesh geometry={rig.leg} material={rig.material} />
           </group>
         ))}
       </group>
+      </CharacterLayer>
     </>
   );
 }

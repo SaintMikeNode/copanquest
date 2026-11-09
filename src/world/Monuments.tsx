@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { buildGreybox } from "./buildGreybox";
 import { buildMonument } from "../voxel/monumentArt";
 import { createMonumentMaterial } from "../voxel/material";
+import { LAYER_WORLD } from "../game/layers";
 
 /** Stelae and altars as carved pixel-art blocks (same 32 px/m density as the world). */
 export function Monuments() {
@@ -22,6 +23,7 @@ export function Monuments() {
           material={material}
           position={m.position}
           rotation-y={m.rotY}
+          layers-mask={1 | (1 << LAYER_WORLD)}
           castShadow
           receiveShadow
         />
