@@ -1,0 +1,25 @@
+Maya calendar day signs (tzolk'in), from Wikimedia Commons:
+
+d01-imix.svg — Bluebalam — CC BY-SA 4.0 — https://commons.wikimedia.org/wiki/File:MAYA-g-log-cal-D01-Imix.svg
+d02-ik.svg — Bluebalam — CC BY-SA 4.0 — https://commons.wikimedia.org/wiki/File:MAYA-g-log-cal-D02-Ik.svg
+d03-akbal.svg — Bluebalam — CC BY-SA 4.0 — https://commons.wikimedia.org/wiki/File:MAYA-g-log-cal-D03-Akbal.svg
+d04-kan.svg — Bluebalam — CC BY-SA 4.0 — https://commons.wikimedia.org/wiki/File:MAYA-g-log-cal-D04-Kan.svg
+d05-chikchan.svg — Bluebalam — CC BY-SA 4.0 — https://commons.wikimedia.org/wiki/File:MAYA-g-log-cal-D05-Chikchan.svg
+d06-kimi.svg — Bluebalam — CC BY-SA 4.0 — https://commons.wikimedia.org/wiki/File:MAYA-g-log-cal-D06-Kimi.svg
+d07-manik.svg — Bluebalam — CC BY-SA 4.0 — https://commons.wikimedia.org/wiki/File:MAYA-g-log-cal-D07-Manik.svg
+d08-lamat.svg — Bluebalam — CC BY-SA 4.0 — https://commons.wikimedia.org/wiki/File:MAYA-g-log-cal-D08-Lamat.svg
+d09-muluk.svg — Bluebalam — CC BY-SA 4.0 — https://commons.wikimedia.org/wiki/File:MAYA-g-log-cal-D09-Muluk.svg
+d10-ok.svg — Original: CJLL Wright Vector:  ExtendedPartition — CC BY 2.5 — https://commons.wikimedia.org/wiki/File:MAYA-g-log-cal-D10-Ok.svg
+d11-chuwen.svg — Bluebalam — CC BY-SA 4.0 — https://commons.wikimedia.org/wiki/File:MAYA-g-log-cal-D11-Chuwen.svg
+d12-eb.svg — Bluebalam — CC BY-SA 4.0 — https://commons.wikimedia.org/wiki/File:MAYA-g-log-cal-D12-Eb.svg
+d13-ben.svg — Bluebalam — CC BY-SA 4.0 — https://commons.wikimedia.org/wiki/File:MAYA-g-log-cal-D13-Ben.svg
+d14-ix.svg — Bluebalam — CC BY-SA 4.0 — https://commons.wikimedia.org/wiki/File:MAYA-g-log-cal-D14-Ix.svg
+d15-men.svg — Bluebalam — CC BY-SA 4.0 — https://commons.wikimedia.org/wiki/File:MAYA-g-log-cal-D15-Men.svg
+d16-kib.svg — Bluebalam — CC BY-SA 4.0 — https://commons.wikimedia.org/wiki/File:MAYA-g-log-cal-D16-Kib.svg
+d17-kaban.svg — Bluebalam — CC BY-SA 4.0 — https://commons.wikimedia.org/wiki/File:MAYA-g-log-cal-D17-Kaban.svg
+d18-etznab.svg — Bluebalam — CC BY-SA 4.0 — https://commons.wikimedia.org/wiki/File:MAYA-g-log-cal-D18-Etznab.svg
+d19-kawak.svg — Bluebalam — CC BY-SA 4.0 — https://commons.wikimedia.org/wiki/File:MAYA-g-log-cal-D19-Kawak.svg
+d20-ajaw.svg — Bluebalam — CC BY-SA 4.0 — https://commons.wikimedia.org/wiki/File:MAYA-g-log-cal-D20-Ajaw.svg
+
+The menu and loading screens draw these signs as pixel art (an adaptation, src/ui/MayaBackground.tsx);
+the adapted images are shared under the same licenses.

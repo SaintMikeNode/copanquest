@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useL10n, useT } from "../i18n";
 import { POIS } from "../poi/poiData";
+import { MayaBackground } from "./MayaBackground";
 
 /**
  * Full-screen loader with a progress bar and rotating facts. `done` fades it out;
@@ -25,6 +26,7 @@ export function LoadingScreen({ progress, done = false }: { progress: number; do
   const pct = Math.round(Math.max(0.03, Math.min(1, progress)) * 100);
   return (
     <div className={done ? "loader loader-done" : "loader"} role="status" aria-live="polite">
+      <MayaBackground />
       <div className="loader-card">
         <img src="/favicon.svg" alt="" width={64} height={64} className="loader-logo" />
         <h1>{t("title")}</h1>

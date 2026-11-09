@@ -53,10 +53,25 @@ button { font: inherit; cursor: pointer; }
 
 /* ---------- Menu ---------- */
 .menu {
-  position: fixed; inset: 0; display: grid; place-items: center; padding: 16px;
-  background: linear-gradient(180deg, #bcd9ea 0%, #f1d9a6 62%, #6f8f4a 62.2%, #4f7a3a 100%);
+  position: fixed; inset: 0; display: grid; place-items: center; padding: 56px 16px;
 }
-.menu-lang { position: absolute; top: max(12px, env(safe-area-inset-top)); right: 12px; }
+.menu-lang { position: absolute; z-index: 1; top: calc(max(0px, env(safe-area-inset-top)) + 52px); right: 12px; }
+
+/* Menu + loading background (src/ui/MayaBackground.tsx): jade shimmer, carved day signs, step frets. */
+.maya-bg { position: absolute; inset: 0; overflow: hidden; z-index: 0; pointer-events: none;
+  background: radial-gradient(120% 90% at 50% 45%, #1d4a36 0%, #133528 55%, #0b2219 100%); }
+.maya-bg-blast { position: absolute !important; inset: 0; opacity: .55; }
+.maya-bg-glyphs { position: absolute; left: calc(-1 * var(--tw)); top: calc(-1 * var(--th)); right: 0; bottom: 0;
+  background-repeat: repeat; image-rendering: pixelated; opacity: .3; will-change: transform;
+  animation: maya-drift 120s linear infinite; }
+@keyframes maya-drift { to { transform: translate(var(--tw), var(--th)); } }
+.maya-bg-vignette { position: absolute; inset: 0; background: radial-gradient(70% 60% at 50% 50%, transparent 40%, rgba(4,14,10,.55) 100%); }
+.maya-bg-fret { position: absolute; left: 0; right: 0; height: 44px; background-repeat: repeat-x; background-size: 64px 44px;
+  image-rendering: pixelated; box-shadow: 0 0 0 1px #2a170b, 0 6px 14px rgba(0,0,0,.35); }
+.maya-bg-fret-top { top: 0; transform: scaleY(-1); }
+.maya-bg-fret-bottom { bottom: 0; }
+.menu-card, .loader-card { z-index: 1; }
+@media (prefers-reduced-motion: reduce) { .maya-bg-glyphs { animation: none; } }
 .menu-card { max-width: 420px; width: 100%; text-align: center; padding: 22px 20px; }
 .menu-card h1 { margin: 8px 0 4px; font-size: 2.4rem; color: var(--red); letter-spacing: .5px; text-shadow: 3px 3px 0 #e2c48f; }
 .menu-card p { margin: 0 0 20px; line-height: 1.45; }
@@ -168,8 +183,8 @@ button { font: inherit; cursor: pointer; }
 
 /* ---------- Loading screen ---------- */
 .loader {
-  position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 16px;
-  background: linear-gradient(180deg, #93b4ee 0%, #cdd6f2 55%, #4f9a3c 55.3%, #3b7d2e 100%);
+  position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 56px 16px;
+  background: #133528;
   transition: opacity .6s ease; image-rendering: pixelated;
 }
 .loader-done { opacity: 0; pointer-events: none; }

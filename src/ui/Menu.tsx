@@ -1,4 +1,5 @@
 import { useGame } from "../state/useGame";
+import { MayaBackground } from "./MayaBackground";
 import { useT } from "../i18n";
 import { LangToggle } from "./LangToggle";
 import { Overlay } from "./Overlay";
@@ -12,6 +13,7 @@ export function Menu() {
   const setOverlay = useGame((s) => s.setOverlay);
   return (
     <main className="menu">
+      <MayaBackground />
       <div className="menu-lang">
         <LangToggle />
       </div>

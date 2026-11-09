@@ -24,6 +24,15 @@ export const CREDITS: { heading: Key; items: CreditItem[] }[] = [
         license: "ODbL 1.0",
       },
       {
+        title: "Maya day signs (tzolk'in) — menu and loading background",
+        url: "https://commons.wikimedia.org/wiki/File:MAYA-g-log-cal-D20-Ajaw.svg",
+        credit: {
+          es: "Bluebalam (19 signos; Ok: original de CJLL Wright, vector de ExtendedPartition), Wikimedia Commons. Adaptados a pixel art.",
+          en: "Bluebalam (19 signs; Ok: original by CJLL Wright, vector by ExtendedPartition), Wikimedia Commons. Adapted to pixel art.",
+        },
+        license: "CC BY-SA 4.0 (Ok: CC BY 2.5)",
+      },
+      {
         title: "Pixelify Sans (font)",
         url: "https://github.com/eifetx/Pixelify-Sans",
         credit: "The Pixelify Sans Project Authors",
@@ -91,6 +100,7 @@ export const CREDITS: { heading: Key; items: CreditItem[] }[] = [
       { title: "Rapier (Dimforge)", url: "https://rapier.rs", license: "Apache-2.0" },
       { title: "React", url: "https://react.dev", license: "MIT" },
       { title: "zustand", url: "https://github.com/pmndrs/zustand", license: "MIT" },
+      { title: "PixelBlast (React Bits, David Haz)", url: "https://reactbits.dev/backgrounds/pixel-blast", license: "MIT + Commons Clause" },
     ],
   },
 ];

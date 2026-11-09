@@ -268,6 +268,8 @@ The in-game **Créditos** screen (`src/ui/creditsData.ts`) must stay in sync wit
 - A. P. Maudslay, *Biologia Centrali-Americana: Archaeology* (1889–1902), **public domain**: https://biodiversitylibrary.org/item/106393
 - OpenStreetMap data (structure and monument positions): © OpenStreetMap contributors, **ODbL 1.0**
 - Pixelify Sans font by The Pixelify Sans Project Authors, **SIL OFL 1.1** (bundled via `@fontsource/pixelify-sans`): https://github.com/eifetx/Pixelify-Sans
+- Maya day signs (tzolk'in) for the menu and loading background, from Wikimedia Commons: 19 signs by **Bluebalam**, **CC BY-SA 4.0**; Ok by CJLL Wright (vector by ExtendedPartition), **CC BY 2.5**. Kept as SVGs in `public/glyphs/` (per-file list in `public/glyphs/LICENSE.txt`) and drawn as pixel art at runtime by `src/ui/MayaBackground.tsx`; the adapted images are under the same licences.
+- **PixelBlast** background from React Bits by David Haz, **MIT + Commons Clause** (copyright notice kept in `src/components/PixelBlast/PixelBlast.jsx`): https://reactbits.dev/backgrounds/pixel-blast. Added by hand instead of `npx shadcn add` (the project has no shadcn/Tailwind setup); one change: the canvas is created per effect run so it survives React StrictMode.
 - Fact sources for the info cards: Wikipedia (CC BY-SA), Penn Museum *Expedition*, mayaruins.com, Uncovered History, ahutnick.github.io/copanaltarqkings, Mesoweb, Asociación Copán, and Sugiyama et al. 2018 (*PLOS ONE*). See `src/ui/creditsData.ts`.
 
 **Reference only (copyrighted; not redistributed)**
