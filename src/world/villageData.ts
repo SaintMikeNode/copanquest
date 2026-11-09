@@ -207,7 +207,7 @@ export const JADES: { id: string; at: [number, number]; mound?: string }[] = [
   { id: "j-temple22", at: [106, 232], mound: "temple22" },
   { id: "j-temple16", at: [72, 330], mound: "temple16" },
   { id: "j-temple26", at: [90, 204], mound: "temple26" },
-  { id: "j-str10", at: [33, 169], mound: "str10" },
+  { id: "j-str10", at: [56, 177], mound: "str10" },
   { id: "j-temple11", at: [-2, 262], mound: "temple11" },
   { id: "j-str4", at: [-5, 65.5], mound: "str4" },
   { id: "j-west-stands", at: [-72, 0], mound: "str1-west" },

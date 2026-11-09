@@ -17,11 +17,11 @@ export const ITEM_NAMES: Record<Item, L10n> = {
 /** Things lying around the world. y is found by raycast at runtime. */
 export const PICKUPS: { id: string; item: Item; at: [number, number] }[] = [
   // Cacao pods under the fruit trees by the houses
-  ...([[-64.5, 127], [-67.5, 129.5], [-62.5, 135], [-65.5, 137.5], [-68.5, 145], [-71.5, 147.5]] as [number, number][]).map(
+  ...([[-71.5, 122.5], [-68.5, 121.5], [-70.5, 157.5], [-67.5, 154.5], [-69.5, 143.5], [-67.5, 148.5]] as [number, number][]).map(
     (at, i) => ({ id: `cacao-${i}`, item: "cacao" as const, at }),
   ),
   // Indigo shrubs along the field edges
-  ...([[-102, 168], [-96, 169.5], [-74, 169], [-64, 160], [-108, 194]] as [number, number][]).map((at, i) => ({
+  ...([[-102, 168], [-96, 169.5], [-74, 169], [-68, 166], [-108, 194]] as [number, number][]).map((at, i) => ({
     id: `anil-${i}`,
     item: "anil" as const,
     at,

@@ -202,7 +202,7 @@ interface Critter {
 
 const AGOUTI_SPOTS: [number, number][] = [
   [-40, 100],
-  [30, 120],
+  [8, 125],
   [-50, 30],
   [60, 20],
   [-20, 185],
@@ -351,15 +351,16 @@ export function finishDig(siteId: string) {
 
 // ---------------------------------------------------------------- ballgame
 
-const COURT = { minX: 17, maxX: 27, minZ: 150, maxZ: 190, cx: 22, cz: 169 };
+/** Ball Court A-III: alley axis x 36.8, z 152–181 (see siteData.ts). */
+const COURT = { minX: 31.8, maxX: 41.8, minZ: 147.4, maxZ: 185.4, cx: 36.8, cz: 166.4 };
 /** Macaw-head markers on the sloped walls (x, y, z, facing +1 = east-facing wall side). */
 const MARKERS: [number, number, number, number][] = [
-  [17.6, 1.6, 161, 1],
-  [17.6, 1.6, 169, 1],
-  [17.6, 1.6, 177, 1],
-  [26.4, 1.6, 161, -1],
-  [26.4, 1.6, 169, -1],
-  [26.4, 1.6, 177, -1],
+  [30.2, 1.6, 158.4, 1],
+  [30.2, 1.6, 166.4, 1],
+  [30.2, 1.6, 174.4, 1],
+  [43.4, 1.6, 158.4, -1],
+  [43.4, 1.6, 166.4, -1],
+  [43.4, 1.6, 174.4, -1],
 ];
 
 function macawHeadModel() {

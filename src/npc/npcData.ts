@@ -140,7 +140,7 @@ export const TALKERS: Talker[] = [
   {
     id: "ballplayer",
     name: { es: "Hun, jugador de pelota", en: "Hun, ballplayer" },
-    home: [22, 150],
+    home: [36.8, 148],
     wander: 3,
     outfit: { skin: SKIN[2], hair: "#1d1410", top: "#8a5a3a", accent: "#c0392b", bottom: "#f2ede0", head: "headband" },
     lines: [

@@ -91,15 +91,14 @@ export interface Block {
 }
 
 /**
- * Ruined two-room building on top of a ball-court structure: thick walls, a doorway into each
- * room on the alley side. x0..x1, z0..z1 = outer footprint; y = floor; alleyX = the side the
- * doors face. Walls 1 m thick, 2.5 m tall before erosion (est.).
+ * Ruined room building on top of a ball-court structure: thick walls, a row of rooms along the
+ * alley, each with a doorway on the alley side. x0..x1, z0..z1 = outer footprint; y = floor.
+ * Walls 1 m thick, 2.5 m tall before erosion (est.).
  */
-function ballcourtRooms(id: string, x0: number, x1: number, z0: number, z1: number, y: number, doorsEast: boolean): Block[] {
+function ballcourtRooms(id: string, x0: number, x1: number, z0: number, z1: number, y: number, doorsEast: boolean, rooms = 3): Block[] {
   const h = 2.5;
   const t = 1;
   const cy = y + h / 2;
-  const zm = (z0 + z1) / 2;
   const wall = (k: string, ax: number, bx: number, az: number, bz: number): Block => ({
     id: `${id}-${k}`,
     position: [(ax + bx) / 2, cy, (az + bz) / 2],
@@ -111,18 +110,20 @@ function ballcourtRooms(id: string, x0: number, x1: number, z0: number, z1: numb
   const back = doorsEast ? [x0, x0 + t] : [x1 - t, x1];
   const front = doorsEast ? [x1 - t, x1] : [x0, x0 + t];
   const door = 1.5;
-  const d1 = (z0 + zm) / 2;
-  const d2 = (zm + z1) / 2;
-  return [
-    wall("back", back[0], back[1], z0, z1),
-    wall("end-n", x0, x1, z0, z0 + t),
-    wall("end-s", x0, x1, z1 - t, z1),
-    wall("mid", x0, x1, zm - t / 2, zm + t / 2),
-    wall("front-a", front[0], front[1], z0 + t, d1 - door / 2),
-    wall("front-b", front[0], front[1], d1 + door / 2, zm - t / 2),
-    wall("front-c", front[0], front[1], zm + t / 2, d2 - door / 2),
-    wall("front-d", front[0], front[1], d2 + door / 2, z1 - t),
-  ];
+  const out: Block[] = [wall("back", back[0], back[1], z0, z1)];
+  const step = (z1 - z0) / rooms;
+  for (let k = 0; k <= rooms; k++) {
+    const z = Math.min(z1 - t, Math.max(z0, z0 + k * step - t / 2));
+    out.push(wall(`cross-${k}`, x0, x1, z, z + t));
+  }
+  for (let k = 0; k < rooms; k++) {
+    const a = z0 + k * step + t / 2;
+    const b = z0 + (k + 1) * step - t / 2;
+    const m = (a + b) / 2;
+    out.push(wall(`front-${k}a`, front[0], front[1], a, m - door / 2));
+    out.push(wall(`front-${k}b`, front[0], front[1], m + door / 2, b));
+  }
+  return out;
 }
 
 /** Dirt paths (present-day visitor trails, laid out for the game). y = approximate surface. */
@@ -218,44 +219,44 @@ export const MOUNDS: Mound[] = [
     material: "stone",
   },
 
-  // ---------- Ball Court A-III (alley 28.4 × 7 m, north–south, centered x = 22) ----------
+  // ---------- Ball Court A-III (alley 28.4 × 7 m, north–south, axis x = 36.8) ----------
+  // Measured on clear dry-season satellite imagery (Esri World Imagery, Wayback 2024-03-28):
+  // alley x 33.6–40, z 152–181; Structure 9 x 6–34 (sloped playing wall x 26–34, rooms
+  // x 10–25); Structure 10 x 40–63 (slope x 40–47.5, rooms x 47.5–62.5). Stela 1 stands at
+  // Structure 9's west face; Stela 2's platform is on the alley's axis. Heights est.
   {
     id: "str9",
     name: { es: "Estructura 9 (Juego de Pelota)", en: "Structure 9 (Ball Court)" },
-    center: [11, 169],
-    size: [8, 30],
+    center: [16.15, 166.4],
+    size: [20.3, 28],
     tiers: 1,
     tierHeight: 3,
     setback: 1,
     // Stairs up the south end from the Court of the Hieroglyphic Stairway (seen in photos from
-    // Temple 11). The ruined room building on top sits on the north part (BLOCKS below).
-    // Plus outer stairs up to the rooms on the north part (west side; Stela 1 stands south of them).
+    // Temple 11), and up the outer (west) side north of Stela 1. Room ruins on top (BLOCKS).
     stairs: [{ face: "s", width: 6, run: 3 }, { face: "w", width: 10, offset: 8, run: 3 }],
     material: "stone",
   },
   {
     id: "str10",
     name: { es: "Estructura 10 (Juego de Pelota)", en: "Structure 10 (Ball Court)" },
-    center: [33, 169],
-    size: [8, 30],
+    center: [55.25, 166.4],
+    size: [15.5, 28],
     tiers: 1,
     tierHeight: 3,
     setback: 1,
-    // Stairs up the south end from the Court of the Hieroglyphic Stairway (seen in photos from
-    // Temple 11). The ruined room building on top sits on the north part (BLOCKS below).
-    // Plus outer stairs up to the rooms on the north part (east side).
+    // Stairs up the south end and up the outer (east) side. Room ruins on top (BLOCKS).
     stairs: [{ face: "s", width: 6, run: 3 }, { face: "e", width: 10, offset: -8, run: 3 }],
     material: "stone",
   },
 
-  // Stepped platform at the north end of the ball court, crowned by Stela 2 with Altar L
-  // (Mesoweb Copán tour; FLAAR). Footprint from the OSM outlines (ways 384158423 and 384552931:
-  // x 24–50, z 121–139, upper level x 27–50, z 124–136). It lies east of the alley's axis; from
-  // Temple 11 (the classic photo viewpoint) it appears right behind the court. Height est.
+  // Stepped platform closing the north end of the ball court, on the alley's axis, crowned by
+  // Stela 2 with Altar L (Mesoweb Copán tour; FLAAR; photos from the south). Footprint from the
+  // OSM outlines (ways 384158423, 384552931: x 24–50, z 121–139) and the imagery. Height est.
   {
     id: "ballcourt-north",
     name: { es: "Plataforma norte del Juego de Pelota", en: "Ball Court north platform" },
-    center: [37, 130],
+    center: [36.8, 130],
     size: [26, 18],
     tiers: 2,
     tierHeight: 1.25,
@@ -263,9 +264,8 @@ export const MOUNDS: Mound[] = [
     stairs: [{ face: "s", width: 18, run: 3 }],
     material: "stone",
   },
-  // Raised terrace east of the ball court that runs south to the base of Temple 26: the stepped
-  // terrace beside Structure 10 in photos from the south. Footprint from OSM way 384158423
-  // (x 50–66, z 121–154 and x 44.5–67, z 154–183.5). Heights est.
+  // Raised area northeast of the ball court, part of the platform complex that runs south to
+  // Temple 26 (OSM way 384158423: x 50–66, z 121–154). Heights est.
   {
     id: "ballcourt-ne",
     center: [58, 137.5],
@@ -273,16 +273,6 @@ export const MOUNDS: Mound[] = [
     tiers: 2,
     tierHeight: 1.5,
     setback: 1.5,
-    material: "stone",
-  },
-  {
-    id: "ballcourt-east",
-    center: [55.75, 168.75],
-    size: [22.5, 29.5],
-    tiers: 1,
-    tierHeight: 3,
-    setback: 1,
-    stairs: [{ face: "w", width: 18, run: 3 }],
     material: "stone",
   },
 
@@ -466,31 +456,30 @@ export const MOUNDS: Mound[] = [
 ];
 
 export const BLOCKS: Block[] = [
-  // Ball court: ruined room buildings on the north part of Structures 9 and 10 (photos from the
-  // south show them there; the south part of each top is open).
-  ...ballcourtRooms("str9-rooms", 8, 14, 155, 167, 3, true),
-  ...ballcourtRooms("str10-rooms", 30, 36, 155, 167, 3, false),
-  // Ball court: sloped playing walls on both sides of the alley (x 18.5–25.5)
+  // Ball court: ruined room buildings on Structures 9 and 10 (rows of rooms in the imagery).
+  ...ballcourtRooms("str9-rooms", 10, 25, 157.5, 176, 3, true),
+  ...ballcourtRooms("str10-rooms", 47.5, 62.5, 153.5, 174, 3, false),
+  // Ball court: sloped playing walls from the alley edges (x 33.6 / 40) up to the structures.
   {
     id: "ballcourt-slope-w",
-    position: [16.9, 1.3, 169],
-    size: [4.4, 0.6, 28],
-    rotation: [0, 0, -0.6],
+    position: [29.95, 1.5, 166.4],
+    size: [7.9, 0.6, 28],
+    rotation: [0, 0, -0.39],
     material: "stone",
     collider: true,
   },
   {
     id: "ballcourt-slope-e",
-    position: [27.1, 1.3, 169],
-    size: [4.4, 0.6, 28],
-    rotation: [0, 0, 0.6],
+    position: [43.75, 1.5, 166.4],
+    size: [7.9, 0.6, 28],
+    rotation: [0, 0, 0.39],
     material: "stone",
     collider: true,
   },
-  { id: "ballcourt-alley", position: [22, 0, 169], size: [7, 0, 28.4], material: "sand" },
-  { id: "ballcourt-marker-n", position: [22, 0, 159], size: [1.5, 0, 1.5], material: "stone" },
-  { id: "ballcourt-marker-c", position: [22, 0, 169], size: [1.5, 0, 1.5], material: "stone" },
-  { id: "ballcourt-marker-s", position: [22, 0, 179], size: [1.5, 0, 1.5], material: "stone" },
+  { id: "ballcourt-alley", position: [36.8, 0, 166.4], size: [6.4, 0, 28.4], material: "sand" },
+  { id: "ballcourt-marker-n", position: [36.8, 0, 156.4], size: [1.5, 0, 1.5], material: "stone" },
+  { id: "ballcourt-marker-c", position: [36.8, 0, 166.4], size: [1.5, 0, 1.5], material: "stone" },
+  { id: "ballcourt-marker-s", position: [36.8, 0, 176.4], size: [1.5, 0, 1.5], material: "stone" },
 
   // Sacbe (causeway) toward Las Sepulturas, ~800 m east (OSM) — leads off the playable area
   { id: "sacbe", position: [176, 0, 15], size: [50, 0, 8], rotation: [0, 0.187, 0], material: "gravel" },
@@ -527,7 +516,7 @@ export const PATHS: PathLine[] = [
 export const OPEN_AREAS: [number, number, number, number][] = [
   [-50, -24, 44, 62], // Great Plaza
   [-40, 78, 44, 148], // Middle plaza
-  [4, 150, 40, 190], // Ball court
+  [4, 148, 66, 186], // Ball court
   [-28, 186, 58, 232], // Court of the Hieroglyphic Stairway
   [-24, 286, 50, 350], // West Court
   [90, 250, 140, 320], // East Court
@@ -603,7 +592,7 @@ export const ROSALILA = {
 export const MAP_LABELS: { position: [number, number]; text: L10n }[] = [
   { position: [-5, 5], text: { es: "Gran Plaza", en: "Great Plaza" } },
   { position: [-140, 74], text: { es: "Entrada", en: "Entrance" } },
-  { position: [22, 145], text: { es: "Juego de Pelota", en: "Ball Court" } },
+  { position: [36.8, 146], text: { es: "Juego de Pelota", en: "Ball Court" } },
   { position: [12, 196], text: { es: "Escalinata", en: "Stairway" } },
   { position: [13, 305], text: { es: "Patio Occ.", en: "West Court" } },
   { position: [116, 300], text: { es: "Patio Or.", en: "East Court" } },

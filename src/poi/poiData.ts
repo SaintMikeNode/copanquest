@@ -116,7 +116,7 @@ export const POIS: Poi[] = [
   },
   {
     id: "ballcourt",
-    position: [22, 169],
+    position: [36.8, 166.4],
     radius: 14,
     markerHeight: 9,
     title: { es: "Juego de Pelota A-III", en: "Ball Court A-III" },
