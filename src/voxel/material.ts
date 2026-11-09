@@ -330,9 +330,16 @@ const monumentVertex = /* glsl */ `
   varying vec3 vWorld;
   void main() {
     vUv = uv;
-    vNormal = normalize(mat3(modelMatrix) * normal);
+    // InstancedMesh support (three.js defines USE_INSTANCING and instanceMatrix): many animals,
+    // one draw call per body part.
+    #ifdef USE_INSTANCING
+      mat4 model = modelMatrix * instanceMatrix;
+    #else
+      mat4 model = modelMatrix;
+    #endif
+    vNormal = normalize(mat3(model) * normal);
     vec3 transformedNormal = normalMatrix * normal;
-    vec4 worldPosition = modelMatrix * vec4(position, 1.0);
+    vec4 worldPosition = model * vec4(position, 1.0);
     vec4 mvPosition = viewMatrix * worldPosition;
     ${shadowVertex}
     vWorld = worldPosition.xyz;

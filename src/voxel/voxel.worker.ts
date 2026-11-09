@@ -6,7 +6,7 @@ import { buildGreybox } from "../world/buildGreybox";
 import type { TerrainGrid } from "../world/terrainData";
 import { VoxelWorld } from "./voxelWorld";
 import { meshFarTerrain, meshVoxelWorld, type MeshData } from "./mesher";
-import { paintPaths, placeBenches, plantBushes, plantTrees, scatterFragments, scatterPlants } from "./decorate";
+import { paintPaths, placeBenches, plantBushes, plantTrees, scatterFragments, scatterPlants, treePerches } from "./decorate";
 import { buildVillage } from "./village";
 
 export interface VoxelRequest {
@@ -23,6 +23,8 @@ export interface VoxelBase {
   plants: PlantGroup[];
   /** Decoration colliders [x, y, z, hx, hy, hz]… (trees, bushes, village). */
   colliders: Float32Array;
+  /** Canopy-top perches [x, y, z, tree index]… (capuchin monkeys). */
+  perches: Float32Array;
 }
 export type VoxelMessage =
   | { type: "base"; base: VoxelBase }
@@ -54,11 +56,13 @@ self.onmessage = (e: MessageEvent<VoxelRequest>) => {
   const plants = scatterPlants(world, crops);
   const far = meshFarTerrain(grid, world, farExtent);
   const colliders = new Float32Array(world.colliders);
+  const perches = treePerches(world);
   let triangles = far.reduce((n, m) => n + m.index.length / 3, 0);
-  post({ type: "base", base: { far, plants, colliders } }, [
+  post({ type: "base", base: { far, plants, colliders, perches } }, [
     ...far.flatMap(buffers),
     ...plants.map((p) => p.data.buffer),
     colliders.buffer,
+    perches.buffer,
   ]);
   let nearTriangles = 0;
   let ready = false;

@@ -21,7 +21,8 @@ Live at https://copanquest.todosenlaweb.com (Worker `copanquest`, repo `SaintMik
 the user says so in that moment. `cloudflare.config.ts` holds the Worker name, domain and SPA fallback.
 Builds go through the Cloudflare Vite plugin (v2 beta, required by `cf` for Vite projects): output is
 `.cloudflare/output/v0/` (assets in `workers/default/assets/`), not `dist/`. `npm run preview` serves it
-in the local Workers runtime. Manual fallback deploy: `npm run deploy` (needs `npx cf auth login`).
+in the local Workers runtime, which snapshots the build when it starts: **restart the preview after every
+build**, or the page asks for new script files the server doesn't know and the game stays blank. Manual fallback deploy: `npm run deploy` (needs `npx cf auth login`).
 
 ## Layout
 

@@ -60,6 +60,7 @@ export const CREDITS: { heading: Key; items: CreditItem[] }[] = [
       { title: "Mesoweb — Copán tour", url: "https://www.mesoweb.com/copan/tour/08.html" },
       { title: "Aoyama (1999), obsidiana de Ixtepeque en Copán — Mesoweb", url: "https://www.mesoweb.com/Simposio/pdf/12/Aoyama.1999.pdf" },
       { title: "Alfaro Moisa (2011), cerámica polícroma Copador en El Salvador", url: "https://antharky.ucalgary.ca/caadb/sites/antharky.ucalgary.ca.caadb/files/_Moisa_2011_Cer__mica_pol__croma_Copador_en_El_Salvador__An__lisis_de_los_contextos_de_Tazumal__San_Andr__s_y_Joya_de_Cer__n.pdf" },
+      { title: "Neotropical Primates (2020): Cebus imitator en Honduras", url: "https://primate.socgen.ucla.edu/index.php/multivitaminic/article/view/79" },
       { title: "Webster & Freter (1990), Latin American Antiquity", url: "https://www.cambridge.org/core/journals/latin-american-antiquity/article/settlement-history-and-the-classic-collapse-at-copan-a-redefined-chronological-perspective/064579A73D12BC3BA7FDB6EE7763A827" },
     ],
   },

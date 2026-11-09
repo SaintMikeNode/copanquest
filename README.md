@@ -60,6 +60,8 @@ Dev tools: `npm run dev` or `?debug` in the URL enables the collider view. `F3` 
 - **Trails skip the ball court:** from the entrance the trail runs down the west side of the middle plaza and passes west of the ball court; a spur crosses the Court of the Hieroglyphic Stairway to its foot.
 - **People you can talk to** (right-click / *Hablar* button): a weaver, a farmer, a cacao merchant, a scribe, a ballplayer, a sculptor at an unfinished stela, a potter making Copador pottery, an obsidian knapper, a village girl, and the guide. Every line is sourced (`src/npc/npcData.ts`). Townspeople also walk the trails, some carrying baskets.
 - **Jaguars** prowl three edges of the woods. Get close and they sit and watch you; *Observar* teaches about b'alam.
+- **Scarlet macaws** perch on the entrance gate and the market stall awnings (folded wings, head bobs, a wing stretch now and then), besides the flocks overhead (`Macaws.tsx`).
+- **White-faced capuchins** (*mono cara blanca*, *Cebus imitator*): nine troops of three sit on canopy ledges around the park (entrance, Great Plaza, ball court, stairway, Acropolis, both wards), look around, leap from tree to tree and scatter when you come close. Perches come from the voxel worker (`treePerches`); all monkeys are 6 instanced draw calls (`Monkeys.tsx`). The species is one of Honduras' three wild monkeys; we found no record of it at Copán itself, so the game says only that it lives in Honduras.
 - **Ladders:** wooden ladders up stepped walls, terrace by terrace (Acropolis north wall, Temples 16, 22 and 26, and the ball court's Structure 10). Walk into the wall to climb (`src/world/ladders.ts`).
 - **10 jade beads** to find, many only reachable by ladder. Progress (jade, places visited, people met) is saved in the browser.
 
@@ -243,6 +245,7 @@ All player-facing facts must be verifiable. Each POI in `src/poi/poiData.ts` has
   - Ball court alley: about 28.4 × 7 m, running north–south.
 - **Estimates** (marked "est." in `siteData.ts`): the other heights and platform sizes, the Acropolis court height (12 m) and Altar Q's exact spot. Check them against the UNAH 2016 survey before the art pass.
 
+- **Capuchin:** one of three wild primates in Honduras (with *Ateles geoffroyi* and *Alouatta palliata*): *Neotropical Primates* (2020), first record of *Cebus imitator* on Honduras' Pacific slope.
 - **Villager facts:** Copador polychrome (Copán + El Salvador; used by villagers at Joya de Cerén): Alfaro Moisa 2011, *Cerámica polícroma Copador en El Salvador*. Copán's obsidian almost all from Ixtepeque, ~80 km away, imported as large flakes and nodules: Aoyama (Mesoweb Simposio 1999, 2009). Valley population ~20,000 in AD 750–800: Webster & Freter 1990, "Settlement history and the Classic collapse at Copán", *Latin American Antiquity*.
 
 **Known simplifications:**

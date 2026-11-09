@@ -13,7 +13,8 @@ import { VoxelTerrain } from "./voxel/VoxelTerrain";
 import { Rosalila } from "./world/Rosalila";
 import { Fence } from "./world/Fence";
 import { Monuments } from "./world/Monuments";
-import { Macaws } from "./world/Macaws";
+import { Macaws, PerchedMacaws } from "./world/Macaws";
+import { Monkeys } from "./world/Monkeys";
 import { Background } from "./world/Background";
 import { Ambient } from "./world/Ambient";
 import { Torches } from "./world/Torches";
@@ -132,6 +133,8 @@ export default function Game() {
           <Rosalila />
           <Fence />
           <Macaws />
+          <PerchedMacaws />
+          <Monkeys />
           <Jades />
           <Ambient />
           <Torches />

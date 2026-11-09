@@ -20,6 +20,20 @@ const inRect = (x: number, z: number, r: [number, number, number, number], pad =
 const inOpen = (x: number, z: number, pad = 0) => OPEN_AREAS.some((r) => inRect(x, z, r, pad));
 const inBounds = (x: number, z: number) => x >= BOUNDS.minX && x <= BOUNDS.maxX && z >= BOUNDS.minZ && z <= BOUNDS.maxZ;
 
+/** Is (x, z) within r of any trail's centerline? */
+function nearTrail(x: number, z: number, r: number) {
+  for (const p of PATHS)
+    for (let k = 0; k < p.points.length - 1; k++) {
+      const [ax, az] = p.points[k];
+      const [bx, bz] = p.points[k + 1];
+      const dx = bx - ax;
+      const dz = bz - az;
+      const t = Math.max(0, Math.min(1, ((x - ax) * dx + (z - az) * dz) / (dx * dx + dz * dz)));
+      if (Math.hypot(x - (ax + t * dx), z - (az + t * dz)) < r) return true;
+    }
+  return false;
+}
+
 /** Paint dirt trails onto whatever grass surface is near each path's height. */
 export function paintPaths(w: VoxelWorld) {
   for (const p of PATHS) {
@@ -80,7 +94,11 @@ function logLine(w: VoxelWorld, x0: number, y0: number, z0: number, x1: number, 
 }
 
 /** Voxel tree rooted at block (ix, iy, iz) — iy is the first air block above the ground. */
+/** Every tree grown (trunk corner, ground block, kind), for treePerches(). */
+const grown: { ix: number; iy: number; iz: number; kind: TreeKind }[] = [];
+
 export function growTree(w: VoxelWorld, ix: number, iy: number, iz: number, kind: TreeKind, seed: number) {
+  grown.push({ ix, iy, iz, kind });
   const r = (k: number) => hash2(seed * 7 + k, seed * 13 - k);
   if (kind === "ceiba") {
     // Ceiba: straight trunk, buttress roots, horizontal branches, wide flat crown.
@@ -131,6 +149,33 @@ export function growTree(w: VoxelWorld, ix: number, iy: number, iz: number, kind
     disc(w, ix + 1, cy + 3, iz + 1, big + 1.5, 3, leaf, seed + 1);
     disc(w, ix + 1, cy + 6, iz + 1, big - 1.5, 2, leaf, seed + 2);
   }
+}
+
+const LEAF = new Set<number>([B.Leaves, B.Fig, B.Blossom, B.BlossomYellow]);
+
+/**
+ * Spots on top of the tree canopies where an animal can sit: [x, y, z, tree index]… in meters.
+ * Sampled on rings around each trunk (outer ledges of the crown), only where the top block is
+ * foliage well above the ground. Used by the capuchin monkeys.
+ */
+export function treePerches(w: VoxelWorld): Float32Array {
+  const out: number[] = [];
+  grown.forEach((t, ti) => {
+    const half = t.kind === "ceiba" ? 2 : t.kind === "fig" ? 1.5 : 1;
+    // Outer ledges of the widest crown layer: visible from the ground, not hidden on top.
+    const ring = t.kind === "ceiba" ? [13, 15] : t.kind === "fig" ? [11, 12.5] : [5, 6.5];
+    for (const rad of ring)
+      for (let k = 0; k < 6; k++) {
+        const a = (k / 6) * Math.PI * 2 + rad;
+        const px = Math.round(t.ix + half + Math.cos(a) * rad);
+        const pz = Math.round(t.iz + half + Math.sin(a) * rad);
+        if (px < 0 || pz < 0 || px >= NX || pz >= NZ) continue;
+        const s = w.surface(px, pz);
+        if (!LEAF.has(s.id) || s.y - t.iy < 12) continue;
+        out.push(toX(px), REGION.minY + s.y * BLOCK, toZ(pz), ti);
+      }
+  });
+  return new Float32Array(out);
 }
 
 /** True if a trunk can stand here: flat grass, no buildings nearby. */
@@ -246,6 +291,8 @@ export function plantTrees(w: VoxelWorld) {
       // Keep the boundary fence clear of trunks and crowns.
       const edge = Math.min(Math.abs(x - BOUNDS.minX), Math.abs(x - BOUNDS.maxX), Math.abs(z - BOUNDS.minZ), Math.abs(z - BOUNDS.maxZ));
       if (edge < 4) continue;
+      // Keep trails (and the views along them, e.g. the entrance trail onto Structure 4) clear.
+      if (nearTrail(x, z, 6)) continue;
       const forest = !inBounds(x, z);
       const ring = inOpen(x, z, 14);
       const p = forest ? 0.4 : ring ? 0.4 : 0.1;

@@ -347,6 +347,14 @@ export const ANIMALS: { id: string; name: L10n; fact: L10n }[] = [
     },
   },
   {
+    id: "capuchin",
+    name: { es: "Mono cara blanca", en: "White-faced capuchin" },
+    fact: {
+      es: "Es uno de los tres monos que viven en Honduras, junto al mono araña y el mono aullador. Vive en grupos y come frutas e insectos.",
+      en: "It's one of the three monkeys that live in Honduras, along with the spider monkey and the howler monkey. It lives in groups and eats fruit and insects.",
+    },
+  },
+  {
     id: "turkey",
     name: { es: "Chompipe", en: "Turkey" },
     fact: { es: "Los mayas criaban pavos. En Honduras les decimos chompipes.", en: "The Maya raised turkeys. In Honduras we call them chompipes." },
