@@ -194,7 +194,8 @@ function patio(w: VoxelWorld, x: number, z: number, sw: number, sd: number) {
     }
 }
 
-function ladders(w: VoxelWorld) {
+/** (Unused) Old block ladders — ladders are now a separate mesh (world/Ladders.tsx). */
+export function blockLadders(w: VoxelWorld) {
   for (const seg of ladderSegments()) {
     const [bx, by, bz] = seg.base;
     const n = Math.round(seg.height / BLOCK);
@@ -281,7 +282,6 @@ export function buildVillage(w: VoxelWorld, plants: PlantSink) {
     growTree(w, ix(x), s.y, iz(z), "tree", Math.round(x * 7 + z));
   }
   workshop(w);
-  ladders(w);
   void NX;
   void NZ;
 }

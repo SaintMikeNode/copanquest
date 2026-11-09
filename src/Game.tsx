@@ -16,6 +16,7 @@ import { Background } from "./world/Background";
 import { Ambient } from "./world/Ambient";
 import { Torches } from "./world/Torches";
 import { Smoke } from "./world/Smoke";
+import { Ladders } from "./world/LadderMeshes";
 import { tickDay } from "./game/time";
 import { tickLens, useLens } from "./game/lens";
 import { dayClock } from "./game/time";
@@ -117,6 +118,7 @@ export default function Game() {
           <Ambient />
           <Torches />
           <Smoke />
+          <Ladders />
           <PoiMarkers />
           <PoiTracker />
         </Suspense>

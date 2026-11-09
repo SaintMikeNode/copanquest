@@ -4,6 +4,11 @@ import { B, BLOCK, PL } from "./blocks";
 import { CS, NX, NZ, REGION, VoxelWorld, hash2, valueNoise } from "./voxelWorld";
 import { BOUNDS, FIXED_TREES, OPEN_AREAS, PATHS } from "../world/siteData";
 import { VILLAGE_RECT, WORKSHOP } from "../world/villageData";
+import { ladderSegments } from "../world/ladders";
+
+/** Ladder feet must stay clear of bushes and rubble. */
+const LADDER_FEET = ladderSegments().map((s) => [s.base[0] + s.out[0] * 0.6, s.base[2] + s.out[1] * 0.6] as [number, number]);
+const nearLadder = (x: number, z: number) => LADDER_FEET.some(([lx, lz]) => Math.hypot(x - lx, z - lz) < 2.8);
 
 const toIx = (x: number) => Math.floor((x - REGION.minX) / BLOCK);
 const toIz = (z: number) => Math.floor((z - REGION.minZ) / BLOCK);
@@ -152,6 +157,7 @@ export function scatterFragments(w: VoxelWorld) {
       if (hash2(ix * 5, iz * 3) > 0.12) continue;
       const s = w.surface(ix, iz);
       if (s.id !== B.Grass && s.id !== B.GrassStone) continue;
+      if (nearLadder(toX(ix), toZ(iz))) continue;
       let wall = false;
       for (const [dx, dz] of [[4, 0], [-4, 0], [0, 4], [0, -4]] as const) {
         const n = w.surface(ix + dx, iz + dz);
@@ -198,6 +204,7 @@ export function plantBushes(w: VoxelWorld) {
       if (hash2(ix * 11, iz * 7) > 0.18) continue;
       const s = w.surface(ix, iz);
       if (s.id !== B.Grass && s.id !== B.GrassStone) continue;
+      if (nearLadder(toX(ix), toZ(iz))) continue;
       // Next to a wall at least 1.5 m taller?
       let wall = false;
       for (const [dx, dz] of [[3, 0], [-3, 0], [0, 3], [0, -3]] as const) {
