@@ -21,6 +21,7 @@
   "controls.poi": "Walk up to the stelae, altars and temples to learn about them.",
   "greybox": "Work in progress: we keep improving the world.",
   "credits.intro": "CopánQuest uses these sources and tools. Thank you!",
+  "credits.audio": "Music and sound",
   "credits.layout": "Site plan",
   "credits.terrain": "Terrain",
   "credits.historic": "Historical documentation",
@@ -85,6 +86,8 @@
   "pause": "Paused",
   "resume": "Resume",
   "respawn": "Back to the entrance",
+  "sound.music": "Music",
+  "sound.sfx": "Sound effects",
   "respawned": "Back at the entrance",
   "controls.more": "Right-click: talk, observe, dig or hit the ball · E: journal · C: camera · T: time lens · R: back to the entrance · Esc: pause"
 }

@@ -63,6 +63,15 @@ export default defineConfig({
         globPatterns: ["**/*.{js,css,html,svg,png,json,bin,glb,ktx2}"],
         // macOS AppleDouble files appear when the repo lives on an exFAT drive.
         globIgnores: ["**/._*"],
+        // Sound effects are small and fetched after the first tap: cache them as they arrive.
+        // (Music streams with range requests, which the service worker can't cache, so it stays online-only.)
+        runtimeCaching: [
+          {
+            urlPattern: ({ url }) => url.pathname.startsWith("/audio/sfx/"),
+            handler: "CacheFirst",
+            options: { cacheName: "cq-sfx", expiration: { maxEntries: 80 }, cacheableResponse: { statuses: [200] } },
+          },
+        ],
       },
     }),
   ],

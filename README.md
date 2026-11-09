@@ -67,6 +67,10 @@ Dev tools: `npm run dev` or `?debug` in the URL enables the collider view. `F3` 
 - **Ladders:** wooden ladders up stepped walls, terrace by terrace (Acropolis north wall, Temples 16, 22 and 26, and the ball court's Structure 10). Walk into the wall to climb (`src/world/ladders.ts`).
 - **10 jade beads** to find, many only reachable by ladder. Progress (jade, places visited, people met) is saved in the browser.
 
+## Sound
+
+`src/audio/sound.ts`: Web Audio engine. Music plays Tiki Party → 5 s pause → Field Day → 5 s pause → around again, starting on the first tap or key press (browsers block sound before that). The ♫ / 🔊 buttons in the menu and the HUD switch music and effects off separately (saved in `localStorage`). Every button click ticks; `src/audio/AudioEvents.tsx` plays effects by watching the stores (windows, dialogue, places, pickups, jade, digging, finds, quests, photos, camera, time lens, respawn); jump, ball hit, rank up and errors are played where they happen. Sound effects are cached by the service worker after first use; music streams.
+
 ## Game loop
 
 Everything feeds **XP** and four **ranks** (`src/state/progress.ts`): Turista → Explorador/a (binoculars, so the camera can zoom) → Arqueólogo/a (the time lens) → Guardián/a de Copán (jade hat). Progress is saved in localStorage.
@@ -270,6 +274,7 @@ The in-game **Créditos** screen (`src/ui/creditsData.ts`) must stay in sync wit
 - Pixelify Sans font by The Pixelify Sans Project Authors, **SIL OFL 1.1** (bundled via `@fontsource/pixelify-sans`): https://github.com/eifetx/Pixelify-Sans
 - Maya day signs (tzolk'in) for the menu and loading background, from Wikimedia Commons: 19 signs by **Bluebalam**, **CC BY-SA 4.0**; Ok by CJLL Wright (vector by ExtendedPartition), **CC BY 2.5**. Kept as SVGs in `public/glyphs/` (per-file list in `public/glyphs/LICENSE.txt`) and drawn as pixel art at runtime by `src/ui/MayaBackground.tsx`; the adapted images are under the same licences.
 - **PixelBlast** background from React Bits by David Haz, **MIT + Commons Clause** (copyright notice kept in `src/components/PixelBlast/PixelBlast.jsx`): https://reactbits.dev/backgrounds/pixel-blast. Added by hand instead of `npx shadcn add` (the project has no shadcn/Tailwind setup); one change: the canvas is created per effect run so it survives React StrictMode.
+- Music: *Tiki Party* and *Field Day* (Main versions) from **Ovani Sound**'s Casual Music Pack Vol. 1; sound effects from Ovani Sound's Cozy Casual Sound FX Pack Vol. 2. **Ovani Sound royalty-free license** (https://ovanisound.com/policies/terms-of-service): used inside the game only, not redistributed as a pack. Converted from the packs' WAVs to 128 kbps MP3 with LAME (`lame -b 128 --cbr -q 2`) into `public/audio/`; the effect → file map is `SFX` in `src/audio/sound.ts`.
 - Fact sources for the info cards: Wikipedia (CC BY-SA), Penn Museum *Expedition*, mayaruins.com, Uncovered History, ahutnick.github.io/copanaltarqkings, Mesoweb, Asociación Copán, and Sugiyama et al. 2018 (*PLOS ONE*). See `src/ui/creditsData.ts`.
 
 **Reference only (copyrighted; not redistributed)**

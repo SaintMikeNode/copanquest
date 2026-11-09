@@ -15,6 +15,8 @@ import { ActionPrompt, CameraOverlay, GlyphPuzzle, HudButtons, Journal } from ".
 import { useCamera } from "../game/camera";
 import { useAction } from "../game/WorldGame";
 import { DesktopKeys, PauseMenu } from "./DesktopKeys";
+import { AudioEvents } from "../audio/AudioEvents";
+import { SoundToggle } from "./SoundToggle";
 
 /** Desktop mouse-look: free the cursor when UI needs it, and remind how to grab it. */
 function MouseLook({ needsCursor }: { needsCursor: boolean }) {
@@ -46,6 +48,7 @@ export function Hud() {
       <div className="hud-left">
         <div className="hud-top-left">
           <LangToggle />
+          <SoundToggle />
           <button className="pill" onClick={() => setOverlay("help")}>?</button>
           <button className="pill" onClick={() => setOverlay("credits")}>{t("credits")}</button>
           <DebugOverlay />
@@ -63,6 +66,7 @@ export function Hud() {
       <DialogueBox />
       <Toast />
       <DesktopKeys />
+      <AudioEvents />
       <MouseLook needsCursor={!!overlay || !!dialogue || !!found} />
       {IS_TOUCH && !overlay && !dialogue && !found && !camOn && <TouchControls />}
       {overlay === "map" && (

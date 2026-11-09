@@ -55,7 +55,7 @@ button { font: inherit; cursor: pointer; }
 .menu {
   position: fixed; inset: 0; display: grid; place-items: center; padding: 56px 16px;
 }
-.menu-lang { position: absolute; z-index: 1; top: calc(max(0px, env(safe-area-inset-top)) + 52px); right: 12px; }
+.menu-lang { position: absolute; z-index: 1; display: flex; gap: 8px; top: calc(max(0px, env(safe-area-inset-top)) + 52px); right: 12px; }
 
 /* Menu + loading background (src/ui/MayaBackground.tsx): jade shimmer, carved day signs, step frets. */
 .maya-bg { position: absolute; inset: 0; overflow: hidden; z-index: 0; pointer-events: none;

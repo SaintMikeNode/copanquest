@@ -21,6 +21,7 @@
   "controls.poi": "Acércate a las estelas, altares y templos para aprender sobre ellos.",
   "greybox": "Versión en desarrollo: seguimos mejorando el mundo.",
   "credits.intro": "CopánQuest usa estas fuentes y herramientas. ¡Gracias!",
+  "credits.audio": "Música y sonido",
   "credits.layout": "Plano del sitio",
   "credits.terrain": "Terreno",
   "credits.historic": "Documentación histórica",
@@ -85,6 +86,8 @@
   "pause": "Pausa",
   "resume": "Continuar",
   "respawn": "Volver a la entrada",
+  "sound.music": "Música",
+  "sound.sfx": "Efectos de sonido",
   "respawned": "Volviste a la entrada",
   "controls.more": "Clic derecho: hablar, observar, excavar o golpear la pelota · E: diario · C: cámara · T: lente del tiempo · R: volver a la entrada · Esc: pausa"
 }

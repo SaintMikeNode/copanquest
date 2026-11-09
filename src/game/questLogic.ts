@@ -2,6 +2,7 @@
 import type { L10n } from "../i18n";
 import { getT } from "../i18n";
 import { useGame } from "../state/useGame";
+import { play } from "../audio/sound";
 import { computeXp, rankIndex, RANKS, useProgress } from "../state/progress";
 import { QUESTS, type QuestCheck } from "./gameData";
 import { talkInfo, TALKERS } from "../npc/npcData";
@@ -77,7 +78,10 @@ export function checkRankUp(before: number) {
   if (after > before) {
     const l = useGame.getState().lang;
     const t = getT();
-    setTimeout(() => useGame.getState().showToast(`${t("rank.up")} ${RANKS[after].name[l]}! ${RANKS[after].reward[l]}`), 3300);
+    setTimeout(() => {
+      useGame.getState().showToast(`${t("rank.up")} ${RANKS[after].name[l]}! ${RANKS[after].reward[l]}`);
+      play("rankup");
+    }, 3300);
   }
 }
 

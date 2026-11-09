@@ -12,6 +12,7 @@ import { FollowCamera } from "./FollowCamera";
 import { ladderSegments } from "../world/ladders";
 import { CharacterLayer } from "../game/layers";
 import { DEV_TOOLS } from "../config";
+import { play } from "../audio/sound";
 import { buildPixelModel, hex, solid, type FaceName } from "../voxel/pixelModel";
 import type { Tile } from "../voxel/textures";
 
@@ -285,6 +286,8 @@ export function Player() {
     // Share state with the minimap / POIs.
     playerState.body = c.body;
     playerState.position.copy(c.currPos);
+    // Jump sound: leaving the ground fast upward (not a ladder, not falling off a ledge).
+    if (playerState.grounded && !c.isOnGround && !climbing && c.body.linvel().y > 2.5) play("jump", { rate: 0.95 + Math.random() * 0.1 });
     playerState.grounded = c.isOnGround;
     euler.setFromQuaternion(c.currQuat, "YXZ");
     playerState.facingYaw = euler.y;

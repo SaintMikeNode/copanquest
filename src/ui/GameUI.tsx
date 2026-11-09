@@ -12,6 +12,7 @@ import { Overlay } from "./Overlay";
 import { playerState } from "../player/playerState";
 import { ballHit, finishDig, useAction } from "../game/WorldGame";
 import { InteractKey } from "./Dialogue";
+import { play } from "../audio/sound";
 
 // ---------------------------------------------------------------- HUD buttons + rank
 
@@ -34,7 +35,10 @@ export function HudButtons() {
   });
   const [fx, setFx] = useState(0);
   const clickLens = () => {
-    if (!lensUnlocked(computeXp())) useGame.getState().showToast(t("lens.locked"));
+    if (!lensUnlocked(computeXp())) {
+      useGame.getState().showToast(t("lens.locked"));
+      play("error");
+    }
     else {
       toggleLens();
       setFx(Date.now());
@@ -119,6 +123,7 @@ export function CameraOverlay() {
     const target = cam.aim;
     if (!target) {
       useGame.getState().showToast(t("photo.none"));
+      play("error");
       return;
     }
     const before = rankIndex(computeXp());
@@ -355,7 +360,10 @@ export function GlyphPuzzle() {
                       useProgress.getState().solveGlyph(current);
                       setMsg(t("glyphs.right"));
                       checkRankUp(before);
-                    } else setMsg(`${t("glyphs.wrong")} ${t("glyphs.hint")}`);
+                    } else {
+                      setMsg(`${t("glyphs.wrong")} ${t("glyphs.hint")}`);
+                      play("error");
+                    }
                   }}
                 >
                   {o}

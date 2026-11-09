@@ -2,6 +2,7 @@ import { useGame } from "../state/useGame";
 import { MayaBackground } from "./MayaBackground";
 import { useT } from "../i18n";
 import { LangToggle } from "./LangToggle";
+import { SoundToggle } from "./SoundToggle";
 import { Overlay } from "./Overlay";
 import { Credits } from "./Credits";
 import { Help } from "./Help";
@@ -15,6 +16,7 @@ export function Menu() {
     <main className="menu">
       <MayaBackground />
       <div className="menu-lang">
+        <SoundToggle />
         <LangToggle />
       </div>
       <div className="menu-card">

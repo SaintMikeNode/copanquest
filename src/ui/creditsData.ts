@@ -4,7 +4,7 @@ export interface CreditItem {
   title: string;
   url: string;
   credit?: string | L10n;
-  license?: string;
+  license?: string | L10n;
 }
 
 export const CREDITS: { heading: Key; items: CreditItem[] }[] = [
@@ -90,6 +90,23 @@ export const CREDITS: { heading: Key; items: CreditItem[] }[] = [
       { title: "Getty — Hieroglyphic Stairway at Copán", url: "https://www.getty.edu/projects/maya-initiative/hieroglyphic-stairway-at-copan/" },
       { title: "Rosalila Temple (World History Encyclopedia)", url: "https://www.worldhistory.org/image/4066/rosalila-temple-copan/" },
       { title: "Wikimedia Commons — Rosalila replica photos (CPN Rosalila 01, Rosalila Temple, Honduras-0385B)", url: "https://commons.wikimedia.org/wiki/File:CPN_Rosalila_01.jpg" },
+    ],
+  },
+  {
+    heading: "credits.audio",
+    items: [
+      {
+        title: "Casual Music Pack Vol. 1 — Tiki Party, Field Day",
+        url: "https://ovanisound.com",
+        credit: "Ovani Sound",
+        license: { es: "Licencia libre de regalías de Ovani Sound", en: "Ovani Sound royalty-free license" },
+      },
+      {
+        title: "Cozy Casual Sound FX Pack Vol. 2",
+        url: "https://ovanisound.com",
+        credit: "Ovani Sound",
+        license: { es: "Licencia libre de regalías de Ovani Sound", en: "Ovani Sound royalty-free license" },
+      },
     ],
   },
   {

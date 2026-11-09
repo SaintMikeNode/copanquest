@@ -5,8 +5,10 @@ import "@fontsource/pixelify-sans/latin-400.css";
 import "@fontsource/pixelify-sans/latin-700.css";
 import "./styles.css";
 import { installUiTextures } from "./ui/uiTextures";
+import { initSound } from "./audio/sound";
 
 installUiTextures();
+initSound();
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

@@ -15,6 +15,7 @@ import { checkRankUp } from "./questLogic";
 import { trackSubject } from "./subjects";
 import { getT } from "../i18n";
 import { CharacterLayer } from "./layers";
+import { play } from "../audio/sound";
 
 // ---------------------------------------------------------------- shared helpers
 
@@ -416,6 +417,7 @@ export function BallGame() {
         const d = Math.hypot(dx, dz) || 1;
         const m = b.mass();
         b.applyImpulse({ x: (dx / d) * 7 * m, y: 3.2 * m, z: (dz / d) * 7 * m }, true);
+        play("ball");
       }
     }
     // Marker hits.

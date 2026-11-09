@@ -18,7 +18,7 @@ export function Credits() {
                   {it.title}
                 </a>
                 {it.credit && <> — {typeof it.credit === "string" ? it.credit : it.credit[lang]}</>}
-                {it.license && <span className="license"> ({it.license})</span>}
+                {it.license && <span className="license"> ({typeof it.license === "string" ? it.license : it.license[lang]})</span>}
               </li>
             ))}
           </ul>
