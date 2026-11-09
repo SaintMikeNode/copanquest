@@ -83,6 +83,10 @@ class MeshBuilder {
 
 const P = CS + 2; // padded chunk size
 
+/** Blocks the wind sways (see the block shader): 1 = foliage. */
+const FOLIAGE = new Uint8Array(256);
+for (const b of [B.Leaves, B.Fig, B.Blossom, B.BlossomYellow]) FOLIAGE[b] = 1;
+
 /**
  * Meshes the voxel region. Chunks are grouped into regions of `group` × `group` chunk
  * columns, one mesh (one draw call) per region.
@@ -154,7 +158,9 @@ export function meshVoxelWorld(
                   mask[n] = 0;
                   if (!id) continue;
                   const fi = ci + Sd;
-                  if (pad[fi]) continue;
+                  // Hidden behind a block — except a solid face behind foliage: leaves sway in
+                  // the wind (block shader), and a culled face there shows as a see-through gap.
+                  if (pad[fi] && !(FOLIAGE[pad[fi]] && !FOLIAGE[id])) continue;
                   const faces = FACE_LAYERS[id];
                   const layer = d === 1 ? (side > 0 ? faces[0] : faces[2]) : faces[1];
                   // Foliage skips AO so canopies merge into big quads (it barely shows on leaves).
