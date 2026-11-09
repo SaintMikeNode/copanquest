@@ -78,28 +78,21 @@ function buildMountains(r: Region) {
     { cell: 100, ext: 4000, hole: 1000 },
     { cell: 300, ext: 15000, hole: 4000 },
   ];
-  // Framing: the valley floor stretches several km east, south and west before the hills rise,
-  // while to the north they are close. Past ~1.1 km every direction samples the DEM farther out
-  // (up to 2.2× the distance), pulling the real ridges in so hills ring the park all around.
-  // Terrain that is already high (the north) keeps its own height. Fades back to the true
-  // terrain beyond ~10 km. An artistic choice, not geography: see README (Horizon).
   const sstep = (a: number, b: number, v: number) => {
     const t = Math.min(1, Math.max(0, (v - a) / (b - a)));
     return t * t * (3 - 2 * t);
   };
-  const pulled = (x: number, z: number) => {
-    const real = sample(r, x, z);
-    const d = Math.hypot(x, z);
-    const pull = sstep(1100, 2600, d) * (1 - sstep(7000, 13000, d));
-    if (pull <= 0) return real;
-    const k = 1 + 1.2 * pull;
-    return Math.max(real, real + (sample(r, x * k, z * k) - real) * pull);
-  };
-  // The Copán river valley runs east–west and stays low for 15+ km that way, so pulling in alone
-  // leaves those sides flat. Add a ring of rolling hills (value noise, ~110–340 m, rising from
-  // 1.2 km to full height at 2.3 km, like the real hills to the north) as a minimum height.
-  // Whatever is added stays under ~6° above the horizon seen from the park (so it never towers
-  // into the clouds); real terrain is never lowered.
+  // Framing (an artistic choice, not exact geography: see README, Horizon). Hills are close to the
+  // north, but the Copán river valley runs east–west and stays low for 15+ km that way. So:
+  //  - a ring of hills (value noise shaped into peaks and valleys, up to ~500 m, starting
+  //    1.1–1.7 km out depending on direction, like the real hills to the north) is a minimum
+  //    height all around;
+  //  - real ridges past 1.2 km (except the northern hills) and the added hills are both held
+  //    under a skyline limit that varies with direction (~1.5–5.5°), so the horizon rises and
+  //    dips instead of forming an even wall;
+  //  - beyond 2.5 km the real terrain is also squashed above ~2° over the horizon (shape kept,
+  //    30 % of the excess), so the big ranges 8–15 km out read as a low far skyline behind
+  //    the nearer peaks instead of an even line at the same height all around.
   const hash = (i: number, j: number) => {
     const h = Math.sin(i * 127.1 + j * 311.7) * 43758.5453;
     return h - Math.floor(h);
@@ -117,18 +110,49 @@ function buildMountains(r: Region) {
     const d = hash(i + 1, j + 1);
     return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
   };
+  /** tan of a skyline limit that varies around the park: lo° to lo+span° with direction. */
+  const limit = (ux: number, uz: number, seed: number, lo: number, span: number) =>
+    Math.tan(((lo + span * sstep(0.3, 0.7, vnoise(ux * 5 + seed, uz * 5 - seed * 0.7))) * Math.PI) / 180);
   const hills = (x: number, z: number) => {
     const d = Math.hypot(x, z);
-    const ring = sstep(1200, 2300, d) * (1 - sstep(10000, 14000, d));
+    // Where the hills start varies around the park (1.1–1.7 km), so ridges stand at different
+    // depths and overlap instead of forming one even line. Noise on the direction vector, so
+    // there is no seam where the angle wraps.
+    const ux = x / (d || 1);
+    const uz = z / (d || 1);
+    const start = 1100 + 600 * vnoise(ux * 1.6 + 5.3, uz * 1.6 + 2.1);
+    const ring = sstep(start, start + 1200, d) * (1 - sstep(10000, 14000, d));
     if (ring <= 0) return -1e4;
-    const n = 0.65 * vnoise(x / 1400 + 17.3, z / 1400 - 4.1) + 0.35 * vnoise(x / 450 - 3.7, z / 450 + 9.2);
-    return ring * (110 + 230 * n);
+    // Peaks and valleys: most ground stays low (pow), some rises into peaks; a broad mask makes
+    // whole stretches lower so there are gaps and saddles to see through.
+    const n = 0.6 * vnoise(x / 900 + 17.3, z / 900 - 4.1) + 0.4 * vnoise(x / 350 - 3.7, z / 350 + 9.2);
+    const mask = vnoise(x / 2200 + 3.1, z / 2200 - 7.7);
+    let h = ring * 650 * Math.pow(n, 1.5) * (0.25 + 1.0 * mask);
+    // Never towering: above a limit that changes with direction (~1.3–5° over the horizon),
+    // keep only a tenth of the extra height.
+    const cap = 20 + d * limit(ux, uz, 3.7, 1.3, 3.7);
+    if (h > cap) h = cap + (h - cap) * 0.1;
+    return h;
   };
   const height = (x: number, z: number) => {
-    const real = sample(r, x, z);
-    const cap = 40 + Math.hypot(x, z) * 0.105;
-    const added = Math.min(Math.max(pulled(x, z), hills(x, z)), cap);
-    return Math.round(Math.max(real, added) / STEP) * STEP;
+    const d = Math.hypot(x, z);
+    let real = sample(r, x, z);
+    // Real ridges past ~1.2 km (the long one to the south read as a wall): above a limit that
+    // changes with direction (~1.4–5.6°), 85 % of the extra height goes, so the skyline rises
+    // and dips. The northern hills (the view from the entrance) are left as they are.
+    if (d > 1100) {
+      const ux = x / d;
+      const uz = z / d;
+      const north = sstep(0.7, 0.92, -uz);
+      const soft = 20 + d * limit(ux, uz, 11.3, 1.4, 4.2);
+      const k = sstep(1100, 1500, d) * (1 - north);
+      if (real > soft) real -= (real - soft) * 0.85 * k;
+    }
+    if (d > 2500) {
+      const soft = 60 + d * 0.03;
+      if (real > soft) real = soft + (real - soft) * 0.3;
+    }
+    return Math.round(Math.max(real, hills(x, z)) / STEP) * STEP;
   };
   /** Height of the column containing (x, z) in whichever ring owns it. */
   const colH = (x: number, z: number) => {
@@ -164,7 +188,16 @@ function buildMountains(r: Region) {
         c.copy(h < 120 ? grass : h < 600 ? forest : pine);
         if (steep > 0.55) c.lerp(rock, 0.6);
         const tint = 0.92 + ((Math.sin(x0 * 0.013) + Math.cos(z0 * 0.017)) * 0.04);
-        quad([[x0, h, z1], [x1, h, z1], [x1, h, z0], [x0, h, z0]], tint, c);
+        // Relief: tops facing the morning sun (east-southeast) are lighter, those facing away
+        // darker, from the slope between neighbors, so ridges and valleys read at a distance.
+        const e = nb[0] > -1e3 ? nb[0] : h;
+        const w = nb[1] > -1e3 ? nb[1] : h;
+        const so = nb[2] > -1e3 ? nb[2] : h;
+        const no = nb[3] > -1e3 ? nb[3] : h;
+        const gx = (e - w) / (2 * ring.cell);
+        const gz = (so - no) / (2 * ring.cell);
+        const lit = THREE.MathUtils.clamp(1 - (gx * 0.85 + gz * 0.45) * 1.6, 0.72, 1.18);
+        quad([[x0, h, z1], [x1, h, z1], [x1, h, z0], [x0, h, z0]], tint * lit, c);
         const side = c.clone().lerp(rock, 0.25);
         if (nb[0] < h) quad([[x1, nb[0], z1], [x1, nb[0], z0], [x1, h, z0], [x1, h, z1]], 0.78, side);
         if (nb[1] < h) quad([[x0, nb[1], z0], [x0, nb[1], z1], [x0, h, z1], [x0, h, z0]], 0.72, side);
@@ -209,10 +242,12 @@ const mountainMaterial = () =>
       varying vec3 vWorld;
       varying float vDepth;
       void main() {
-        // Far ridges go bluer and paler (aerial perspective), like a painted backdrop, but with
-        // about half the world's haze per kilometre so the valley's mountains stay readable:
-        // ~35 % haze at 3 km, ~60 % at 6 km, ~85 % at 12 km (normal quality).
-        gl_FragColor = vec4(haze(vColor * light, vDepth * 0.5, vWorld), 1.0);
+        // Far ridges go bluer and paler (aerial perspective), like a painted backdrop. Nearby
+        // hills get about half the world's haze per km so they stay readable; past ~4 km it
+        // builds back up so the far skyline melts into the sky (~30 % at 3 km, ~75 % at 8 km,
+        // ~95 % at 14 km, normal quality).
+        float k = mix(0.35, 1.3, smoothstep(4000.0, 11000.0, vDepth));
+        gl_FragColor = vec4(haze(vColor * light, vDepth * k, vWorld), 1.0);
         #include <colorspace_fragment>
       }
     `,

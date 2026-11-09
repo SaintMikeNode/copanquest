@@ -74,6 +74,7 @@ function jeepModel() {
         }
     }
   };
+  const tire = (t: Tile) => solid(t, TIRE, 0.06, 59);
   const bumper = (t: Tile) => solid(t, TRIM, 0.04, 58);
   return buildPixelModel([
     { size: [1.7, 0.7, 3.6], paint: body }, // 0
@@ -82,30 +83,37 @@ function jeepModel() {
     { size: [1.74, 0.08, 1.9], paint: canvasTop }, // 3
     { size: [0.08, 0.9, 0.08], paint: post }, // 4
     { size: [1.4, 0.4, 0.45], paint: seat }, // 5
-    { size: [0.3, 0.76, 0.76], paint: wheel }, // 6
-    { size: [1.84, 0.18, 0.14], paint: bumper }, // 7
+    // Wheel: three overlapping boxes make a stepped round tire (a single box looked flat).
+    { size: [0.32, 0.62, 0.62], paint: wheel }, // 6: middle, with the hub
+    { size: [0.3, 0.78, 0.36], paint: tire }, // 7: tall
+    { size: [0.3, 0.36, 0.78], paint: tire }, // 8: wide
+    { size: [1.84, 0.18, 0.14], paint: bumper }, // 9
   ]);
 }
 
 /** Parts: [part, x, y, z] in jeep space (x across, y up, z toward the front). */
-const LAYOUT: [number, number, number, number][] = [
-  [0, 0, 0.75, 0],
-  [1, 0, 1.21, 1.2],
-  [2, 0, 1.6, 0.6],
-  [3, 0, 2.06, -0.45],
-  [4, -0.83, 1.56, -1.36],
-  [4, 0.83, 1.56, -1.36],
-  [4, -0.83, 1.56, 0.45],
-  [4, 0.83, 1.56, 0.45],
-  [5, 0, 1.3, -0.15],
-  [5, 0, 1.3, -1.05],
-  [6, 0.85, 0.38, 1.15],
-  [6, -0.85, 0.38, 1.15],
-  [6, 0.85, 0.38, -1.15],
-  [6, -0.85, 0.38, -1.15],
-  [6, 0, 1.0, -1.95], // spare wheel on the back
-  [7, 0, 0.5, 1.86],
-  [7, 0, 0.5, -1.86],
+const WHEELS: [number, number, number, boolean][] = [
+  [0.85, 0.39, 1.15, false],
+  [-0.85, 0.39, 1.15, false],
+  [0.85, 0.39, -1.15, false],
+  [-0.85, 0.39, -1.15, false],
+  [0, 1.0, -1.95, true], // spare wheel on the back, facing backward
+];
+/** Parts: [part, x, y, z, turned 90°] in jeep space (x across, y up, z toward the front). */
+const LAYOUT: [number, number, number, number, boolean][] = [
+  [0, 0, 0.75, 0, false],
+  [1, 0, 1.21, 1.2, false],
+  [2, 0, 1.6, 0.6, false],
+  [3, 0, 2.06, -0.45, false],
+  [4, -0.83, 1.56, -1.36, false],
+  [4, 0.83, 1.56, -1.36, false],
+  [4, -0.83, 1.56, 0.45, false],
+  [4, 0.83, 1.56, 0.45, false],
+  [5, 0, 1.3, -0.15, false],
+  [5, 0, 1.3, -1.05, false],
+  ...WHEELS.flatMap(([x, y, z, r]) => [6, 7, 8].map((p) => [p, x, y, z, r] as [number, number, number, number, boolean])),
+  [9, 0, 0.5, 1.86, false],
+  [9, 0, 0.5, -1.86, false],
 ];
 
 export function Jeep() {
@@ -116,13 +124,13 @@ export function Jeep() {
   return (
     <>
     <group position={[JEEP.at[0], y, JEEP.at[1]]} rotation={[0, JEEP.yaw, 0]}>
-      {LAYOUT.map(([p, x, py, z], i) => (
+      {LAYOUT.map(([p, x, py, z, turned], i) => (
         <mesh
           key={i}
           geometry={model.geometries[p]}
           material={model.material}
           position={[x, py, z]}
-          rotation={p === 6 && i === 14 ? [0, Math.PI / 2, 0] : [0, 0, 0]}
+          rotation={turned ? [0, Math.PI / 2, 0] : [0, 0, 0]}
           layers-mask={1 | (1 << LAYER_WORLD)}
           castShadow
           receiveShadow
