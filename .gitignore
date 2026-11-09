@@ -7,3 +7,7 @@ dev-dist
 .wrangler
 data/raw/
 .cloudflare/
+
+# Licensed audio (Ovani Sound): served from the R2 bucket "copanquest-assets" by worker/index.ts,
+# never committed (the license forbids redistributing the files on their own).
+public/audio/

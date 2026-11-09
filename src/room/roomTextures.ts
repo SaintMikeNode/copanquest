@@ -1126,3 +1126,24 @@ export const jadeMosaicTex = () =>
       }
     grain(g, w, h, 62, 10);
   });
+
+/** Field notebook cover: "DIARIO DE CAMPO". */
+export const fieldbookTex = () =>
+  tex(
+    40,
+    56,
+    (g, w, h) => {
+      g.fillStyle = "#6b4a2a";
+      g.fillRect(0, 0, w, h);
+      g.fillStyle = "#4a321c";
+      g.fillRect(0, 0, 4, h);
+      g.fillStyle = "#e9dcb6";
+      g.fillRect(9, 14, 26, 18);
+      text(g, "DIARIO", 22, 20, 5, "#4a321c");
+      text(g, "DE CAMPO", 22, 27, 4.5, "#4a321c");
+      g.fillStyle = "#c21f1f";
+      g.fillRect(30, 0, 3, h); // elastic band
+      grain(g, w, h, 63, 10);
+    },
+    false,
+  );

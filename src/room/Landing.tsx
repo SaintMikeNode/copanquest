@@ -192,6 +192,22 @@ export default function Landing({ onIntent }: { onIntent: () => void }) {
         <Scene phase={phase} on={on} onArrive={setPhase} onMonitor={zoomIn} prompt={prompt} hover={setPointer} />
       </Canvas>
       {(phase === "room" || phase === "out") && (
+        <footer className="landing-footer">
+          {t("footer.a")}{" "}
+          <a href="https://github.com/SaintMikeNode/copanquest" target="_blank" rel="noopener noreferrer">
+            {t("footer.project")}
+          </a>{" "}
+          {t("footer.by")}{" "}
+          <a href="https://nerdypunk.dev" target="_blank" rel="noopener noreferrer">
+            nerdypunkdev
+          </a>{" "}
+          {t("footer.partOf")}{" "}
+          <a href="https://todosenlaweb.com" target="_blank" rel="noopener noreferrer">
+            Todos en la Web
+          </a>
+        </footer>
+      )}
+      {(phase === "room" || phase === "out") && (
         <button className="landing-hint pill" onClick={zoomIn}>
           {IS_TOUCH ? "👆" : <kbd>{t("room.key")}</kbd>} {t("room.hint")}
         </button>

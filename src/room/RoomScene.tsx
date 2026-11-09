@@ -29,7 +29,11 @@ const deskShadows: [number, number, number, number][] = [
   [0.6, -1.5, 0.15, 0.15], // lava lamp
   [0.84, -1.42, 0.36, 0.3], // game boxes
   [0.38, -0.99, 0.09, 0.13], // mouse
-  [0.66, -1.02, 0.18, 0.16], // floppies
+  [0.53, -1.23, 0.18, 0.16], // floppies
+  [-0.74, -0.99, 0.44, 0.44], // hat
+  [0.88, -1.02, 0.27, 0.34], // field notebook
+  [0.64, -1.0, 0.3, 0.2], // trowel
+  [-0.3, -0.88, 0.16, 0.1], // magnifier
 ];
 /** Window in the back wall, behind the right end of the desk. */
 const WIN = { x0: 0.95, x1: 1.95, y0: 1.0, y1: 2.12 };
@@ -170,9 +174,14 @@ export function RoomScene({
       shell: psxMaterial({ color: "#f4eee0" }),
       lenca: psxMaterial({ map: T.lencaTex() }),
       clay: psxMaterial({ color: "#b06a3a" }),
-      sneaker: psxMaterial({ color: "#f2efe6" }),
-      sneakerAccent: psxMaterial({ color: "#1e6fd0" }),
-      rubber: psxMaterial({ color: "#c9b48a" }),
+      // Archaeology kit and the explorer's hat (same khaki straw and dark band as the player's).
+      hat: psxMaterial({ color: "#c9b07a" }),
+      hatBand: psxMaterial({ color: "#5a3e22" }),
+      steel: psxMaterial({ color: "#c9cfd3" }),
+      handle: psxMaterial({ map: T.deskTex(), color: "#d8a070" }),
+      bristle: psxMaterial({ color: "#3a2a1a" }),
+      lens: psxMaterial({ color: "#cfe8f0", emissive: "#203038", opacity: 0.45 }),
+      fieldbook: psxMaterial({ map: T.fieldbookTex() }),
       backpack: psxMaterial({ map: T.fabricTex("#2a4f8f", 71) }),
       backpackDark: psxMaterial({ map: T.fabricTex("#1d3766", 72) }),
       cable: psxMaterial({ color: "#2a2724" }),
@@ -298,6 +307,17 @@ export function RoomScene({
   );
 
   const ball = useMemo(() => soccerBall(0.11), []);
+  // Pointing trowel blade: a long diamond.
+  const trowelBlade = useMemo(() => {
+    const sh = new THREE.Shape();
+    sh.moveTo(0, -0.1);
+    sh.lineTo(0.035, 0.0);
+    sh.lineTo(0.03, 0.05);
+    sh.lineTo(-0.03, 0.05);
+    sh.lineTo(-0.035, 0.0);
+    sh.closePath();
+    return new THREE.ShapeGeometry(sh);
+  }, []);
   // Cables from the back of the desk down to the power strip on the floor.
   const cables = useMemo(
     () =>
@@ -619,11 +639,45 @@ export function RoomScene({
 
       {/* Floppy disks and a CD. */}
       {M.floppies.map((m, i) => (
-        <mesh key={i} material={[M.black, M.black, m, M.black, M.black, M.black]} position={[0.62 + i * 0.04, DESK_TOP + 0.002 + i * 0.0045, -1.04 + i * 0.02]} rotation={[0, 0.2 + i * 0.35, 0]}>
+        <mesh key={i} material={[M.black, M.black, m, M.black, M.black, M.black]} position={[0.5 + i * 0.03, DESK_TOP + 0.002 + i * 0.0045, -1.24 + i * 0.015]} rotation={[0, 0.2 + i * 0.35, 0]}>
           <boxGeometry args={box(0.09, 0.004, 0.09)} />
         </mesh>
       ))}
-      <mesh geometry={geo.cyl8} material={M.chrome} scale={[0.06, 0.002, 0.06]} position={[-0.78, DESK_TOP + 0.001, -1.08]} />
+      {/* The explorer's hat, like the player's: khaki straw, dark band. */}
+      <group position={[-0.74, DESK_TOP, -0.99]} rotation={[0.04, 0.4, -0.03]}>
+        <mesh geometry={geo.cyl8} material={M.hat} scale={[0.19, 0.012, 0.19]} position={[0, 0.008, 0]} />
+        <mesh geometry={geo.cyl8} material={M.hat} scale={[0.1, 0.1, 0.1]} position={[0, 0.062, 0]} />
+        <mesh geometry={geo.cyl8} material={M.hatBand} scale={[0.103, 0.026, 0.103]} position={[0, 0.027, 0]} />
+        <mesh geometry={geo.sphere} material={M.hat} scale={[0.09, 0.025, 0.09]} position={[0, 0.112, 0]} />
+      </group>
+      {/* Archaeology kit: field notebook with an excavation brush on it, a pointing trowel,
+          a magnifying glass. */}
+      <group position={[0.88, DESK_TOP, -1.02]} rotation={[0, 0.25, 0]} scale={1.35}>
+        <mesh material={[M.fieldbook, M.fieldbook, M.fieldbook, M.fieldbook, M.white, M.fieldbook]} position={[0, 0.008, 0]}>
+          <boxGeometry args={box(0.14, 0.016, 0.2)} />
+        </mesh>
+        <group position={[0.0, 0.026, 0.0]} rotation={[0, 0.7, Math.PI / 2]}>
+          <mesh geometry={geo.cyl8} material={M.handle} scale={[0.008, 0.12, 0.008]} position={[0, -0.03, 0]} />
+          <mesh geometry={geo.cyl8} material={M.steel} scale={[0.011, 0.025, 0.011]} position={[0, 0.04, 0]} />
+          <mesh material={M.bristle} position={[0, 0.07, 0]}>
+            <boxGeometry args={box(0.03, 0.04, 0.012)} />
+          </mesh>
+        </group>
+      </group>
+      <group position={[0.64, DESK_TOP, -1.0]} rotation={[0, -0.9, 0]} scale={1.4}>
+        <mesh geometry={trowelBlade} material={M.steel} position={[0, 0.003, 0]} rotation={[-Math.PI / 2, 0, 0]} />
+        <mesh material={M.steel} position={[0, 0.012, 0.075]} rotation={[0.35, 0, 0]}>
+          <boxGeometry args={box(0.008, 0.006, 0.04)} />
+        </mesh>
+        <mesh geometry={geo.cyl8} material={M.handle} scale={[0.013, 0.11, 0.013]} position={[0, 0.02, 0.145]} rotation={[Math.PI / 2, 0, 0]} />
+      </group>
+      <group position={[-0.34, DESK_TOP, -0.89]} rotation={[0, -0.6, 0]} scale={1.3}>
+        <mesh material={M.black} position={[0, 0.005, 0]} rotation={[Math.PI / 2, 0, 0]}>
+          <torusGeometry args={[0.035, 0.005, 6, 20]} />
+        </mesh>
+        <mesh geometry={geo.cyl8} material={M.lens} scale={[0.033, 0.003, 0.033]} position={[0, 0.005, 0]} />
+        <mesh geometry={geo.cyl8} material={M.black} scale={[0.008, 0.09, 0.008]} position={[0.08, 0.006, 0]} rotation={[0, 0, Math.PI / 2]} />
+      </group>
       {/* Soft contact shadows on the desk. */}
       {deskShadows.map(([x, z, w, d], i) => (
         <mesh key={`ds${i}`} geometry={plane(w, d, 1, 1)} material={M.blob} rotation={[-Math.PI / 2, 0, 0]} position={[x, DESK_TOP + 0.0008, z]} />
@@ -680,24 +734,7 @@ export function RoomScene({
       <mesh geometry={vaseGeo} material={M.lenca} position={[1.32, 0, -1.48]} />
       <mesh geometry={plane(0.4, 0.4, 1, 1)} material={M.blob} rotation={[-Math.PI / 2, 0, 0]} position={[1.32, 0.007, -1.48]} />
 
-      {/* Under the desk: sneakers, a school backpack, magazines, the power strip and cables. */}
-      {[[-0.38, -1.0, 0.25], [-0.25, -0.98, -0.12]].map(([x, z, a], i) => (
-        <group key={`sh${i}`} position={[x, 0, z]} rotation={[0, a, 0]}>
-          <mesh geometry={rbox(0.1, 0.03, 0.27, 0.012)} material={M.rubber} position={[0, 0.015, 0]} />
-          <mesh geometry={rbox(0.09, 0.07, 0.2, 0.025)} material={M.sneaker} position={[0, 0.06, -0.025]} />
-          <mesh geometry={rbox(0.088, 0.045, 0.08, 0.02)} material={M.sneaker} position={[0, 0.045, 0.09]} />
-          <mesh material={M.sneakerAccent} position={[0.046, 0.055, -0.02]}>
-            <boxGeometry args={box(0.004, 0.025, 0.14)} />
-          </mesh>
-          <mesh material={M.sneakerAccent} position={[-0.046, 0.055, -0.02]}>
-            <boxGeometry args={box(0.004, 0.025, 0.14)} />
-          </mesh>
-          <mesh material={M.black} position={[0, 0.096, -0.02]}>
-            <boxGeometry args={box(0.06, 0.004, 0.08)} />
-          </mesh>
-        </group>
-      ))}
-      <mesh geometry={plane(0.4, 0.4, 1, 1)} material={M.blob} rotation={[-Math.PI / 2, 0, 0]} position={[-0.31, 0.007, -0.99]} />
+      {/* Under the desk: a school backpack, magazines, the power strip and cables. */}
       <group position={[-0.74, 0, -1.25]} rotation={[0, 0.35, 0.1]}>
         <mesh geometry={rbox(0.3, 0.36, 0.16, 0.06)} material={M.backpack} position={[0, 0.18, 0]} />
         <mesh geometry={rbox(0.22, 0.16, 0.06, 0.04)} material={M.backpackDark} position={[0, 0.12, 0.1]} />
