@@ -87,7 +87,7 @@ function buildMountains(r: Region) {
     const cz = (Math.floor(z / ring.cell) + 0.5) * ring.cell;
     return m < 1000 ? -1e4 : height(cx, cz);
   };
-  const grass = new THREE.Color("#4f8f3a");
+  const grass = new THREE.Color("#68863c");
   const forest = new THREE.Color("#2d6a2c");
   const pine = new THREE.Color("#2a5a34");
   const rock = new THREE.Color("#8a7a62");

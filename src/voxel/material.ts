@@ -188,8 +188,8 @@ const blockFragment = /* glsl */ `
     if (base == grassLayer && n.y > 0.5) {
       // Lawn: drifting patches of lush deep green and sunny yellow-green.
       float p = vnoise(vWorld.xz * 0.06 + 7.0) * 0.65 + vnoise(vWorld.xz * 0.018) * 0.35;
-      vec3 lush = albedo * vec3(0.82, 0.95, 0.78);
-      vec3 sunny = albedo * vec3(1.12, 1.08, 0.78);
+      vec3 lush = albedo * vec3(0.86, 0.95, 0.8);
+      vec3 sunny = albedo * vec3(1.12, 1.07, 0.8);
       albedo = mix(lush, sunny, smoothstep(0.3, 0.75, p));
     } else if (base >= stoneFirst && base <= stoneLast) {
       // Weathered masonry: vertical rain streaks, moss blotches, damp greener base.

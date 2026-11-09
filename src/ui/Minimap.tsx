@@ -38,9 +38,9 @@ export function Minimap({ large = false }: { large?: boolean }) {
     base.height = canvas.height;
     const b = base.getContext("2d")!;
     b.scale(dpr, dpr);
-    b.fillStyle = "#4f8f3a";
+    b.fillStyle = "#5b7a36";
     b.fillRect(0, 0, cssW + PAD * 2, cssH + PAD * 2);
-    b.fillStyle = "#7fbf52";
+    b.fillStyle = "#91ab58";
     for (const [x0, z0, x1, z1] of OPEN_AREAS) b.fillRect(X(x0), Z(z0), (x1 - x0) * k, (z1 - z0) * k);
     const river = TERRAIN_SCULPT[0];
     b.fillStyle = "#3f8fd8";

@@ -25,7 +25,8 @@ export function rng(seed: number) {
 }
 
 export const P = {
-  grass: pal("#2a6a27", "#37812e", "#479a36", "#5cb141", "#79c752"),
+  // Lawn: a softer, slightly yellow green like Copán's sunny lawns (not neon).
+  grass: pal("#43602a", "#587a2f", "#71933c", "#89aa48", "#a3c25a"),
   dirt: pal("#5a3222", "#72412b", "#8a5234", "#a3633e", "#b9764a"),
   path: pal("#8f4a2c", "#a85a36", "#bd6b41", "#cf7f50", "#df9663"),
   stone: pal("#58564e", "#706d63", "#8a8679", "#a5a090", "#bfb9a6", "#d3cdb9"),
