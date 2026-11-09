@@ -1,0 +1,8 @@
+node_modules
+dist
+dev-dist
+*.tsbuildinfo
+.DS_Store
+._*
+.wrangler
+data/raw/
