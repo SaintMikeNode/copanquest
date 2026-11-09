@@ -35,6 +35,7 @@ export function personRig(o: Outfit): Rig {
   const C = {
     skin: hex(o.skin),
     skinDark: hex(o.skin).map((v) => v * 0.82) as [number, number, number],
+    bottomDark: hex(o.bottom).map((v) => v * 0.75) as [number, number, number],
     hair: hex(o.hair),
     top: hex(o.top),
     accent: hex(o.accent),
@@ -47,10 +48,21 @@ export function personRig(o: Outfit): Rig {
 
   const leg = (t: Tile, f: FaceName) => {
     solid(t, C.skin, 0.05, 2);
-    if (f === "top") return;
-    if (!o.female) for (let y = 0; y < Math.ceil(t.h * 0.25); y++) for (let x = 0; x < t.w; x++) t.set(x, y, C.bottom);
-    if (o.modern) for (let y = 0; y < t.h - 2; y++) for (let x = 0; x < t.w; x++) t.set(x, y, C.bottom);
-    for (let x = 0; x < t.w; x++) t.set(x, t.h - 1, o.modern ? C.white : hex("#5a3a22"));
+    if (f === "top") return solid(t, C.bottom, 0.05, 2);
+    if (o.modern) {
+      // Shorts to the knee, then skin, white socks and sneakers.
+      const shorts = Math.ceil(t.h * 0.5);
+      for (let y = 0; y < shorts; y++) for (let x = 0; x < t.w; x++) t.set(x, y, y === shorts - 1 ? C.bottomDark : C.bottom);
+      for (let y = t.h - 4; y < t.h; y++) for (let x = 0; x < t.w; x++) t.set(x, y, y >= t.h - 2 ? C.white : hex("#e8e8e8"));
+      for (let x = 0; x < t.w; x++) t.set(x, t.h - 1, hex("#c0392b"));
+      return;
+    }
+    // Woven hip cloth to mid-thigh (women's legs are under the skirt).
+    if (!o.female) {
+      const cloth = Math.ceil(t.h * 0.4);
+      for (let y = 0; y < cloth; y++) for (let x = 0; x < t.w; x++) t.set(x, y, y === cloth - 1 ? C.accent : C.bottom);
+    }
+    for (let x = 0; x < t.w; x++) t.set(x, t.h - 1, hex("#5a3a22")); // sandals
   };
   const arm = (t: Tile, f: FaceName) => {
     solid(t, C.skin, 0.05, 3);
@@ -76,10 +88,10 @@ export function personRig(o: Outfit): Rig {
     } else if (o.modern) {
       for (let y = 2; y < t.h; y += 5) for (let x = 0; x < t.w; x++) if (x % 2 === 0 && f === "front") t.set(x, y, C.accent);
     } else {
-      // Cotton cape over the shoulders, sash at the waist.
-      for (let y = Math.floor(t.h * 0.55); y < t.h; y++) for (let x = 0; x < t.w; x++) t.set(x, y, C.skin);
+      // Cotton tunic with a woven band at the chest and a sash at the waist.
       for (let x = 0; x < t.w; x++) {
-        t.set(x, Math.floor(t.h * 0.55) - 1, C.accent);
+        t.set(x, 1, C.accent);
+        if (x % 3 === 0) t.set(x, 2, C.white);
         t.set(x, t.h - 2, C.accent);
         t.set(x, t.h - 1, C.accent);
       }

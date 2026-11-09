@@ -251,7 +251,7 @@ const PAST: Outfit[] = [
 ];
 const TOURIST: Outfit[] = [
   { skin: "#e0b48c", hair: "#6a4a2a", top: "#e86aa4", accent: "#ffffff", bottom: "#3a5a8a", head: "cap", modern: true },
-  { skin: "#c48a5a", hair: "#1d1410", top: "#f2c42c", accent: "#1f62d0", bottom: "#a8925f", head: "cap", modern: true },
+  { skin: "#c48a5a", hair: "#1d1410", top: "#f2c42c", accent: "#1f62d0", bottom: "#2f4a7a", head: "cap", modern: true },
   { skin: "#f0c8a0", hair: "#c9a04a", top: "#58c4e8", accent: "#ffffff", bottom: "#2a2a2a", head: "none", modern: true, female: true },
   { skin: "#8d5a3b", hair: "#1d1410", top: "#ffffff", accent: "#c0392b", bottom: "#5a6f8a", head: "cap", modern: true },
 ];
