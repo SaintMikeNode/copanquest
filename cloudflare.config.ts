@@ -1,7 +1,7 @@
 import { defineConfig } from "cf/config";
 
-// Static-assets Worker. Files come from ./dist (built by `npm run build`; see wrangler.config.ts).
-// Not deployed yet: create the Worker / custom domain only when explicitly asked.
+// Static-assets Worker. `cf build` runs `vite build`; the Cloudflare Vite plugin (v2 beta) writes
+// the assets and this config to .cloudflare/output. Deployed by Workers Builds on push to main.
 export default defineConfig({
   worker: {
     name: "copanquest",

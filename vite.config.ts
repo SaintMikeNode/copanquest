@@ -1,5 +1,6 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+import { cloudflare } from "@cloudflare/vite-plugin";
 import { VitePWA } from "vite-plugin-pwa";
 
 // ecctrl 2 runs its whole character update (hover spring, jump timer, move impulses) in a
@@ -35,6 +36,8 @@ export default defineConfig({
   plugins: [
     ecctrlFixedStep,
     react(),
+    // Writes the Worker deploy config (static assets from the client build) that `cf deploy` uses.
+    cloudflare(),
     VitePWA({
       registerType: "autoUpdate",
       includeAssets: ["favicon.svg", "icons/*.png"],
@@ -63,6 +66,8 @@ export default defineConfig({
       },
     }),
   ],
+  // Build output (Cloudflare Build Output Spec) must not trigger dev reloads.
+  server: { watch: { ignored: ["**/.cloudflare/**"] } },
   // Dev pre-bundles ecctrl with Rolldown, so the patch must run there too.
   optimizeDeps: { rolldownOptions: { plugins: [ecctrlFixedStep] } },
   build: {

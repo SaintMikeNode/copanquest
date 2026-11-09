@@ -18,13 +18,13 @@ The Principal Group is built from **0.5 m blocks** (a Minecraft-style voxel look
 ```bash
 npm install
 npm run dev        # http://localhost:5180 (with the launch config) or Vite's default port
-npm run build      # typecheck + production build in dist/
-npm run preview    # serve dist/ (service worker active)
+npm run build      # typecheck + production build in .cloudflare/output/v0/
+npm run preview    # serve the build in the local Workers runtime (service worker active)
 ```
 
 Requires **Node 24** (same as Cloudflare Workers Builds; see `.nvmrc`). Built with Vite 8.
 
-Hosting: a Cloudflare static-assets Worker (`cloudflare.config.ts`, `wrangler.config.ts` → `dist/`), like the other todosenlaweb.com sites. `npm run deploy` builds and deploys. Only deploy when the user asks.
+Hosting: a Cloudflare static-assets Worker at https://copanquest.todosenlaweb.com (`cloudflare.config.ts`; the Cloudflare Vite plugin writes the build to `.cloudflare/output/`). Pushing to `main` on GitHub (`SaintMikeNode/copanquest`) deploys through Workers Builds. `npm run deploy` is the manual fallback. Only push or deploy when the user asks.
 
 ### Controls
 

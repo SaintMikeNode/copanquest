@@ -5,7 +5,7 @@ Web 3D exploration game: Honduran kids walk around the Maya city of Copán as it
 ## Commands
 
 - `npm run dev` — dev server (port 5180 in `.claude/launch.json`)
-- `npm run build` — typecheck + production build (`dist/`)
+- `npm run build` — typecheck + production build (`.cloudflare/output/v0/`)
 - `npm run typecheck`
 - `npm run heightmap` — regenerate `public/terrain/` from the Copernicus DEM
 - `npm run icons` — regenerate PWA icons
@@ -15,9 +15,13 @@ installed keg-only by Homebrew: prefix commands with `PATH="/opt/homebrew/opt/no
 (the default `node` is still 22.11). Vite 8 + @vitejs/plugin-react 6. npm 11 install scripts are
 allow-listed in package.json (`allowScripts`: esbuild, workerd, fsevents).
 
-Cloudflare: `cloudflare.config.ts` (Worker `copanquest`, domain copanquest.todosenlaweb.com, SPA
-fallback) + `wrangler.config.ts` (assets = `dist/`). Not deployed; no Worker/trigger yet. When
-connecting Workers Builds, the build command must build the app first: `npm run build && npx cf build`.
+Live at https://copanquest.todosenlaweb.com (Worker `copanquest`, repo `SaintMikeNode/copanquest`).
+**Pushing to `main` deploys** through Workers Builds (trigger "Deploy main": build
+`npx tsc && npx cf build`, deploy `npx cf deploy --prebuilt`, `NODE_VERSION=24`). Never push unless
+the user says so in that moment. `cloudflare.config.ts` holds the Worker name, domain and SPA fallback.
+Builds go through the Cloudflare Vite plugin (v2 beta, required by `cf` for Vite projects): output is
+`.cloudflare/output/v0/` (assets in `workers/default/assets/`), not `dist/`. `npm run preview` serves it
+in the local Workers runtime. Manual fallback deploy: `npm run deploy` (needs `npx cf auth login`).
 
 ## Layout
 
