@@ -91,15 +91,15 @@ function Macaw({ bird, model }: { bird: Bird; model: ReturnType<typeof macawMode
   });
   return (
     <group ref={root} scale={1.6}>
-      <mesh geometry={G[0]} material={m} castShadow />
+      <mesh geometry={G[0]} material={m} />
       <mesh geometry={G[1]} material={m} position={[0, 0.06, 0.22]} />
       <mesh geometry={G[2]} material={m} position={[0, 0.04, 0.31]} />
       <mesh geometry={G[4]} material={m} position={[0, -0.02, -0.42]} rotation-x={0.12} />
       <group ref={wl} position={[-0.07, 0.04, 0.02]}>
-        <mesh geometry={G[3]} material={m} position={[-0.21, 0, 0]} castShadow />
+        <mesh geometry={G[3]} material={m} position={[-0.21, 0, 0]} />
       </group>
       <group ref={wr} position={[0.07, 0.04, 0.02]} scale-x={-1}>
-        <mesh geometry={G[3]} material={m} position={[-0.21, 0, 0]} castShadow />
+        <mesh geometry={G[3]} material={m} position={[-0.21, 0, 0]} />
       </group>
     </group>
   );

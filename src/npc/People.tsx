@@ -9,6 +9,7 @@ import { playerState } from "../player/playerState";
 import { useGame } from "../state/useGame";
 import { trackSubject } from "../game/subjects";
 import { lensMix } from "../game/lens";
+import { Blob } from "../game/blob";
 
 const DRAW_DIST = 95;
 const TALK_DIST = 2.8;
@@ -49,7 +50,8 @@ function Person({
   const r = useMemo(() => personRig(outfit), [outfit]);
   return (
     <group ref={root}>
-      <mesh geometry={r.body} material={r.material} castShadow />
+      <mesh geometry={r.body} material={r.material} />
+      <Blob size={0.85} />
       <group ref={(g) => void (limbs.current.legL = g)} position={[-r.legX, r.hip, 0]}>
         <mesh geometry={r.legL} material={r.material} />
       </group>
@@ -309,11 +311,12 @@ function Jaguar({ index }: { index: number }) {
       </RigidBody>
       <group ref={root}>
         <group ref={torso}>
-          <mesh geometry={rig.body} material={rig.material} castShadow />
+          <mesh geometry={rig.body} material={rig.material} />
           <group ref={tail} position={[0, 0.72, -0.55]} rotation-x={0.5}>
             <mesh geometry={rig.tail} material={rig.material} />
           </group>
         </group>
+        <Blob size={1.5} />
         {legPos.map((lp, i) => (
           <group key={i} ref={(g) => void (legs.current[i] = g)} position={lp}>
             <mesh geometry={rig.leg} material={rig.material} />

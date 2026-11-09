@@ -68,7 +68,6 @@ export function Jades() {
             geometry={model.geometries[0]}
             material={model.material}
             position={it.pos}
-            castShadow
           />
         ),
       )}

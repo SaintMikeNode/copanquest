@@ -185,7 +185,7 @@ For Blender: import the PNG as a Displace texture on a 3000 m plane subdivided 1
 
 - The menu loads first (~74 kB gzip). The 3D engine chunk is fetched while the player reads it.
 - `dpr` is `[1, 1.5]` on High and `[0.75, 1]` on Low. drei's `PerformanceMonitor` drives the *Auto* setting; it ignores the first 4 s to avoid the shader-compile hitch.
-- There are no real-time shadows. The player has a cheap blob shadow: a raycast down plus a radial-gradient quad.
+- **Cached ("baked on demand") sun shadows** work at every quality level. The world is static, so the shadow map (2048 on High, 1024 on Low) is only redrawn when the player moves more than 8 m or every ~2 s as the sun moves, not every frame. Characters, animals and pickups don't cast into it; they use soft blob shadows.
 - The voxel world is greedy-meshed in a Web Worker and grouped into regions (one draw call each). The POI markers and clouds are one InstancedMesh each.
 - Physics runs at a fixed 60 Hz with interpolation. A variable timestep launched the floating character into the sky after the first long frame.
 

@@ -166,7 +166,7 @@ function PlayerModel({ controller }: { controller: React.RefObject<EcctrlHandle 
     if (armR.current) armR.current.rotation.x = s * 0.9;
   });
   const part = (i: number, pos: [number, number, number]) => (
-    <mesh geometry={G[i]} material={material} position={pos} castShadow />
+    <mesh geometry={G[i]} material={material} position={pos} />
   );
   // Feet at y = FEET (capsule bottom minus float height).
   return (
