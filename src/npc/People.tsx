@@ -18,6 +18,32 @@ const JAGUAR_TALK_DIST = 5;
 /** Shared per-frame registry of where talkable actors are (for the "talk" prompt). */
 const talkables = new Map<string, THREE.Vector3>();
 
+/** Where every actor (people and jaguars) is, so they keep out of each other's way. */
+const actors = new Map<string, { x: number; z: number }>();
+function place(key: string, x: number, z: number) {
+  const a = actors.get(key);
+  if (a) {
+    a.x = x;
+    a.z = z;
+  } else actors.set(key, { x, z });
+}
+/** Nearest other actor within r of (x, z), or null. */
+function nearestActor(key: string, x: number, z: number, r: number) {
+  let best: { x: number; z: number } | null = null;
+  let bd = r;
+  for (const [k, a] of actors) {
+    if (k === key) continue;
+    const d = Math.hypot(a.x - x, a.z - z);
+    if (d < bd) {
+      bd = d;
+      best = a;
+    }
+  }
+  return best;
+}
+/** Personal space between actors (m). */
+const SPACE = 1.1;
+
 type Ray = InstanceType<ReturnType<typeof useRapier>["rapier"]["Ray"]>;
 
 /**
@@ -35,7 +61,10 @@ function useGround() {
   const ray = useMemo(() => new rapier.Ray({ x: 0, y: 0, z: 0 }, { x: 0, y: -1, z: 0 }), [rapier]) as Ray;
   return (x: number, z: number, fromY: number, exclude?: RapierRigidBody | null) => {
     ray.origin = { x, y: fromY, z };
-    const hit = world.castRay(ray, 80, true, rapier.QueryFilterFlags.EXCLUDE_SENSORS, undefined, undefined, exclude ?? undefined);
+    // Only the fixed world counts as ground: other characters' bodies (kinematic) and the
+    // player (dynamic) would otherwise lift an actor into the air when they meet.
+    const flags = rapier.QueryFilterFlags.EXCLUDE_SENSORS | rapier.QueryFilterFlags.EXCLUDE_KINEMATIC | rapier.QueryFilterFlags.EXCLUDE_DYNAMIC;
+    const hit = world.castRay(ray, 80, true, flags, undefined, undefined, exclude ?? undefined);
     return hit ? fromY - hit.timeOfImpact : null;
   };
 }
@@ -105,10 +134,11 @@ interface ActorState {
   phase: number;
   s: number; // walker: distance along path
   dir: number; // walker: +1 / −1
+  dodge: number; // walker: extra sideways offset while passing someone
 }
 
 function useActor(x: number, z: number) {
-  return useRef<ActorState>({ x, z, y: NaN, yaw: Math.random() * 6, tx: x, tz: z, wait: Math.random() * 3, phase: 0, s: 0, dir: 1 });
+  return useRef<ActorState>({ x, z, y: NaN, yaw: Math.random() * 6, tx: x, tz: z, wait: Math.random() * 3, phase: 0, s: 0, dir: 1, dodge: 0 });
 }
 
 function Talker({ index }: { index: number }) {
@@ -146,8 +176,8 @@ function Talker({ index }: { index: number }) {
         const nx = a.x + (dx / d) * Math.min(sp, d);
         const nz = a.z + (dz / d) * Math.min(sp, d);
         const g = ground(nx, nz, a.y + STEP, body.current);
-        if (g === null || g - a.y > STEP - 0.05 || a.y - g > DROP) {
-          // Wall, block or ledge ahead: stay put and pick another spot after a pause.
+        if (g === null || g - a.y > STEP - 0.05 || a.y - g > DROP || nearestActor(t.id, nx, nz, SPACE)) {
+          // Wall, block, ledge or someone ahead: stay put and pick another spot after a pause.
           a.tx = a.x;
           a.tz = a.z;
           a.wait = 0.5;
@@ -170,6 +200,7 @@ function Talker({ index }: { index: number }) {
       root.current.visible = camera.position.distanceTo(root.current.position) < DRAW_DIST;
     }
     talkables.set(t.id, pos.set(a.x, a.y, a.z));
+    place(t.id, a.x, a.z);
     trackSubject(`npc:${t.id}`, t.id, a.x, a.y + 1.2, a.z);
   });
   return (
@@ -219,9 +250,19 @@ function Walker({ index }: { index: number }) {
     const dx = (x1 - x0) * a.dir;
     const dz = (z1 - z0) * a.dir;
     const len = Math.hypot(dx, dz) || 1;
-    // Keep to one side of the trail.
-    a.x = x0 + (x1 - x0) * f + (dz / len) * w.side;
-    a.z = z0 + (z1 - z0) * f - (dx / len) * w.side;
+    // Keep to one side of the trail, and step further aside to pass anyone in the way.
+    const key = `walker:${index}`;
+    const nX = dz / len;
+    const nZ = -dx / len;
+    const cx = x0 + (x1 - x0) * f + nX * w.side;
+    const cz = z0 + (z1 - z0) * f + nZ * w.side;
+    const other = nearestActor(key, cx + (dx / len) * 0.8, cz + (dz / len) * 0.8, SPACE + 0.6);
+    // Step away from the other's side (or to our own side of the trail if dead ahead).
+    const sideOf = other ? (other.x - cx) * nX + (other.z - cz) * nZ : 0;
+    const want = other ? (Math.abs(sideOf) < 0.15 ? Math.sign(w.side || 1) : -Math.sign(sideOf)) * 1.2 : 0;
+    a.dodge += (want - a.dodge) * Math.min(1, dt * 3);
+    a.x = cx + nX * a.dodge;
+    a.z = cz + nZ * a.dodge;
     a.yaw = turn(a.yaw, Math.atan2(dx, dz), 0.12);
     // Follow the ground down, and up only by small steps (never onto blocks beside the trail).
     const first = Number.isNaN(a.y);
@@ -233,6 +274,9 @@ function Walker({ index }: { index: number }) {
     // Era: tourists vanish through the time lens, ancient townspeople appear.
     const lens = lensMix.value;
     const present = w.era === "past" ? lens > 0.5 : w.era === "present" ? lens < 0.5 : true;
+    // People from the other era don't take up room.
+    if (present) place(key, a.x, a.z);
+    else actors.delete(key);
     if (root.current) {
       root.current.position.set(a.x, a.y, a.z);
       root.current.rotation.y = a.yaw;
@@ -292,7 +336,7 @@ function Jaguar({ index }: { index: number }) {
         const nx = a.x + (dx / d) * Math.min(sp, d);
         const nz = a.z + (dz / d) * Math.min(sp, d);
         const g = ground(nx, nz, a.y + STEP, body.current);
-        if (g === null || g - a.y > STEP - 0.05 || a.y - g > DROP) {
+        if (g === null || g - a.y > STEP - 0.05 || a.y - g > DROP || nearestActor(id, nx, nz, SPACE + 0.4)) {
           a.tx = a.x;
           a.tz = a.z;
           a.wait = 0.5;
@@ -325,6 +369,7 @@ function Jaguar({ index }: { index: number }) {
       root.current.visible = camera.position.distanceTo(root.current.position) < DRAW_DIST;
     }
     talkables.set(id, pos.set(a.x, a.y, a.z));
+    place(id, a.x, a.z);
     trackSubject(`jaguar:${index}`, "jaguar", a.x, a.y + 0.7, a.z);
   });
   const legPos: [number, number, number][] = [

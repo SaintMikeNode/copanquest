@@ -66,6 +66,7 @@ export function Hud() {
       </div>
       <button className="hud-map" onClick={() => setOverlay("map")} aria-label={t("map")}>
         <Minimap />
+        {!IS_TOUCH && <kbd>M</kbd>}
       </button>
       <HudButtons />
       <CameraOverlay />

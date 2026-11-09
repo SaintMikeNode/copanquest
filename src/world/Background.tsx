@@ -78,7 +78,58 @@ function buildMountains(r: Region) {
     { cell: 100, ext: 4000, hole: 1000 },
     { cell: 300, ext: 15000, hole: 4000 },
   ];
-  const height = (x: number, z: number) => Math.round(sample(r, x, z) / STEP) * STEP;
+  // Framing: the valley floor stretches several km east, south and west before the hills rise,
+  // while to the north they are close. Past ~1.1 km every direction samples the DEM farther out
+  // (up to 2.2× the distance), pulling the real ridges in so hills ring the park all around.
+  // Terrain that is already high (the north) keeps its own height. Fades back to the true
+  // terrain beyond ~10 km. An artistic choice, not geography: see README (Horizon).
+  const sstep = (a: number, b: number, v: number) => {
+    const t = Math.min(1, Math.max(0, (v - a) / (b - a)));
+    return t * t * (3 - 2 * t);
+  };
+  const pulled = (x: number, z: number) => {
+    const real = sample(r, x, z);
+    const d = Math.hypot(x, z);
+    const pull = sstep(1100, 2600, d) * (1 - sstep(7000, 13000, d));
+    if (pull <= 0) return real;
+    const k = 1 + 1.2 * pull;
+    return Math.max(real, real + (sample(r, x * k, z * k) - real) * pull);
+  };
+  // The Copán river valley runs east–west and stays low for 15+ km that way, so pulling in alone
+  // leaves those sides flat. Add a ring of rolling hills (value noise, ~110–340 m, rising from
+  // 1.2 km to full height at 2.3 km, like the real hills to the north) as a minimum height.
+  // Whatever is added stays under ~6° above the horizon seen from the park (so it never towers
+  // into the clouds); real terrain is never lowered.
+  const hash = (i: number, j: number) => {
+    const h = Math.sin(i * 127.1 + j * 311.7) * 43758.5453;
+    return h - Math.floor(h);
+  };
+  const vnoise = (x: number, z: number) => {
+    const i = Math.floor(x);
+    const j = Math.floor(z);
+    const fx = x - i;
+    const fz = z - j;
+    const u = fx * fx * (3 - 2 * fx);
+    const v = fz * fz * (3 - 2 * fz);
+    const a = hash(i, j);
+    const b = hash(i + 1, j);
+    const c = hash(i, j + 1);
+    const d = hash(i + 1, j + 1);
+    return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
+  };
+  const hills = (x: number, z: number) => {
+    const d = Math.hypot(x, z);
+    const ring = sstep(1200, 2300, d) * (1 - sstep(10000, 14000, d));
+    if (ring <= 0) return -1e4;
+    const n = 0.65 * vnoise(x / 1400 + 17.3, z / 1400 - 4.1) + 0.35 * vnoise(x / 450 - 3.7, z / 450 + 9.2);
+    return ring * (110 + 230 * n);
+  };
+  const height = (x: number, z: number) => {
+    const real = sample(r, x, z);
+    const cap = 40 + Math.hypot(x, z) * 0.105;
+    const added = Math.min(Math.max(pulled(x, z), hills(x, z)), cap);
+    return Math.round(Math.max(real, added) / STEP) * STEP;
+  };
   /** Height of the column containing (x, z) in whichever ring owns it. */
   const colH = (x: number, z: number) => {
     const m = Math.max(Math.abs(x), Math.abs(z));
@@ -158,8 +209,10 @@ const mountainMaterial = () =>
       varying vec3 vWorld;
       varying float vDepth;
       void main() {
-        // Far ridges go bluer and paler (aerial perspective), like a painted backdrop.
-        gl_FragColor = vec4(haze(vColor * light, vDepth * 1.15, vWorld), 1.0);
+        // Far ridges go bluer and paler (aerial perspective), like a painted backdrop, but with
+        // about half the world's haze per kilometre so the valley's mountains stay readable:
+        // ~35 % haze at 3 km, ~60 % at 6 km, ~85 % at 12 km (normal quality).
+        gl_FragColor = vec4(haze(vColor * light, vDepth * 0.5, vWorld), 1.0);
         #include <colorspace_fragment>
       }
     `,

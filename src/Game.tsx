@@ -30,6 +30,7 @@ import { DigEffects } from "./game/DigEffects";
 import { People } from "./npc/People";
 import { Jades } from "./poi/Jades";
 import { Boundary } from "./world/Boundary";
+import { Jeep } from "./world/Jeep";
 import { Environment } from "./world/Environment";
 import { PerfProbe } from "./world/PerfProbe";
 import { PoiTracker } from "./poi/PoiTracker";
@@ -119,6 +120,10 @@ export default function Game() {
             <TerrainCollider />
             <SiteColliders />
             <Boundary />
+            {/* Own boundary: Jeep waits for the terrain, and suspending the whole Physics tree breaks Rapier. */}
+            <Suspense fallback={null}>
+              <Jeep />
+            </Suspense>
             <Player />
             <People />
             <CameraAim />

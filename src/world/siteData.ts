@@ -162,8 +162,18 @@ export const EXTRA_WALLS: [number, number, number, number][] = [[143.5, 299, 1, 
 /** Height of the Acropolis courts above the Great Plaza (est.). */
 export const ACROPOLIS_TOP = 12;
 
-/** Start at the visitor entrance (west), next to the guide, looking east toward the city. */
-export const PLAYER_SPAWN: [number, number, number] = [-144, 2, 80];
+/**
+ * Arrival area outside the entrance gate (west of the park): the visit starts here, beside the
+ * jeep, looking east at the gate. Invisible walls (Boundary.tsx) close it on three sides, so the
+ * only way to go is through the gate; the park's west wall is open between the gate posts.
+ * Stays inside the detailed voxel world (REGION.minX = −180).
+ */
+export const ARRIVAL = { minX: -178, minZ: 72, maxZ: 89.5, gateZ0: 77.75, gateZ1: 83.75 };
+/** The tour jeep, parked beside the start (yaw π/2: its front points east, toward the gate). */
+export const JEEP = { at: [-160.5, 76.4] as [number, number], yaw: Math.PI / 2 };
+
+/** Start outside the entrance gate, beside the jeep, looking east toward the gate and the city. */
+export const PLAYER_SPAWN: [number, number, number] = [-164, 3, 80.7];
 /** Camera yaw at spawn (FollowCamera convention: 0 = looking north, −π/2 = looking east). */
 export const SPAWN_YAW = -Math.PI / 2;
 
@@ -510,6 +520,9 @@ export const PATHS: PathLine[] = [
   { y: 0, width: 2, points: [[100, 40], [104, 70], [100, 100], [90, 118]] },
   // 9: West ward lane, off trail 2 (between Mound 7 and Mound 8, west of the real platforms)
   { y: 0, width: 2, points: [[-38, 236], [-60, 231], [-82, 231], [-102, 236], [-108, 262], [-110, 290], [-106, 312]] },
+  // Last (appended so walker path indices stay the same): the dirt road from the arrival area,
+  // where the jeep is parked, to the entrance gate.
+  { y: 0, width: 3.5, points: [[-177, 80.7], [-160, 80.7], [-150, 81.5]] },
 ];
 
 /** Lawns kept open (no trees, short grass only). [minX, minZ, maxX, maxZ] */

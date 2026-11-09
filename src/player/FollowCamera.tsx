@@ -93,6 +93,13 @@ export function FollowCamera({ target }: { target: RefObject<EcctrlHandle | null
           return;
         }
       }
+      // A primary touch starts a new gesture: forget fingers whose "up" never arrived (a menu
+      // opening mid-touch can swallow it), or the next drag is mistaken for a pinch and the
+      // camera stops turning.
+      if (e.pointerType === "touch" && e.isPrimary) {
+        pinch.clear();
+        active = null;
+      }
       pinch.set(e.pointerId, { x: e.clientX, y: e.clientY });
       if (pinch.size === 2) {
         const [a, b] = [...pinch.values()];
@@ -102,7 +109,11 @@ export function FollowCamera({ target }: { target: RefObject<EcctrlHandle | null
       active = e.pointerId;
       lastX = e.clientX;
       lastY = e.clientY;
-      el.setPointerCapture(e.pointerId);
+      try {
+        el.setPointerCapture(e.pointerId);
+      } catch {
+        /* pointer already gone */
+      }
     };
     const look = (e: MouseEvent) => {
       if (!locked()) return;
@@ -146,6 +157,15 @@ export function FollowCamera({ target }: { target: RefObject<EcctrlHandle | null
     el.addEventListener("pointermove", move);
     el.addEventListener("pointerup", up);
     el.addEventListener("pointercancel", up);
+    el.addEventListener("lostpointercapture", up);
+    // Opening or closing any window or dialogue also ends whatever drag was going on.
+    const reset = () => {
+      pinch.clear();
+      active = null;
+    };
+    const unsubUI = useGame.subscribe((s, p) => {
+      if (s.overlay !== p.overlay || s.dialogue !== p.dialogue) reset();
+    });
     el.addEventListener("wheel", wheel, { passive: false });
     return () => {
       el.removeEventListener("contextmenu", noMenu);
@@ -155,6 +175,8 @@ export function FollowCamera({ target }: { target: RefObject<EcctrlHandle | null
       el.removeEventListener("pointermove", move);
       el.removeEventListener("pointerup", up);
       el.removeEventListener("pointercancel", up);
+      el.removeEventListener("lostpointercapture", up);
+      unsubUI();
       el.removeEventListener("wheel", wheel);
     };
   }, [gl]);

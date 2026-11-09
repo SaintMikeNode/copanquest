@@ -1,6 +1,7 @@
 // Computer controls that open things or change the game state (movement keys live in
 // player/controls.ts). Right click to interact is in FollowCamera (it fires "cq-interact").
 //   E / J  journal (inventory)       C  explorer's camera        R  back to the entrance
+//   M      map
 //   Esc    closes what is open; otherwise pauses (and frees the mouse)
 // Pressing Esc while the mouse is captured makes the browser release it without sending
 // the key to the page, so losing the capture unexpectedly also opens the pause menu.
@@ -13,6 +14,7 @@ import { respawn } from "../player/respawn";
 import { Overlay } from "./Overlay";
 import { Help } from "./Help";
 import { QuickSettings } from "./QuickSettings";
+import { IS_TOUCH } from "../config";
 
 const typing = (e: KeyboardEvent) => {
   const el = e.target as HTMLElement | null;
@@ -52,6 +54,11 @@ export function DesktopKeys() {
         else if (!busy()) g.setOverlay("journal");
         return;
       }
+      if (e.code === "KeyM") {
+        if (g.overlay === "map") g.setOverlay(null);
+        else if (!busy()) g.setOverlay("map");
+        return;
+      }
       if (busy()) return;
       if (e.code === "KeyC") useCamera.getState().toggle();
       else if (e.code === "KeyR") {
@@ -77,6 +84,7 @@ export function DesktopKeys() {
 
 /** Grab the mouse again (a button click counts as the user gesture browsers require). */
 function relock() {
+  if (IS_TOUCH) return; // phones and tablets have no mouse to capture
   const el = document.querySelector<HTMLCanvasElement>(".game-canvas canvas");
   const req = el?.requestPointerLock?.() as Promise<void> | undefined;
   req?.catch?.(() => {}); // Right after Esc, Chrome refuses for a moment; a click on the game works.

@@ -45,13 +45,13 @@ Hosting: a Cloudflare static-assets Worker at https://copanquest.todosenlaweb.co
 
 **UI look:** pixel-art wood, moss and red ochre in the style of "garden/nature" Minecraft UI packs (style references only; no art copied). The textures are drawn at startup from the game's own palettes (`src/ui/uiTextures.ts`) and used as CSS variables: wood-framed panels with parchment inside and moss on top, calm low-contrast plank buttons with outlined text, red-ochre plaster (like Copán's painted stucco) for the main action and selected toggles, dark inset slots for HUD chips, 9-slice pixel frames (`border-image`). Font: Pixelify Sans.
 
-The pause menu freezes the whole world (R3F frameloop `never`) and has Resume, Back to the entrance, the language / sound / credits row and the controls. The same row, plus a Controls button, is at the bottom of the journal (E or the book button), so phones reach it too; the HUD itself only keeps one row of same-height chips (an **Esc Menú** button that opens the pause menu, ☰ on phones; rank, Maya date, jade, places, people; FPS — on phones these sit behind a **▾ Progreso** button), the map and the camera / journal / time-lens buttons. On computers those three buttons show their key (C, E, T) on a small keycap, and their icons are 16×16 pixel art from `uiTextures.ts` (`--icon-camera`, `--icon-book`, `--icon-lens`). Losing the mouse capture (Esc, switching windows) opens it. Computer keys live in `src/ui/DesktopKeys.tsx`; right-click fires a `cq-interact` event from `FollowCamera`.
+The pause menu freezes the whole world (R3F frameloop `never`) and has Resume, Back to the entrance, the language / sound / credits row and the controls. The same row, plus a Controls button, is at the bottom of the journal (E or the book button), so phones reach it too; the HUD itself only keeps one row of same-height chips (an **Esc Menú** button that opens the pause menu, ☰ on phones; rank, Maya date, jade, places, people; FPS — on phones these sit behind a **▾ Progreso** button), the map and the camera / journal / time-lens buttons. On computers those three buttons show their key (C, E, T) on a small keycap, as does the minimap (M opens the big map), and their icons are 16×16 pixel art from `uiTextures.ts` (`--icon-camera`, `--icon-book`, `--icon-lens`). Losing the mouse capture (Esc, switching windows) opens it. Computer keys live in `src/ui/DesktopKeys.tsx`; right-click fires a `cq-interact` event from `FollowCamera`.
 
 Dev tools: `npm run dev` or `?debug` in the URL enables the collider view. `F3` (or tapping the FPS counter) opens the debug panel: draw calls, triangles, position and quality. `?touch` forces the touch controls on desktop. In dev, `cqTeleport(x, y, z)` in the console moves the player.
 
 ## Game features
 
-- **Start at the visitor entrance**, next to Don Mateo, a Ch'orti' Maya guide. The Ch'orti' live in the Copán region today.
+- **Start outside the entrance gate**, beside the tour jeep you arrived in (`Jeep.tsx`, an original blocky safari 4×4), on a dirt road that leads to the gate. Invisible walls close the arrival area (`ARRIVAL` in `siteData.ts`, colliders in `Boundary.tsx`) so the only way is through the gate, where Don Mateo, a Ch'orti' Maya guide, waits. The Ch'orti' live in the Copán region today.
 - **A living Maya ward** west of the Great Plaza, toward El Bosque, modeled on Joya de Cerén (El Salvador, buried by ash around AD 600):
   - Patio groups of earthen, thatched houses on low platforms, with sleeping benches.
   - Open kitchens with three-stone hearths, and storehouses with maize and pots.
@@ -190,6 +190,8 @@ Structure positions are converted from OpenStreetMap with `x = (lon − lon0) ×
 
 At 30 m the DEM is too coarse for the site core, and it is a surface model that includes trees. So `terrainData.ts` flattens the core rectangle (`FLAT_CORE`) to y = 0 with a 120 m smooth falloff, then applies hand-sculpted areas (`TERRAIN_SCULPT`, e.g. the river channel under El Corte). The physics collider is an invisible trimesh of the same 20k-triangle grid; the visible ground is voxels. If the files are missing, a procedural valley is used instead.
 
+**Horizon** (`Background.tsx`): the 30 km region DEM drawn as blocky mountains around the world, with half the world's haze per km so the ridges stay readable. For framing it is **not exact geography**: hills are close to the north, but the Copán river valley runs east–west and stays low for 15+ km that way, so past ~1.1 km the backdrop samples the DEM up to 2.2× farther out (pulling real ridges in) and adds a ring of rolling hills (~110–340 m, value noise) as a minimum. The added height stays under ~6° above the horizon so it never towers into the clouds, and real terrain is never lowered.
+
 For Blender: import the PNG as a Displace texture on a 3000 m plane subdivided 100 × 100, with strength = `maxElevation − minElevation`.
 
 ## Collisions
@@ -198,6 +200,7 @@ For Blender: import the PNG as a Displace texture on a 3000 m plane subdivided 1
 - **Stairs:** the visual steps are decoration only. Each staircase gets one invisible convex-hull wedge. The wedge runs from the top edge to `(tiers + 1) × setback` out from it. That length clears every tier corner by `tierHeight / (tiers + 1)`; with a shorter run the capsule snags on the corners. The 62-step Hieroglyphic Stairway climbs smoothly (tested to the top, ~21 m).
 - The character's walkable slope limit is set to 62°.
 - Invisible boundary walls surround the playable area (`BOUNDS`), plus extra walls such as the El Corte cliff edge (`EXTRA_WALLS`).
+- Villagers and jaguars move kinematically and find the ground with a downward ray that only sees **fixed** colliders (terrain, structures, the jeep), never other characters or the player, so meeting someone can't lift them into the air. They step up at most 0.6 m and won't walk off drops over 1.2 m. They also keep ~1.1 m apart: trail walkers step aside to pass, wanderers and jaguars turn away.
 
 ## Performance (mobile first)
 
