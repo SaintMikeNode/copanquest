@@ -12,12 +12,14 @@ import { LangToggle } from "./LangToggle";
 import { DialogueBox, Progress, TalkPrompt, Toast } from "./Dialogue";
 import { ActionPrompt, CameraOverlay, GlyphPuzzle, HudButtons, Journal } from "./GameUI";
 import { useCamera } from "../game/camera";
+import { useAction } from "../game/WorldGame";
 
 export function Hud() {
   const t = useT();
   const overlay = useGame((s) => s.overlay);
   const dialogue = useGame((s) => s.dialogue);
   const camOn = useCamera((s) => s.active);
+  const found = useAction((s) => s.found);
   const setOverlay = useGame((s) => s.setOverlay);
   const close = () => setOverlay(null);
   return (
@@ -39,7 +41,7 @@ export function Hud() {
       {!camOn && !dialogue && <ActionPrompt />}
       <DialogueBox />
       <Toast />
-      {IS_TOUCH && !overlay && !dialogue && <TouchControls />}
+      {IS_TOUCH && !overlay && !dialogue && !found && !camOn && <TouchControls />}
       {overlay === "map" && (
         <Overlay title={t("map")} onClose={close}>
           <Minimap large />
