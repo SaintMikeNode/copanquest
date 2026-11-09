@@ -9,11 +9,20 @@ import { POIS } from "../poi/poiData";
 import { playerState } from "../player/playerState";
 import { IS_TOUCH } from "../config";
 
-/** Key chip on the prompts: right click on computers (none on touch, where you tap the button). */
+/** Key chip on the prompts: a mouse with its right button lit (none on touch, where you tap the
+ * button itself). The words stay as the accessible label and tooltip. */
 export function InteractKey() {
   const t = useT();
   if (IS_TOUCH) return null;
-  return <span className="talk-key">{t("key.interact")}</span>;
+  return (
+    <span className="talk-key mouse-key" role="img" aria-label={t("key.interact")} title={t("key.interact")}>
+      <svg viewBox="0 0 16 22" width="14" height="19" aria-hidden="true">
+        <path d="M8.6 1.6A6.4 6.4 0 0 1 14.4 8v1H8.6z" fill="#ffd95a" />
+        <rect x="1.6" y="1.6" width="12.8" height="18.8" rx="6.4" fill="none" stroke="#fff" strokeWidth="1.6" />
+        <path d="M8 1.6V9M1.6 9h12.8" stroke="#fff" strokeWidth="1.4" />
+      </svg>
+    </span>
+  );
 }
 
 /** "Talk" button / right click when someone is close. Enter also advances a dialogue. */

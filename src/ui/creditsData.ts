@@ -23,6 +23,12 @@ export const CREDITS: { heading: Key; items: CreditItem[] }[] = [
         credit: "© OpenStreetMap contributors",
         license: "ODbL 1.0",
       },
+      {
+        title: "Pixelify Sans (font)",
+        url: "https://github.com/eifetx/Pixelify-Sans",
+        credit: "The Pixelify Sans Project Authors",
+        license: "SIL OFL 1.1",
+      },
     ],
   },
   {

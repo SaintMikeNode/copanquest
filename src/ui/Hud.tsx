@@ -42,16 +42,19 @@ export function Hud() {
   const close = () => setOverlay(null);
   return (
     <div className="hud">
-      <div className="hud-top-left">
-        <LangToggle />
-        <button className="pill" onClick={() => setOverlay("help")}>?</button>
-        <button className="pill" onClick={() => setOverlay("credits")}>{t("credits")}</button>
-        <DebugOverlay />
+      {/* One column: the progress chips always start below the first row, however it wraps. */}
+      <div className="hud-left">
+        <div className="hud-top-left">
+          <LangToggle />
+          <button className="pill" onClick={() => setOverlay("help")}>?</button>
+          <button className="pill" onClick={() => setOverlay("credits")}>{t("credits")}</button>
+          <DebugOverlay />
+        </div>
+        <Progress />
       </div>
       <button className="hud-map" onClick={() => setOverlay("map")} aria-label={t("map")}>
         <Minimap />
       </button>
-      <Progress />
       <HudButtons />
       <CameraOverlay />
       {!dialogue && !camOn && <InfoCard />}
