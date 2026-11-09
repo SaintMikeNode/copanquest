@@ -203,7 +203,8 @@ export function plantBushes(w: VoxelWorld) {
     for (let ix = 4; ix < NX - 4; ix += 3) {
       if (hash2(ix * 11, iz * 7) > 0.18) continue;
       const s = w.surface(ix, iz);
-      if (s.id !== B.Grass && s.id !== B.GrassStone) continue;
+      // Natural ground only: no bushes on pyramid terraces or platform tops (grass there is fine).
+      if (s.id !== B.Grass) continue;
       if (nearLadder(toX(ix), toZ(iz))) continue;
       // Next to a wall at least 1.5 m taller?
       let wall = false;
