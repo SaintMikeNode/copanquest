@@ -57,9 +57,11 @@ class MeshBuilder {
     else this.idx.push(base, base + 1, base + 3, base + 1, base + 2, base + 3);
   }
 
-  /** Axis-aligned box (skipping the bottom face), for trees on the far terrain. */
-  box(x0: number, y0: number, z0: number, x1: number, y1: number, z1: number, top: number, side: number, uvScale: number) {
+  /** Axis-aligned box for trees on the far terrain. Trunks skip the bottom face (it sits in the
+   * ground); canopies need it, or looking up at them shows an empty, hollow box. */
+  box(x0: number, y0: number, z0: number, x1: number, y1: number, z1: number, top: number, side: number, uvScale: number, bottom = false) {
     const U = (a: number) => a / uvScale;
+    if (bottom) this.quad([[x0, y0, z0], [x1, y0, z0], [x1, y0, z1], [x0, y0, z1]], [0, -1, 0], [[U(x0), U(z0)], [U(x1), U(z0)], [U(x1), U(z1)], [U(x0), U(z1)]], top);
     this.quad([[x0, y1, z1], [x1, y1, z1], [x1, y1, z0], [x0, y1, z0]], [0, 1, 0], [[U(x0), U(z1)], [U(x1), U(z1)], [U(x1), U(z0)], [U(x0), U(z0)]], top);
     this.quad([[x0, y0, z1], [x1, y0, z1], [x1, y1, z1], [x0, y1, z1]], [0, 0, 1], [[U(x0), U(y0)], [U(x1), U(y0)], [U(x1), U(y1)], [U(x0), U(y1)]], side);
     this.quad([[x1, y0, z0], [x0, y0, z0], [x0, y1, z0], [x1, y1, z0]], [0, 0, -1], [[U(x1), U(y0)], [U(x0), U(y0)], [U(x0), U(y1)], [U(x1), U(y1)]], side);
@@ -351,7 +353,7 @@ export function meshFarTerrain(grid: TerrainGrid, world: VoxelWorld, extent = 10
         mb.box(tx - tw, h, tz - tw, tx + tw, h + trunkH, tz + tw, L("logTop"), L("logSide"), 0.5);
         const cw = 3.5 * k;
         const leaf = hash(x0 + 3, z0 - 3) < 0.4 ? L("fig") : L("leaves");
-        mb.box(tx - cw, h + trunkH - 1, tz - cw, tx + cw, h + trunkH + 2.5 * k, tz + cw, leaf, leaf, 0.5);
+        mb.box(tx - cw, h + trunkH - 1, tz - cw, tx + cw, h + trunkH + 2.5 * k, tz + cw, leaf, leaf, 0.5, true);
         const cw2 = 2 * k;
         mb.box(tx - cw2, h + trunkH + 2.5 * k, tz - cw2, tx + cw2, h + trunkH + 4 * k, tz + cw2, leaf, leaf, 0.5);
       }
