@@ -120,7 +120,7 @@ button { font: inherit; cursor: pointer; }
   padding: 12px 20px; border: 0; border-radius: 14px; font-weight: 800; font-size: 1rem;
   background: #fffaf0; color: var(--red-dark); box-shadow: 0 5px 0 #c9b98f, 0 8px 20px rgba(0,0,0,.3);
 }
-.talk-key { display: inline-grid; place-items: center; width: 24px; height: 24px; border-radius: 6px; background: var(--red); color: #fff; margin-right: 6px; font-size: .85rem; }
+.talk-key { display: inline-grid; place-items: center; min-width: 24px; height: 24px; padding: 0 7px; white-space: nowrap; border-radius: 6px; background: var(--red); color: #fff; margin-right: 6px; font-size: .85rem; }
 .dialogue {
   position: absolute; left: 50%; transform: translateX(-50%); bottom: max(16px, env(safe-area-inset-bottom));
   width: min(560px, calc(100% - 24px)); padding: 14px 16px 12px; border-radius: 16px;
@@ -247,3 +247,12 @@ button { font: inherit; cursor: pointer; }
   position: absolute; left: 50%; top: 58%; transform: translateX(-50%); padding: 8px 14px; border-radius: 10px;
   background: var(--panel); color: var(--panel-text); font-size: .85rem; font-weight: 700; pointer-events: none; white-space: nowrap;
 }
+
+/* ---------- Pause menu (Esc) ---------- */
+.pause-menu { display: grid; gap: 10px; width: min(320px, 100%); margin: 4px 0 6px; }
+.pause-menu button:not(.primary) {
+  padding: 11px 14px; border-radius: 12px; border: 2px solid var(--red); background: transparent;
+  color: var(--red); font: inherit; font-weight: 700; cursor: pointer;
+}
+.pause-menu button:not(.primary):hover { background: rgba(179, 64, 42, .08); }
+.overlay-body h3 { margin: 14px 0 4px; color: var(--red); font-size: 1rem; justify-self: start; }

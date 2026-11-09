@@ -33,9 +33,17 @@ Hosting: a Cloudflare static-assets Worker at https://copanquest.todosenlaweb.co
 | Walk | W A S D / arrows | Left joystick |
 | Run | Shift | Push the joystick to the edge |
 | Jump | Space | *Saltar* button |
-| Look | Click the game once, then move the mouse (Esc frees the cursor); Q / E | Drag on the screen |
+| Look | Click the game once, then move the mouse | Drag on the screen |
 | Zoom | Mouse wheel | Pinch |
+| Talk / observe / dig / hit the ball | Right-click | The prompt button |
+| Journal (inventory) | E (or J) | Book button |
+| Explorer's camera | C (left click or F takes the photo) | Camera button |
+| Time lens | T | Hourglass button |
+| Back to the entrance | R | Pause menu |
+| Pause | Esc (also frees the cursor; closes an open window first) | — |
 | Map | Click the minimap | Tap the minimap |
+
+The pause menu freezes the whole world (R3F frameloop `never`) and has Resume, Back to the entrance, Credits and the controls. Losing the mouse capture (Esc, switching windows) opens it. Computer keys live in `src/ui/DesktopKeys.tsx`; right-click fires a `cq-interact` event from `FollowCamera`.
 
 Dev tools: `npm run dev` or `?debug` in the URL enables the collider view. `F3` (or tapping the FPS counter) opens the debug panel: draw calls, triangles, position and quality. `?touch` forces the touch controls on desktop. In dev, `cqTeleport(x, y, z)` in the console moves the player.
 
@@ -50,7 +58,7 @@ Dev tools: `npm run dev` or `?debug` in the URL enables the collider view. `F3` 
   - A market along the trail. (`src/world/villageData.ts`, `src/voxel/village.ts`)
 - **Two more wards** fill the open ground east of the Great Plaza (along the road to the Las Sepulturas sacbe) and southwest of the Acropolis, with patio groups, temazcales, fields, fruit trees, hearth smoke and neighbors walking their lanes. Around AD 750–800 about 20,000 people lived in the Copán valley, most in patio groups like these (Webster & Freter 1990, *Latin American Antiquity*). Their layout is a game layout.
 - **Trails skip the ball court:** from the entrance the trail runs down the west side of the middle plaza and passes west of the ball court; a spur crosses the Court of the Hieroglyphic Stairway to its foot.
-- **People you can talk to** (E key / *Hablar* button): a weaver, a farmer, a cacao merchant, a scribe, a ballplayer, a sculptor at an unfinished stela, a potter making Copador pottery, an obsidian knapper, a village girl, and the guide. Every line is sourced (`src/npc/npcData.ts`). Townspeople also walk the trails, some carrying baskets.
+- **People you can talk to** (right-click / *Hablar* button): a weaver, a farmer, a cacao merchant, a scribe, a ballplayer, a sculptor at an unfinished stela, a potter making Copador pottery, an obsidian knapper, a village girl, and the guide. Every line is sourced (`src/npc/npcData.ts`). Townspeople also walk the trails, some carrying baskets.
 - **Jaguars** prowl three edges of the woods. Get close and they sit and watch you; *Observar* teaches about b'alam.
 - **Ladders:** wooden ladders up stepped walls, terrace by terrace (Acropolis north wall, Temples 16, 22 and 26, and the ball court's Structure 10). Walk into the wall to climb (`src/world/ladders.ts`).
 - **10 jade beads** to find, many only reachable by ladder. Progress (jade, places visited, people met) is saved in the browser.

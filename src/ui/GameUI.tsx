@@ -11,6 +11,7 @@ import { useLens } from "../game/lens";
 import { Overlay } from "./Overlay";
 import { playerState } from "../player/playerState";
 import { ballHit, finishDig, useAction } from "../game/WorldGame";
+import { InteractKey } from "./Dialogue";
 
 // ---------------------------------------------------------------- HUD buttons + rank
 
@@ -24,9 +25,9 @@ export function HudButtons() {
   const toggleLens = useLens((s) => s.toggle);
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.code === "KeyC") useCamera.getState().toggle();
-      if (e.code === "KeyJ") useGame.getState().setOverlay(useGame.getState().overlay === "journal" ? null : "journal");
-      if (e.code === "KeyT") clickLens();
+      // C, E/J, R and Esc live in DesktopKeys; T needs this button's effect.
+      const g = useGame.getState();
+      if (e.code === "KeyT" && !e.repeat && !g.overlay && !g.dialogue) clickLens();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -101,7 +102,6 @@ export function CameraOverlay() {
     if (!active) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.code === "KeyF" || e.code === "Enter") shoot();
-      if (e.code === "Escape" && !document.pointerLockElement) useCamera.getState().toggle(false);
     };
     const onShutter = () => shoot();
     window.addEventListener("keydown", onKey);
@@ -424,11 +424,12 @@ export function ActionPrompt() {
   }, [kind, id]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => () => stop(), []); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
-    const down = (e: KeyboardEvent) => {
-      if (e.code === "KeyE" && !e.repeat && !useGame.getState().talkTarget) start();
+    const interact = () => {
+      const g = useGame.getState();
+      if (!g.talkTarget && !g.dialogue && !g.overlay) start();
     };
-    window.addEventListener("keydown", down);
-    return () => window.removeEventListener("keydown", down);
+    window.addEventListener("cq-interact", interact);
+    return () => window.removeEventListener("cq-interact", interact);
   });
   if (found) {
     const a = ARTIFACTS.find((x) => x.id === found)!;
@@ -461,7 +462,7 @@ export function ActionPrompt() {
       onContextMenu={(e) => e.preventDefault()}
       style={{ ["--p" as string]: `${progress * 100}%` }}
     >
-      <span className="talk-key">E</span> {kind === "dig" ? (progress > 0 ? t("dig.hold") : `⛏ ${t("dig")}`) : `🏐 ${t("hit")}`}
+      <InteractKey /> {kind === "dig" ? (progress > 0 ? t("dig.hold") : `⛏ ${t("dig")}`) : `🏐 ${t("hit")}`}
       {kind === "dig" && <i className="dig-bar" />}
     </button>
   );

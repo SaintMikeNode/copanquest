@@ -7,8 +7,16 @@ import { talkInfo, TALKERS } from "../npc/npcData";
 import { JADES } from "../world/villageData";
 import { POIS } from "../poi/poiData";
 import { playerState } from "../player/playerState";
+import { IS_TOUCH } from "../config";
 
-/** "Talk" button / E key when someone is close. */
+/** Key chip on the prompts: right click on computers (none on touch, where you tap the button). */
+export function InteractKey() {
+  const t = useT();
+  if (IS_TOUCH) return null;
+  return <span className="talk-key">{t("key.interact")}</span>;
+}
+
+/** "Talk" button / right click when someone is close. Enter also advances a dialogue. */
 export function TalkPrompt() {
   const target = useGame((s) => s.talkTarget);
   const dialogue = useGame((s) => s.dialogue);
@@ -16,21 +24,28 @@ export function TalkPrompt() {
   const t = useT();
   const l = useL10n();
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.code !== "KeyE" && e.code !== "Enter") return;
+    const interact = () => {
       const g = useGame.getState();
+      if (g.overlay) return;
       if (g.dialogue) advance();
       else if (g.talkTarget) g.openDialogue(g.talkTarget);
     };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.code === "Enter" && useGame.getState().dialogue) advance();
+    };
+    window.addEventListener("cq-interact", interact);
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    return () => {
+      window.removeEventListener("cq-interact", interact);
+      window.removeEventListener("keydown", onKey);
+    };
   }, []);
   if (!target || dialogue) return null;
   const info = talkInfo(target);
   if (!info) return null;
   return (
     <button className="talk-prompt" onClick={() => open(target)}>
-      <span className="talk-key">E</span> {t(info.verb)} · {l(info.name)}
+      <InteractKey /> {t(info.verb)} · {l(info.name)}
     </button>
   );
 }

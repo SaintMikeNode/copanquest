@@ -1,5 +1,5 @@
 import { Suspense, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
-import { useFrame } from "@react-three/fiber";
+import { useFrame, useThree } from "@react-three/fiber";
 import { LoadingScreen } from "./ui/LoadingScreen";
 import { loadStore } from "./voxel/voxelStream";
 import { Canvas } from "@react-three/fiber";
@@ -51,6 +51,17 @@ function DayTicker() {
   return null;
 }
 
+/** The pause menu freezes the whole world: no rendering, physics, people or clocks. */
+function PauseLoop() {
+  const paused = useGame((s) => s.overlay === "pause");
+  const setFrameloop = useThree((s) => s.setFrameloop);
+  useEffect(() => {
+    // setFrameloop restarts R3F's clock, so resuming doesn't produce one huge frame.
+    setFrameloop(paused ? "never" : "always");
+  }, [paused, setFrameloop]);
+  return null;
+}
+
 /** Calls onVisible after the world has rendered a few frames (shaders compiled, regions uploaded). */
 function FirstFrames({ ready, onVisible }: { ready: boolean; onVisible: () => void }) {
   const frames = useRef(0);
@@ -97,6 +108,7 @@ export default function Game() {
           onFallback={() => setAutoLevel("low")}
         />
         <DayTicker />
+        <PauseLoop />
         <Environment />
         <Suspense fallback={null}>
           <Background />

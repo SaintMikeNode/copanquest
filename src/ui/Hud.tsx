@@ -14,6 +14,7 @@ import { DialogueBox, Progress, TalkPrompt, Toast } from "./Dialogue";
 import { ActionPrompt, CameraOverlay, GlyphPuzzle, HudButtons, Journal } from "./GameUI";
 import { useCamera } from "../game/camera";
 import { useAction } from "../game/WorldGame";
+import { DesktopKeys, PauseMenu } from "./DesktopKeys";
 
 /** Desktop mouse-look: free the cursor when UI needs it, and remind how to grab it. */
 function MouseLook({ needsCursor }: { needsCursor: boolean }) {
@@ -58,6 +59,7 @@ export function Hud() {
       {!camOn && !dialogue && <ActionPrompt />}
       <DialogueBox />
       <Toast />
+      <DesktopKeys />
       <MouseLook needsCursor={!!overlay || !!dialogue || !!found} />
       {IS_TOUCH && !overlay && !dialogue && !found && !camOn && <TouchControls />}
       {overlay === "map" && (
@@ -72,6 +74,7 @@ export function Hud() {
       )}
       {overlay === "journal" && <Journal />}
       {overlay === "glyphs" && <GlyphPuzzle />}
+      {overlay === "pause" && <PauseMenu />}
       {overlay === "help" && (
         <Overlay title={t("help")} onClose={close}>
           <Help />

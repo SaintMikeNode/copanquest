@@ -39,7 +39,7 @@ interface GameState {
   setActivePoi: (id: string | null) => void;
   dismissPoi: () => void;
 
-  overlay: null | "credits" | "map" | "help" | "journal" | "glyphs";
+  overlay: null | "credits" | "map" | "help" | "journal" | "glyphs" | "pause";
   setOverlay: (o: GameState["overlay"]) => void;
 
   /** Character or animal the player can talk to / observe right now. */

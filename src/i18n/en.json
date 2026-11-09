@@ -16,7 +16,7 @@
   "jump": "Jump",
   "nearby": "You are near",
   "controls.keys": "Move with W A S D or the arrow keys. Shift to run. Space to jump.",
-  "controls.mouse": "Click the game and move the mouse to look around (Esc frees the cursor). Scroll to zoom in or out.",
+  "controls.mouse": "Click the game and move the mouse to look around. Scroll to zoom in or out.",
   "controls.touch": "Use the stick on the left to walk and drag on the screen to look around. Push the stick to the edge to run.",
   "controls.poi": "Walk up to the stelae, altars and temples to learn about them.",
   "greybox": "Work in progress: we keep improving the world.",
@@ -39,7 +39,7 @@
   "jade": "Jade",
   "places": "Places",
   "people": "People",
-  "controls.talk": "Walk up to people and press E (or the Talk button) to chat. To climb a wooden ladder, walk into the wall.",
+  "controls.talk": "Walk up to people and right-click (or tap the Talk button) to chat. To climb a wooden ladder, walk into the wall.",
   "loading.terrain": "Preparing the Copán valley…",
   "loading.city": "Building the city…",
   "loading.ready": "Ready!",
@@ -80,5 +80,11 @@
   "inventory": "Bag",
   "lens.past": "⏳ Copán around AD 800",
   "lens.present": "⏳ Back to the present",
-  "mouse.hint": "Click the game to look around with the mouse · Esc frees the cursor"
+  "mouse.hint": "Click the game to look around with the mouse · Esc to pause",
+  "key.interact": "Right-click",
+  "pause": "Paused",
+  "resume": "Resume",
+  "respawn": "Back to the entrance",
+  "respawned": "Back at the entrance",
+  "controls.more": "Right-click: talk, observe, dig or hit the ball · E: journal · C: camera · T: time lens · R: back to the entrance · Esc: pause"
 }

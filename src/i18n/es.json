@@ -16,7 +16,7 @@
   "jump": "Saltar",
   "nearby": "Estás cerca de",
   "controls.keys": "Muévete con W A S D o las flechas. Mayús para correr. Espacio para saltar.",
-  "controls.mouse": "Haz clic en el juego y mueve el ratón para mirar alrededor (Esc suelta el cursor). Rueda para acercar o alejar.",
+  "controls.mouse": "Haz clic en el juego y mueve el ratón para mirar alrededor. Rueda para acercar o alejar.",
   "controls.touch": "Usa la palanca de la izquierda para caminar y arrastra el dedo en la pantalla para mirar. Empuja la palanca hasta el borde para correr.",
   "controls.poi": "Acércate a las estelas, altares y templos para aprender sobre ellos.",
   "greybox": "Versión en desarrollo: seguimos mejorando el mundo.",
@@ -39,7 +39,7 @@
   "jade": "Jade",
   "places": "Lugares",
   "people": "Gente",
-  "controls.talk": "Acércate a las personas y presiona E (o el botón Hablar) para conversar. Para subir por una escalera de madera, camina hacia la pared.",
+  "controls.talk": "Acércate a las personas y haz clic derecho (o toca el botón Hablar) para conversar. Para subir por una escalera de madera, camina hacia la pared.",
   "loading.terrain": "Preparando el valle de Copán…",
   "loading.city": "Construyendo la ciudad…",
   "loading.ready": "¡Listo!",
@@ -80,5 +80,11 @@
   "inventory": "Bolsa",
   "lens.past": "⏳ Copán hacia el año 800 d. C.",
   "lens.present": "⏳ De vuelta al presente",
-  "mouse.hint": "Haz clic en el juego para mirar con el ratón · Esc para soltar el cursor"
+  "mouse.hint": "Haz clic en el juego para mirar con el ratón · Esc para pausar",
+  "key.interact": "Clic der.",
+  "pause": "Pausa",
+  "resume": "Continuar",
+  "respawn": "Volver a la entrada",
+  "respawned": "Volviste a la entrada",
+  "controls.more": "Clic derecho: hablar, observar, excavar o golpear la pelota · E: diario · C: cámara · T: lente del tiempo · R: volver a la entrada · Esc: pausa"
 }

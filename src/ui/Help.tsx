@@ -9,6 +9,7 @@ export function Help() {
         <>
           <p>{t("controls.keys")}</p>
           <p>{t("controls.mouse")}</p>
+          <p>{t("controls.more")}</p>
         </>
       )}
       <p>{t("controls.poi")}</p>

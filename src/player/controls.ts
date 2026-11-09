@@ -1,6 +1,6 @@
 import type { KeyboardControlsEntry } from "@react-three/drei";
 
-export type Control = "forward" | "backward" | "leftward" | "rightward" | "jump" | "run" | "lookLeft" | "lookRight";
+export type Control = "forward" | "backward" | "leftward" | "rightward" | "jump" | "run";
 
 export const keyboardMap: KeyboardControlsEntry<Control>[] = [
   { name: "forward", keys: ["ArrowUp", "KeyW"] },
@@ -9,8 +9,6 @@ export const keyboardMap: KeyboardControlsEntry<Control>[] = [
   { name: "rightward", keys: ["ArrowRight", "KeyD"] },
   { name: "jump", keys: ["Space"] },
   { name: "run", keys: ["ShiftLeft", "ShiftRight"] },
-  { name: "lookLeft", keys: ["KeyQ"] },
-  { name: "lookRight", keys: ["KeyE"] },
 ];
 
 /** Touch joystick pushed past this fraction of its radius = run. */

@@ -1,10 +1,8 @@
 import { useEffect, useMemo, useRef, type RefObject } from "react";
 import * as THREE from "three";
 import { useFrame, useThree } from "@react-three/fiber";
-import { useKeyboardControls } from "@react-three/drei";
 import { useRapier } from "@react-three/rapier";
 import type { EcctrlHandle } from "ecctrl";
-import type { Control } from "./controls";
 import { playerState } from "./playerState";
 import { DEV_TOOLS } from "../config";
 import { SPAWN_YAW } from "../world/siteData";
@@ -33,7 +31,6 @@ const WALL_PADDING = 0.3;
 export function FollowCamera({ target }: { target: RefObject<EcctrlHandle | null> }) {
   const { camera, gl } = useThree();
   const { world, rapier } = useRapier();
-  const [, getKeys] = useKeyboardControls<Control>();
 
   const yaw = useRef(SPAWN_YAW); // 0 = camera south of the player, looking north
   const pitch = useRef(0.35);
@@ -78,6 +75,11 @@ export function FollowCamera({ target }: { target: RefObject<EcctrlHandle | null
     // Desktop: click to lock the pointer, then the mouse turns the camera (like a PC game).
     const locked = () => document.pointerLockElement === el;
     const down = (e: PointerEvent) => {
+      if (e.pointerType === "mouse" && e.button === 2) {
+        // Right click interacts (talk, observe, dig, hit the ball), like in Minecraft.
+        window.dispatchEvent(new Event("cq-interact"));
+        return;
+      }
       if (e.pointerType === "mouse") {
         if (locked()) {
           // Left click while aiming the explorer's camera takes the photo.
@@ -132,6 +134,13 @@ export function FollowCamera({ target }: { target: RefObject<EcctrlHandle | null
       e.preventDefault();
       wantDist.current = THREE.MathUtils.clamp(wantDist.current * (1 + e.deltaY * 0.001), MIN_DIST, MAX_DIST);
     };
+    const noMenu = (e: MouseEvent) => e.preventDefault();
+    const respawned = () => {
+      yaw.current = SPAWN_YAW;
+      pitch.current = THREE.MathUtils.clamp(0.35, MIN_PITCH, MAX_PITCH);
+    };
+    el.addEventListener("contextmenu", noMenu);
+    window.addEventListener("cq-respawn", respawned);
     document.addEventListener("mousemove", look);
     el.addEventListener("pointerdown", down);
     el.addEventListener("pointermove", move);
@@ -139,6 +148,8 @@ export function FollowCamera({ target }: { target: RefObject<EcctrlHandle | null
     el.addEventListener("pointercancel", up);
     el.addEventListener("wheel", wheel, { passive: false });
     return () => {
+      el.removeEventListener("contextmenu", noMenu);
+      window.removeEventListener("cq-respawn", respawned);
       document.removeEventListener("mousemove", look);
       el.removeEventListener("pointerdown", down);
       el.removeEventListener("pointermove", move);
@@ -159,9 +170,6 @@ export function FollowCamera({ target }: { target: RefObject<EcctrlHandle | null
       return;
     }
     const dt = Math.min(delta, 0.1);
-    const k = getKeys();
-    if (k.lookLeft) yaw.current += dt * 2;
-    if (k.lookRight) yaw.current -= dt * 2;
 
     // Explorer's camera: tighter, over the right shoulder, with optional zoom.
     const photo = useCamera.getState();
