@@ -166,7 +166,8 @@ export const ACROPOLIS_TOP = 12;
  * Arrival area outside the entrance gate (west of the park): the visit starts here, beside the
  * jeep, looking east at the gate. Invisible walls (Boundary.tsx) close it on three sides, so the
  * only way to go is through the gate; the park's west wall is open between the gate posts.
- * Stays inside the detailed voxel world (REGION.minX = −180).
+ * Stays inside the detailed voxel world (REGION.minX = −240), in a clearing of the small forest
+ * planted west of the park (plantEntranceForest in decorate.ts).
  */
 export const ARRIVAL = { minX: -178, minZ: 72, maxZ: 89.5, gateZ0: 77.75, gateZ1: 83.75 };
 /** The tour jeep, parked beside the start (yaw π/2: its front points east, toward the gate). */

@@ -51,7 +51,7 @@ Dev tools: `npm run dev` or `?debug` in the URL enables the collider view. `F3` 
 
 ## Game features
 
-- **Start outside the entrance gate**, beside the tour jeep you arrived in (`Jeep.tsx`, an original blocky safari 4×4), on a dirt road that leads to the gate. Invisible walls close the arrival area (`ARRIVAL` in `siteData.ts`, colliders in `Boundary.tsx`) so the only way is through the gate, where Don Mateo, a Ch'orti' Maya guide, waits. The Ch'orti' live in the Copán region today.
+- **Start outside the entrance gate**, beside the tour jeep you arrived in (`Jeep.tsx`, an original blocky safari 4×4), on a dirt road that leads to the gate. Invisible walls close the arrival area (`ARRIVAL` in `siteData.ts`, colliders in `Boundary.tsx`) so the only way is through the gate, where Don Mateo, a Ch'orti' Maya guide, waits (the Ch'orti' live in the Copán region today). The arrival area sits in a clearing of a small forest (`plantEntranceForest` in `decorate.ts`, ±55 m along the west fence): the detailed voxel world reaches 60 m past the fence there (`REGION.minX = −240`) so these are real park-style trees with shadows, not the far terrain's box trees, and they hide most of the view past the entrance (≈ +120k near triangles).
 - **A living Maya ward** west of the Great Plaza, toward El Bosque, modeled on Joya de Cerén (El Salvador, buried by ash around AD 600):
   - Patio groups of earthen, thatched houses on low platforms, with sleeping benches.
   - Open kitchens with three-stone hearths, and storehouses with maize and pots.

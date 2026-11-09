@@ -2,7 +2,7 @@
 // (grass, ferns, flowers, heliconias). Runs in the worker after the site is rasterized.
 import { B, BLOCK, PL } from "./blocks";
 import { CS, NX, NZ, REGION, VoxelWorld, hash2, valueNoise } from "./voxelWorld";
-import { BOUNDS, FIXED_TREES, OPEN_AREAS, PATHS } from "../world/siteData";
+import { ARRIVAL, BOUNDS, FIXED_TREES, OPEN_AREAS, PATHS } from "../world/siteData";
 import { VILLAGE_RECTS, WORKSHOP } from "../world/villageData";
 import { ladderSegments } from "../world/ladders";
 
@@ -300,6 +300,42 @@ export function plantTrees(w: VoxelWorld) {
       const kindRoll = hash2(ix, iz + 77);
       const kind: TreeKind = kindRoll < 0.12 ? "ceiba" : kindRoll < 0.35 ? "fig" : "tree";
       const y = goodSpot(w, ix, iz, kind === "tree" ? 4 : 7);
+      if (y < 0) continue;
+      growTree(w, ix, y, iz, kind, seed++);
+    }
+  plantEntranceForest(w, seed);
+}
+
+/**
+ * A small forest west of the park, around the arrival area outside the entrance gate (±55 m
+ * along the fence): denser
+ * than the outer woods and clumped, with the clearing (jeep, road) and the fence line kept free.
+ * Real trees here (not the far terrain's box trees), so they look like the park's and cast
+ * shadows, and they hide most of the view past them.
+ */
+function plantEntranceForest(w: VoxelWorld, seed: number) {
+  const step = 14; // blocks (7 m)
+  const x0 = toIx(REGION.minX + 2);
+  const x1 = toIx(BOUNDS.minX - 5);
+  // Only around the entrance (±55 m of the arrival area): the view out of the gate and the
+  // arrival are what need hiding, and trees are the costliest voxels on phones.
+  const z0 = toIz(ARRIVAL.minZ - 55);
+  const z1 = toIz(ARRIVAL.maxZ + 55);
+  for (let gz = Math.max(0, z0); gz < Math.min(NZ, z1); gz += step)
+    for (let gx = x0; gx < x1; gx += step) {
+      const ix = gx + Math.floor(hash2(gx + 31, gz) * (step - 3));
+      const iz = gz + Math.floor(hash2(gz + 17, gx) * (step - 3));
+      const x = toX(ix);
+      const z = toZ(iz);
+      // The clearing around the jeep and the road, with room for the crowns.
+      if (x > ARRIVAL.minX - 5 && z > ARRIVAL.minZ - 5 && z < ARRIVAL.maxZ + 5) continue;
+      if (nearTrail(x, z, 7)) continue;
+      // Clumps and glades: denser where the noise is high.
+      const p = 0.45 + 0.5 * valueNoise(x * 0.04, z * 0.04, 31);
+      if (hash2(ix + 13, iz + 7) > p) continue;
+      const roll = hash2(ix + 3, iz + 51);
+      const kind: TreeKind = roll < 0.1 ? "ceiba" : roll < 0.4 ? "fig" : "tree";
+      const y = goodSpot(w, ix, iz, kind === "tree" ? 3 : 5);
       if (y < 0) continue;
       growTree(w, ix, y, iz, kind, seed++);
     }

@@ -7,7 +7,7 @@ import { sampleHeight, type TerrainGrid } from "../world/terrainData";
 /** Area built from 0.5 m blocks (meters). Outside it, the blocky far terrain takes over. */
 // minY is chosen so the plaza floor (y = 0) falls mid-chunk: flat ground then touches only one
 // chunk layer instead of two.
-export const REGION = { minX: -180, maxX: 230, minZ: -100, maxZ: 420, minY: -12, maxY: 52 };
+export const REGION = { minX: -240, maxX: 230, minZ: -100, maxZ: 420, minY: -12, maxY: 52 };
 export const NX = Math.round((REGION.maxX - REGION.minX) / BLOCK);
 export const NZ = Math.round((REGION.maxZ - REGION.minZ) / BLOCK);
 export const NY = Math.round((REGION.maxY - REGION.minY) / BLOCK);
