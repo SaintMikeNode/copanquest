@@ -8,6 +8,7 @@ import type { Control } from "./controls";
 import { playerState } from "./playerState";
 import { DEV_TOOLS } from "../config";
 import { SPAWN_YAW } from "../world/siteData";
+import { useCamera } from "../game/camera";
 
 const MIN_DIST = 2.5;
 const MAX_DIST = DEV_TOOLS ? 120 : 14;
@@ -116,7 +117,19 @@ export function FollowCamera({ target }: { target: RefObject<EcctrlHandle | null
     if (k.lookLeft) yaw.current += dt * 2;
     if (k.lookRight) yaw.current -= dt * 2;
 
-    focus.set(c.currPos.x, c.currPos.y + TARGET_HEIGHT, c.currPos.z);
+    // Explorer's camera: tighter, over the right shoulder, with optional zoom.
+    const photo = useCamera.getState();
+    const cam = camera as THREE.PerspectiveCamera;
+    const wantFov = photo.active ? (photo.zoom ? 22 : 45) : 60;
+    if (Math.abs(cam.fov - wantFov) > 0.1) {
+      cam.fov = THREE.MathUtils.damp(cam.fov, wantFov, 8, dt);
+      cam.updateProjectionMatrix();
+    }
+    focus.set(c.currPos.x, c.currPos.y + TARGET_HEIGHT + (photo.active ? 0.35 : 0), c.currPos.z);
+    if (photo.active) {
+      focus.x += Math.cos(yaw.current) * 0.45;
+      focus.z -= Math.sin(yaw.current) * 0.45;
+    }
     const cp = Math.cos(pitch.current);
     dir.set(Math.sin(yaw.current) * cp, Math.sin(pitch.current), Math.cos(yaw.current) * cp);
 
@@ -132,7 +145,8 @@ export function FollowCamera({ target }: { target: RefObject<EcctrlHandle | null
       undefined,
       c.body,
     );
-    const allowed = hit ? Math.max(0.4, hit.timeOfImpact - WALL_PADDING) : wantDist.current;
+    const want = photo.active ? 1.5 : wantDist.current;
+    const allowed = hit ? Math.max(0.4, Math.min(want, hit.timeOfImpact - WALL_PADDING)) : want;
     // Snap in immediately (never show the inside of a wall), ease back out.
     dist.current = allowed < dist.current ? allowed : THREE.MathUtils.damp(dist.current, allowed, 4, dt);
 

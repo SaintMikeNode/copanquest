@@ -3,6 +3,7 @@ import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
 import { buildPixelModel, hex, solid, type FaceName } from "../voxel/pixelModel";
 import type { Tile } from "../voxel/textures";
+import { trackSubject } from "../game/subjects";
 
 // Scarlet macaws (guaras rojas) fly freely around the ruins of Copán today.
 const RED = hex("#d8262a");
@@ -75,6 +76,7 @@ function Macaw({ bird, model }: { bird: Bird; model: ReturnType<typeof macawMode
     const z = bird.cz + Math.sin(a) * bird.r * 0.7;
     const y = bird.h + Math.sin(a * 3 + bird.phase * 9) * 2.5;
     const g = root.current;
+    trackSubject(`macaw:${bird.phase}`, "macaw", x, y, z);
     if (g) {
       g.position.set(x, y, z);
       // Face along the path tangent and bank into the turn.

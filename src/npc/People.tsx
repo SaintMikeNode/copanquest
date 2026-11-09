@@ -7,6 +7,8 @@ import { jaguarRig, personRig } from "./personModel";
 import { PATHS } from "../world/siteData";
 import { playerState } from "../player/playerState";
 import { useGame } from "../state/useGame";
+import { trackSubject } from "../game/subjects";
+import { lensMix } from "../game/lens";
 
 const DRAW_DIST = 95;
 const TALK_DIST = 2.8;
@@ -147,6 +149,7 @@ function Talker({ index }: { index: number }) {
       root.current.visible = camera.position.distanceTo(root.current.position) < DRAW_DIST;
     }
     talkables.set(t.id, pos.set(a.x, a.y, a.z));
+    trackSubject(`npc:${t.id}`, t.id, a.x, a.y + 1.2, a.z);
   });
   return (
     <>
@@ -160,7 +163,7 @@ function Talker({ index }: { index: number }) {
 
 function Walker({ index }: { index: number }) {
   const w = WALKERS[index];
-  const path = PATHS[w.path];
+  const path = w.points ? { points: w.points, y: w.y ?? 0 } : PATHS[w.path ?? 0];
   const { pts, lengths, total } = useMemo(() => {
     const pts = path.points;
     const lengths = [0];
@@ -204,11 +207,15 @@ function Walker({ index }: { index: number }) {
     a.phase += dt * 6.5;
     swing(limbs.current, a.phase, blocked ? 0 : 0.6, w.outfit.basket === true);
     body.current?.setNextKinematicTranslation({ x: a.x, y: a.y, z: a.z });
+    // Era: tourists vanish through the time lens, ancient townspeople appear.
+    const lens = lensMix.value;
+    const present = w.era === "past" ? lens > 0.5 : w.era === "present" ? lens < 0.5 : true;
     if (root.current) {
       root.current.position.set(a.x, a.y, a.z);
       root.current.rotation.y = a.yaw;
-      root.current.visible = camera.position.distanceTo(root.current.position) < DRAW_DIST;
+      root.current.visible = present && camera.position.distanceTo(root.current.position) < DRAW_DIST;
     }
+    if (!present) body.current?.setNextKinematicTranslation({ x: a.x, y: -80, z: a.z });
   });
   return (
     <>
@@ -287,6 +294,7 @@ function Jaguar({ index }: { index: number }) {
       root.current.visible = camera.position.distanceTo(root.current.position) < DRAW_DIST;
     }
     talkables.set(id, pos.set(a.x, a.y, a.z));
+    trackSubject(`jaguar:${index}`, "jaguar", a.x, a.y + 0.7, a.z);
   });
   const legPos: [number, number, number][] = [
     [-0.14, 0.42, 0.42],

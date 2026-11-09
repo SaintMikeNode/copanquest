@@ -32,6 +32,12 @@ export enum B {
   Pottery,
   Earth, // packed-earth house patios
   Maize, // baskets / piles of maize cobs
+  RosaRed,
+  RosaGreen,
+  RosaYellow,
+  RosaMask,
+  Blossom, // pink macuelizo (Tabebuia rosea) in bloom
+  BlossomYellow, // yellow guayacán in bloom
 }
 
 /** Texture layer names (each has VARIANTS tiles), in texture-array order. */
@@ -63,6 +69,12 @@ export const LAYERS = [
   "pottery",
   "earth",
   "maize",
+  "rosaRed",
+  "rosaGreen",
+  "rosaYellow",
+  "rosaMask",
+  "blossom",
+  "blossomYellow",
 ] as const;
 export type LayerName = (typeof LAYERS)[number];
 export const L = (name: LayerName) => LAYERS.indexOf(name);
@@ -92,6 +104,12 @@ FACE_LAYERS[B.Cloth] = [L("cloth"), L("cloth"), L("cloth")];
 FACE_LAYERS[B.Pottery] = [L("pottery"), L("pottery"), L("pottery")];
 FACE_LAYERS[B.Earth] = [L("earth"), L("dirt"), L("dirt")];
 FACE_LAYERS[B.Maize] = [L("maize"), L("maize"), L("maize")];
+FACE_LAYERS[B.RosaRed] = [L("rosaRed"), L("rosaRed"), L("rosaRed")];
+FACE_LAYERS[B.RosaGreen] = [L("rosaGreen"), L("rosaGreen"), L("rosaGreen")];
+FACE_LAYERS[B.RosaYellow] = [L("rosaYellow"), L("rosaYellow"), L("rosaYellow")];
+FACE_LAYERS[B.RosaMask] = [L("rosaRed"), L("rosaMask"), L("rosaRed")];
+FACE_LAYERS[B.Blossom] = [L("blossom"), L("blossom"), L("blossom")];
+FACE_LAYERS[B.BlossomYellow] = [L("blossomYellow"), L("blossomYellow"), L("blossomYellow")];
 
 export const MATERIAL_BLOCK: Record<Material, B> = {
   stone: B.Stone,
@@ -111,6 +129,10 @@ export const MATERIAL_BLOCK: Record<Material, B> = {
   pottery: B.Pottery,
   earth: B.Earth,
   maize: B.Maize,
+  rosaRed: B.RosaRed,
+  rosaGreen: B.RosaGreen,
+  rosaYellow: B.RosaYellow,
+  rosaMask: B.RosaMask,
 };
 
 /** Minimap colors per material. */
@@ -132,6 +154,10 @@ export const MATERIAL_COLOR: Record<Material, string> = {
   pottery: "#c46a3a",
   earth: "#b89466",
   maize: "#f2c42c",
+  rosaRed: "#b3402a",
+  rosaGreen: "#3f8f6a",
+  rosaYellow: "#e3b23c",
+  rosaMask: "#b3402a",
 };
 
 /** Cutout plant sprites (16 × 32 px, 0.5 × 1 m). */

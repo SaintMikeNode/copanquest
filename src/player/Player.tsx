@@ -264,6 +264,7 @@ export function Player() {
     playerState.climbing = climbing;
 
     // Share state with the minimap / POIs.
+    playerState.body = c.body;
     playerState.position.copy(c.currPos);
     playerState.grounded = c.isOnGround;
     euler.setFromQuaternion(c.currQuat, "YXZ");

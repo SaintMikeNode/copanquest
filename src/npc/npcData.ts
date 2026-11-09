@@ -226,8 +226,69 @@ export const JAGUAR_RANGES: [number, number, number, number][] = [
   [150, 40, 195, 120],
 ];
 
-/** Townspeople walking the trails (index into PATHS, offset along it 0..1, side offset). */
-export const WALKERS: { path: number; t: number; side: number; speed: number; outfit: Outfit }[] = [
+/**
+ * Townspeople walking the trails (index into PATHS, or their own loop of points), offset
+ * along it 0..1, side offset. era: "present" (tourists), "past" (only through the time
+ * lens), default both.
+ */
+export interface WalkerDef {
+  path?: number;
+  points?: [number, number][];
+  y?: number;
+  t: number;
+  side: number;
+  speed: number;
+  outfit: Outfit;
+  era?: "present" | "past";
+}
+
+const PAST: Outfit[] = [
+  { skin: SKIN[0], hair: "#1d1410", top: "#f2ede0", accent: "#c0392b", bottom: "#f2ede0", head: "headband" },
+  { skin: SKIN[1], hair: "#1d1410", top: "#f2ede0", accent: "#2a5ca8", bottom: "#2a5ca8", female: true, head: "turban", basket: true },
+  { skin: SKIN[2], hair: "#1d1410", top: "#c46a3a", accent: "#f2c42c", bottom: "#f2ede0", head: "turban" },
+  { skin: SKIN[3], hair: "#3a332e", top: "#f2ede0", accent: "#2f6b4f", bottom: "#c0392b", female: true, head: "none" },
+  { skin: SKIN[0], hair: "#1d1410", top: "#3f8f6a", accent: "#f2c42c", bottom: "#f2ede0", head: "headband", basket: true },
+];
+const TOURIST: Outfit[] = [
+  { skin: "#e0b48c", hair: "#6a4a2a", top: "#e86aa4", accent: "#ffffff", bottom: "#3a5a8a", head: "cap", modern: true },
+  { skin: "#c48a5a", hair: "#1d1410", top: "#f2c42c", accent: "#1f62d0", bottom: "#a8925f", head: "cap", modern: true },
+  { skin: "#f0c8a0", hair: "#c9a04a", top: "#58c4e8", accent: "#ffffff", bottom: "#2a2a2a", head: "none", modern: true, female: true },
+  { skin: "#8d5a3b", hair: "#1d1410", top: "#ffffff", accent: "#c0392b", bottom: "#5a6f8a", head: "cap", modern: true },
+];
+const loop = (cx: number, cz: number, rx: number, rz: number): [number, number][] =>
+  Array.from({ length: 9 }, (_, i) => [cx + Math.cos((i / 8) * Math.PI * 2) * rx, cz + Math.sin((i / 8) * Math.PI * 2) * rz]);
+
+const PLAZA_LOOPS: { pts: [number, number][]; y: number }[] = [
+  { pts: loop(-5, 15, 32, 26), y: 0 }, // Great Plaza
+  { pts: loop(0, 112, 30, 22), y: 0 }, // middle plaza
+  { pts: loop(15, 210, 26, 12), y: 0 }, // Court of the Hieroglyphic Stairway
+  { pts: loop(12, 318, 24, 20), y: 12 }, // West Court
+  { pts: loop(116, 286, 14, 22), y: 12 }, // East Court
+];
+
+export const WALKERS: WalkerDef[] = [
+  // Ancient Copanecos, seen only through the time lens.
+  ...PLAZA_LOOPS.flatMap((l, li) =>
+    [0, 0.33, 0.66].map((t, k) => ({
+      points: l.pts,
+      y: l.y,
+      t: (t + li * 0.11) % 1,
+      side: k % 2 ? 0.8 : -0.8,
+      speed: 0.9 + k * 0.12,
+      outfit: PAST[(li + k) % PAST.length],
+      era: "past" as const,
+    })),
+  ),
+  // Present-day tourists in the Great Plaza and the Acropolis.
+  ...TOURIST.map((o, i) => ({
+    points: i < 2 ? loop(-5, 15, 22, 18) : loop(12, 318, 18, 14),
+    y: i < 2 ? 0 : 12,
+    t: i * 0.3,
+    side: 0.4,
+    speed: 0.7,
+    outfit: o,
+    era: "present" as const,
+  })),
   { path: 0, t: 0.1, side: 0.7, speed: 1.0, outfit: { skin: SKIN[1], hair: "#1d1410", top: "#f2ede0", accent: "#c0392b", bottom: "#2a5ca8", female: true, head: "turban", basket: true } },
   { path: 0, t: 0.55, side: -0.7, speed: 1.15, outfit: { skin: SKIN[2], hair: "#1d1410", top: "#f2ede0", accent: "#1f62d0", bottom: "#f2ede0", head: "headband" } },
   { path: 1, t: 0.3, side: 0.6, speed: 0.9, outfit: { skin: SKIN[0], hair: "#1d1410", top: "#d69a1c", accent: "#f2ede0", bottom: "#f2ede0", head: "headband", basket: true } },

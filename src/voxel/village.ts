@@ -4,6 +4,7 @@ import { NX, NZ, REGION, VoxelWorld, hash2 } from "./voxelWorld";
 import { growTree } from "./decorate";
 import { FIELDS, HOUSEHOLDS, ORCHARD, STALLS, TEMAZCALS, WORKSHOP, type House } from "../world/villageData";
 import { ladderSegments } from "../world/ladders";
+import { DIG_SITES } from "../game/gameData";
 
 const ix = (x: number) => Math.floor((x - REGION.minX) / BLOCK);
 const iz = (z: number) => Math.floor((z - REGION.minZ) / BLOCK);
@@ -225,7 +226,49 @@ function workshop(w: VoxelWorld) {
   }
 }
 
+/** Archaeological squares: turned earth, corner stakes, string lines, a sieve and a bucket. */
+function digSites(w: VoxelWorld) {
+  for (const d of DIG_SITES) {
+    const cx = ix(d.at[0]);
+    const cz = iz(d.at[1]);
+    const s = w.surface(cx, cz);
+    const g = s.y;
+    for (let z = cz - 3; z <= cz + 3; z++)
+      for (let x = cx - 3; x <= cx + 3; x++) {
+        const edge = Math.abs(x - cx) === 3 || Math.abs(z - cz) === 3;
+        w.setBlock(x, g - 1, z, edge ? B.Dirt : B.Earth);
+      }
+    for (const [dx, dz] of [[-3, -3], [3, -3], [-3, 3], [3, 3]] as const) {
+      w.setBlock(cx + dx, g, cz + dz, B.Wood);
+      w.setBlock(cx + dx, g + 1, cz + dz, B.Wood);
+    }
+    w.setBlock(cx + 5, g, cz + 1, B.Pottery); // bucket
+    w.setBlock(cx + 5, g, cz - 1, B.Gravel); // spoil
+    w.setBlock(cx + 6, g, cz - 1, B.Gravel);
+  }
+}
+
+/** Entrance gate with a striped banner, where the visit begins. */
+function gate(w: VoxelWorld) {
+  const cx = ix(-147);
+  const cz = iz(80.5);
+  const s = w.surface(cx, cz);
+  for (const dz of [-6, 6]) {
+    for (let y = 0; y < 8; y++) w.setBlock(cx, s.y + y, cz + dz, B.Log);
+    w.addCollider(cx, s.y, cz + dz, cx, s.y + 7, cz + dz);
+  }
+  for (let dz = -7; dz <= 7; dz++) {
+    w.setBlock(cx, s.y + 8, cz + dz, B.Log);
+    if (Math.abs(dz) <= 4) {
+      w.setBlock(cx, s.y + 7, cz + dz, B.Cloth);
+      w.setBlock(cx, s.y + 6, cz + dz, B.Cloth);
+    }
+  }
+}
+
 export function buildVillage(w: VoxelWorld, plants: PlantSink) {
+  digSites(w);
+  gate(w);
   for (const hh of HOUSEHOLDS) {
     patio(w, hh.patio[0], hh.patio[1], hh.patio[2], hh.patio[3]);
     for (const h of hh.houses) house(w, h, plants);

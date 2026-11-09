@@ -325,6 +325,58 @@ const painters: Record<LayerName, (t: Tile, r: () => number, variant: number) =>
     t.fill(P.adobe, 1.6, 0.8, r);
     pebbles(t, r, P.adobe, 3);
   },
+  rosaRed(t, r) {
+    // Rosalila's red stucco, still glowing after being sealed in white plaster.
+    t.fill(pal("#8e2a1c", "#a8361f", "#bf4428", "#d25a3a"), 2, 0.6, r);
+  },
+  rosaGreen(t, r) {
+    t.fill(pal("#24614a", "#2f7a5c", "#3f8f6a", "#58a882"), 2, 0.6, r);
+    for (let x = 0; x < TEX; x++) {
+      t.set(x, 0, hex("#e3b23c"));
+      t.set(x, TEX - 1, hex("#1a3a2c"));
+    }
+  },
+  rosaYellow(t, r) {
+    t.fill(pal("#b8861c", "#d69a1c", "#e3b23c", "#f2cc5a"), 2, 0.6, r);
+    for (let x = 0; x < TEX; x += 4) for (let y = 0; y < TEX; y++) t.set(x, y, hex("#a8361f"));
+  },
+  rosaMask(t, r) {
+    // Sun-bird deity mask (Rosalila's facade): yellow face, round eyes, hooked beak, green plumes.
+    t.fill(pal("#a8361f", "#bf4428"), 0.5, 0.5, r);
+    const G = hex("#3f8f6a");
+    const GL = hex("#58a882");
+    const Y = hex("#e3b23c");
+    const YL = hex("#f2cc5a");
+    const W = hex("#f1ead8");
+    const K = hex("#2a1a12");
+    for (let y = 1; y < 15; y++) {
+      t.set(0, y, G);
+      t.set(1, y, y % 2 ? GL : G);
+      t.set(15, y, G);
+      t.set(14, y, y % 2 ? GL : G);
+    }
+    for (let x = 2; x < 14; x++) t.set(x, 1, x % 2 ? G : GL);
+    for (let y = 3; y < 10; y++) for (let x = 3; x < 13; x++) t.set(x, y, y === 3 ? YL : Y);
+    for (const ex of [4, 9]) {
+      for (let y = 4; y < 7; y++) for (let x = ex; x < ex + 3; x++) t.set(x, y, W);
+      t.set(ex + 1, 5, K);
+    }
+    // Hooked beak.
+    for (let x = 6; x < 10; x++) t.set(x, 8, hex("#d98a2a"));
+    for (let x = 6; x < 10; x++) t.set(x, 9, hex("#d98a2a"));
+    t.set(7, 10, hex("#d98a2a"));
+    t.set(8, 10, hex("#d98a2a"));
+    t.set(8, 11, hex("#b5651d"));
+    for (let x = 3; x < 13; x++) t.set(x, 13, x % 3 ? Y : G);
+  },
+  blossom(t, r) {
+    t.fill(pal("#a8487a", "#c95c96", "#e27ab0", "#f29cc8", "#ffc2de"), 2.2, 0.9, r);
+    for (let i = 0; i < 7; i++) t.set(Math.floor(r() * TEX), Math.floor(r() * TEX), P.leaves[2]);
+  },
+  blossomYellow(t, r) {
+    t.fill(pal("#c08a12", "#d9a41c", "#f0c22e", "#ffd95a", "#fff09a"), 2.2, 0.9, r);
+    for (let i = 0; i < 7; i++) t.set(Math.floor(r() * TEX), Math.floor(r() * TEX), P.leaves[2]);
+  },
   maize(t, r) {
     // Cobs lying in a pile.
     t.fill(P.maize, 1, 0.5, r);

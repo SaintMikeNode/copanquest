@@ -53,6 +53,44 @@ Dev tools: `npm run dev` or `?debug` in the URL enables the collider view. `F3` 
 - **Ladders:** wooden ladders up stepped walls, terrace by terrace (Acropolis north wall, Temples 16, 22 and 26, and the ball court's Structure 10). Walk into the wall to climb (`src/world/ladders.ts`).
 - **10 jade beads** to find, many only reachable by ladder. Progress (jade, places visited, people met) is saved in the browser.
 
+## Game loop
+
+Everything feeds **XP** and four **ranks** (`src/state/progress.ts`): Turista → Explorador/a (binoculars, so the camera can zoom) → Arqueólogo/a (the time lens) → Guardián/a de Copán (jade hat). Progress is saved in localStorage.
+
+- **Explorer's camera** (📷 / C, shutter F):
+  - Over-the-shoulder viewfinder. An aim check finds the subject nearest the center that nothing blocks.
+  - Saves a real thumbnail into the **album**: animals, people and monuments, each with a fact (`src/game/subjects.ts`, `CameraAim.tsx`).
+- **Quests** (`src/game/gameData.ts`, `questLogic.ts`). Each villager has one, delivered through dialogue (offer → reminder with progress → payoff with a sourced fact):
+  - Guide: photograph 3 animals, then dig 3 archaeology squares.
+  - Weaver: 5 indigo plants (Maya blue).
+  - Merchant: 6 cacao pods.
+  - Farmer: 8 ears of maize.
+  - Scribe: read 6 glyph fragments.
+  - Ballplayer: hit 3 macaw markers.
+  - Sculptor: 3 flints.
+  - Girl: find her 4 turkeys.
+- **Glyph puzzles:** Maya numbers in dots (1), bars (5) and the shell (0), drawn in pixel art.
+- **Digging:** hold to dig at staked squares. Each square gives an artifact with a fact (Copador pottery, Ixtepeque obsidian, shell bead, spindle whorl, greenstone axe), which goes to the journal's **museum**.
+- **Ballgame:** a physics rubber ball, a hip-bump action, and six macaw-head markers on the sloped walls.
+- **Time lens** (⏳ / T): blends the world toward Copán around AD 800 in the shaders. Stone becomes red-painted stucco, plazas and terrace tops become cream plaster, wild plants fade from the city core, and ancient townspeople fill the plazas while today's tourists disappear (`src/game/lens.ts`).
+- **Day and night** (`src/game/time.ts`): a 20-minute day with the sun rising east and setting west, a little to the south (15° N). Sunset colors, then stars, Venus and moonlight, and fireflies at night. A HUD chip shows **today's real date in the Maya calendar** (Long Count, Tzolk'in, Haab'; GMT correlation 584283, checked against 21 Dec 2012 = 13.0.0.0.0 4 Ajaw 3 K'ank'in).
+- **Rosalila:**
+  - A torch-lit tunnel from Temple 16's east face, near the tunnel entrances in OpenStreetMap, leads to a chamber with Rosalila inside.
+  - The chamber has corridors around the temple, and you come out at its painted west front.
+  - It's true to the published size: three stories, about 12.9 m, base 18.5 × 12.5 m.
+  - The facade is red stucco with green and yellow cornices and sun-bird mask friezes.
+  - The interior is dark, with flickering torchlight built into the shared shader.
+  - Colliders are carved by box subtraction.
+  - The info card notes that the real tunnels are much narrower.
+- **Life around the city:**
+  - Animals: agoutis that scurry off, turkeys, butterflies, pollen and fireflies.
+  - Flowering macuelizo (pink) and guayacán (yellow) trees.
+  - Fallen sculpture fragments at the foot of the ruins.
+  - Stone benches along the trails, and an entrance gate.
+  - Hearth smoke over the village, and tourists in the plazas.
+
+Dev console helpers (with `?debug` or `npm run dev`): `cqTeleport(x, y, z)`, `cqView(yaw, pitch, dist)`, `cqTime(0..1)`, `cqLens(true)`.
+
 ## Loading and streaming
 
 - **Loading screen:** shows real progress and rotating facts. It stays up until everything within 150 m of the player is meshed *and* the world has rendered a few frames.

@@ -156,8 +156,8 @@ export function meshVoxelWorld(
                   const faces = FACE_LAYERS[id];
                   const layer = d === 1 ? (side > 0 ? faces[0] : faces[2]) : faces[1];
                   // Foliage skips AO so canopies merge into big quads (it barely shows on leaves).
-                  if (id === B.Leaves || id === B.Fig) {
-                    mask[n] = 1 + layer + 32 * 255;
+                  if (id === B.Leaves || id === B.Fig || id === B.Blossom || id === B.BlossomYellow) {
+                    mask[n] = 1 + layer + 64 * 255;
                     continue;
                   }
                   // AO from the blocks around the front cell, in the face plane.
@@ -173,7 +173,7 @@ export function meshVoxelWorld(
                   const a1 = up && vm ? 0 : 3 - (up + vm + pm);
                   const a2 = up && vp ? 0 : 3 - (up + vp + pp);
                   const a3 = um && vp ? 0 : 3 - (um + vp + mp);
-                  mask[n] = 1 + layer + 32 * (a0 | (a1 << 2) | (a2 << 4) | (a3 << 6));
+                  mask[n] = 1 + layer + 64 * (a0 | (a1 << 2) | (a2 << 4) | (a3 << 6));
                 }
 
               // Greedy merge.
@@ -192,8 +192,8 @@ export function meshVoxelWorld(
                   outer: for (; b + h < CS; h++)
                     for (let k = 0; k < w; k++) if (mask[n + k + h * CS] !== key) break outer;
 
-                  const layer = (key - 1) & 31;
-                  const aoBits = (key - 1) >> 5;
+                  const layer = (key - 1) & 63;
+                  const aoBits = (key - 1) >> 6;
                   const ao = [aoBits & 3, (aoBits >> 2) & 3, (aoBits >> 4) & 3, (aoBits >> 6) & 3];
                   // Corners in (u, v), CCW seen from +d.
                   const uvCorners = [

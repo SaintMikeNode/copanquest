@@ -243,6 +243,10 @@ export class VoxelWorld {
             top = y1 - Math.floor(n * (s.erode + 1));
             if (top < y0) top = y0;
           }
+          if (s.carve) {
+            for (let iy = y0; iy <= y1; iy++) this.clearBlock(ix, iy, iz);
+            continue;
+          }
           for (let iy = y0; iy <= top; iy++) this.setBlock(ix, iy, iz, b);
           if (s.erode && top < y1 && hash2(ix + 3, iz) < 0.6) this.setBlock(ix, top, iz, B.Rubble);
         }

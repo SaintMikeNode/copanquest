@@ -14,6 +14,14 @@ import { Monuments } from "./world/Monuments";
 import { Macaws } from "./world/Macaws";
 import { Background } from "./world/Background";
 import { Ambient } from "./world/Ambient";
+import { Torches } from "./world/Torches";
+import { Smoke } from "./world/Smoke";
+import { tickDay } from "./game/time";
+import { tickLens, useLens } from "./game/lens";
+import { dayClock } from "./game/time";
+import { DEV_TOOLS } from "./config";
+import { CameraAim } from "./game/CameraAim";
+import { Animals, BallGame, DigTracker, Pickups } from "./game/WorldGame";
 import { People } from "./npc/People";
 import { Jades } from "./poi/Jades";
 import { Boundary } from "./world/Boundary";
@@ -23,6 +31,21 @@ import { PoiTracker } from "./poi/PoiTracker";
 import { PoiMarkers } from "./poi/PoiMarkers";
 import { useGame, useQualityLevel } from "./state/useGame";
 import { Hud } from "./ui/Hud";
+
+function DayTicker() {
+  useEffect(() => {
+    if (!DEV_TOOLS) return;
+    // Dev helpers: cqTime(0..1) sets the time of day, cqLens(true) toggles the time lens.
+    const w = window as unknown as { cqTime?: (t: number) => void; cqLens?: (on: boolean) => void };
+    w.cqTime = (t) => void (dayClock.t = t);
+    w.cqLens = (on) => useLens.setState({ on });
+  }, []);
+  useFrame((_, dt) => {
+    tickDay(Math.min(dt, 0.1));
+    tickLens(Math.min(dt, 0.1));
+  });
+  return null;
+}
 
 /** Calls onVisible after the world has rendered a few frames (shaders compiled, regions uploaded). */
 function FirstFrames({ ready, onVisible }: { ready: boolean; onVisible: () => void }) {
@@ -69,6 +92,7 @@ export default function Game() {
           onIncline={() => setAutoLevel("high")}
           onFallback={() => setAutoLevel("low")}
         />
+        <DayTicker />
         <Environment />
         <Suspense fallback={null}>
           <Background />
@@ -80,12 +104,19 @@ export default function Game() {
             <Boundary />
             <Player />
             <People />
+            <CameraAim />
+            <Pickups />
+            <Animals />
+            <DigTracker />
+            <BallGame />
           </Physics>
           <VoxelTerrain />
           <Monuments />
           <Macaws />
           <Jades />
           <Ambient />
+          <Torches />
+          <Smoke />
           <PoiMarkers />
           <PoiTracker />
         </Suspense>

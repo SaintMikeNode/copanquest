@@ -6,7 +6,7 @@ import { buildGreybox } from "../world/buildGreybox";
 import type { TerrainGrid } from "../world/terrainData";
 import { VoxelWorld } from "./voxelWorld";
 import { meshFarTerrain, meshVoxelWorld, type MeshData } from "./mesher";
-import { paintPaths, plantBushes, plantTrees, scatterPlants } from "./decorate";
+import { paintPaths, placeBenches, plantBushes, plantTrees, scatterFragments, scatterPlants } from "./decorate";
 import { buildVillage } from "./village";
 
 export interface VoxelRequest {
@@ -49,6 +49,8 @@ self.onmessage = (e: MessageEvent<VoxelRequest>) => {
   buildVillage(world, (x, y, z, p) => crops.push([x, y, z, p]));
   plantTrees(world);
   plantBushes(world);
+  scatterFragments(world);
+  placeBenches(world);
   const plants = scatterPlants(world, crops);
   const far = meshFarTerrain(grid, world, farExtent);
   const colliders = new Float32Array(world.colliders);

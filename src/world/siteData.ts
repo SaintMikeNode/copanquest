@@ -31,6 +31,10 @@ export type Material =
   | "gravel"
   | "sand"
   | "wood"
+  | "rosaRed"
+  | "rosaGreen"
+  | "rosaYellow"
+  | "rosaMask"
   | "adobe"
   | "thatch"
   | "ladder"
@@ -440,6 +444,25 @@ export const MONUMENTS: Monument[] = [
   // Altar Q: in front of Temple 16's west stair (position est.). ≈ 1.2 × 1.2 × 0.76 m.
   { id: "altar-q", kind: "altar", position: [45, 330], baseY: ACROPOLIS_TOP, height: 1, width: 1.5 },
 ];
+
+/**
+ * Rosalila (AD 571), buried inside Temple 16. Real size: 3 stories, ~12.9 m tall, base
+ * 18.5 × 12.5 m (Asociación Copán). In the game it sits in a chamber inside Temple 16 with
+ * corridors around it (the real tunnels are much narrower), reached by a tunnel from the east,
+ * near the tunnel entrances mapped in OpenStreetMap.
+ */
+export const ROSALILA = {
+  center: [72, 330] as [number, number],
+  baseY: ACROPOLIS_TOP,
+  /** Chamber [width x, height, depth z]. */
+  chamber: [19, 15, 26] as [number, number, number],
+  /** Tunnel along x at this z, from Temple 16's east face to the chamber. */
+  tunnel: { z: 321, width: 2.5, height: 3.5, fromX: 92, toX: 81 },
+  /** Footprint [x (east–west), z (north–south)] and story heights. */
+  size: [12.5, 18.5] as [number, number],
+  stories: [5, 4, 3],
+  inset: 1.5,
+};
 
 /** Labels for the minimap. */
 export const MAP_LABELS: { position: [number, number]; text: L10n }[] = [

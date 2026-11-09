@@ -6,6 +6,8 @@ import { use, useMemo } from "react";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
 import { shared } from "../voxel/material";
+import { dayClock, skyTop } from "../game/time";
+import { fulfilCapture } from "../game/camera";
 
 interface Region {
   size: number;
@@ -42,7 +44,13 @@ function sample(r: Region, x: number, z: number) {
   return H[i] * (1 - tx) * (1 - tz) + H[i + 1] * tx * (1 - tz) + H[i + r.size] * (1 - tx) * tz + H[i + r.size + 1] * tx * tz;
 }
 
+/** Brightness of unlit backdrop surfaces (1 by day, dim at night). */
+const lightU = { value: 1 };
+const nightU = { value: 0 };
+const venusU = { value: new THREE.Vector3(0, 1, 0) };
+
 const hazeGLSL = /* glsl */ `
+  uniform float light;
   uniform vec3 fogColor;
   uniform vec3 sunHaze;
   uniform float fogDist;
@@ -125,6 +133,7 @@ const mountainMaterial = () =>
   new THREE.ShaderMaterial({
     vertexColors: true,
     uniforms: {
+      light: lightU,
       fogColor: shared.fogColor,
       sunHaze: shared.sunHaze,
       fogDist: shared.fogDist,
@@ -150,7 +159,7 @@ const mountainMaterial = () =>
       varying float vDepth;
       void main() {
         // Far ridges go bluer and paler (aerial perspective), like a painted backdrop.
-        gl_FragColor = vec4(haze(vColor, vDepth * 1.15, vWorld), 1.0);
+        gl_FragColor = vec4(haze(vColor * light, vDepth * 1.15, vWorld), 1.0);
         #include <colorspace_fragment>
       }
     `,
@@ -230,6 +239,7 @@ const cloudMaterial = () =>
     transparent: true,
     depthWrite: false,
     uniforms: {
+      light: lightU,
       fogColor: shared.fogColor,
       sunHaze: shared.sunHaze,
       fogDist: shared.fogDist,
@@ -255,7 +265,7 @@ const cloudMaterial = () =>
       varying vec3 vWorld;
       varying float vDepth;
       void main() {
-        vec3 c = vec3(1.0, 1.0, 1.0) * vShade;
+        vec3 c = mix(fogColor, vec3(1.0), light) * vShade * (0.35 + 0.65 * light);
         c = haze(c, vDepth * 0.6, vWorld);
         float fade = 1.0 - smoothstep(1500.0, 2000.0, length(vWorld.xz - cameraPosition.xz));
         gl_FragColor = vec4(c, 0.86 * fade);
@@ -271,10 +281,13 @@ const skyMaterial = () =>
     side: THREE.BackSide,
     depthWrite: false,
     uniforms: {
-      top: { value: new THREE.Color("#4f86e8") },
+      top: { value: skyTop },
       horizon: { value: shared.fogColor.value },
       sunHaze: shared.sunHaze,
       sunDirection: shared.sunDirection,
+      night: nightU,
+      venus: venusU,
+      sunReal: { value: new THREE.Vector3() },
     },
     vertexShader: /* glsl */ `
       varying vec3 vDir;
@@ -288,6 +301,9 @@ const skyMaterial = () =>
       uniform vec3 horizon;
       uniform vec3 sunHaze;
       uniform vec3 sunDirection;
+      uniform float night;
+      uniform vec3 venus;
+      uniform vec3 sunReal;
       varying vec3 vDir;
       void main() {
         vec3 d = normalize(vDir);
@@ -297,9 +313,18 @@ const skyMaterial = () =>
         float s = max(dot(d, sunDirection), 0.0);
         col = mix(col, sunHaze, pow(s, 5.0) * 0.55 * (1.0 - h * 0.6));
         col += vec3(1.0, 0.9, 0.7) * pow(s, 60.0) * 0.4;
-        // Square sun.
+        // Square sun (by day) or square moon (by night, opposite the sun).
         vec3 q = d - sunDirection;
-        col = mix(col, vec3(1.0, 0.98, 0.88), step(max(abs(q.x), max(abs(q.y), abs(q.z))), 0.035));
+        float disc = step(max(abs(q.x), max(abs(q.y), abs(q.z))), night > 0.5 ? 0.025 : 0.035);
+        col = mix(col, night > 0.5 ? vec3(0.92, 0.94, 1.0) : vec3(1.0, 0.98, 0.88), disc);
+        // Stars and Venus — the Maya tracked Venus very carefully.
+        if (night > 0.01 && d.y > 0.0) {
+          vec3 p = floor(d * 380.0);
+          float h = fract(sin(dot(p, vec3(12.9898, 78.233, 37.719))) * 43758.5453);
+          col += vec3(0.9, 0.95, 1.0) * night * smoothstep(0.9965, 1.0, h) * 1.4;
+          vec3 qv = d - venus;
+          col = mix(col, vec3(1.0, 0.97, 0.85), night * step(max(abs(qv.x), max(abs(qv.y), abs(qv.z))), 0.006));
+        }
         if (d.y < 0.0) col = horizon;
         gl_FragColor = vec4(col, 1.0);
         #include <colorspace_fragment>
@@ -338,6 +363,11 @@ export function Background() {
       camera.updateProjectionMatrix();
     }
     sky.position.copy(cam.position);
+    lightU.value = 0.22 + dayClock.daylight * 0.78;
+    nightU.value = dayClock.night;
+    // Venus sits ~40° from the sun along its path: the evening/morning star.
+    const ang = (dayClock.t - 0.25) * Math.PI * 2 + (dayClock.t > 0.5 ? 0.7 : -0.7);
+    venusU.value.set(Math.cos(ang), Math.sin(ang), 0.32).normalize();
     // Clouds drift slowly with the wind and stay centered around the player.
     const t = shared.time.value;
     clouds.position.set(Math.sin(t * 0.0005) * 1200, 0, Math.cos(t * 0.0004) * 300);
@@ -348,6 +378,7 @@ export function Background() {
     gl.render(scene, camera);
     gl.clearDepth();
     gl.render(state.scene, cam);
+    fulfilCapture(gl.domElement);
   }, 1);
   return null;
 }

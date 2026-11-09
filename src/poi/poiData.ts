@@ -182,6 +182,33 @@ export const POIS: Poi[] = [
     source: "ahutnick.github.io (Structure 16); Asociación Copán",
   },
   {
+    id: "rosalila",
+    position: [61, 330],
+    y: ACROPOLIS_TOP,
+    radius: 5,
+    markerHeight: 4,
+    title: { es: "Rosalila", en: "Rosalila" },
+    date: { es: "Año 571 d. C.", en: "AD 571" },
+    body: {
+      es: "¡Estás frente a Rosalila! Este templo de tres pisos mide casi 13 metros. Los mayas no lo destruyeron: lo cubrieron con cuidado con estuco blanco antes de construir el Templo 16 encima, y por eso conserva sus colores. En la vida real los túneles son mucho más angostos; aquí los hicimos grandes para que lo veas completo. Una réplica pintada está en el Museo de Escultura de Copán.",
+      en: "You're standing in front of Rosalila! This three-story temple is almost 13 meters tall. The Maya didn't destroy it: they carefully covered it in white stucco before building Temple 16 on top, which is why it keeps its colors. The real tunnels are much narrower; here we made them big so you can see it whole. A painted replica is in the Copán Sculpture Museum.",
+    },
+    source: "Asociación Copán (Rosalila); Wikipedia",
+  },
+  {
+    id: "rosalila-tunnel",
+    position: [94, 321],
+    y: ACROPOLIS_TOP,
+    radius: 4,
+    markerHeight: 4,
+    title: { es: "Túnel a Rosalila", en: "Tunnel to Rosalila" },
+    body: {
+      es: "Los arqueólogos excavaron túneles dentro de la Acrópolis para estudiar los edificios antiguos que quedaron enterrados. Entra con cuidado: ¡adentro está oscuro!",
+      en: "Archaeologists dug tunnels inside the Acropolis to study the old buildings buried underneath. Go in carefully: it's dark inside!",
+    },
+    source: "Asociación Copán; Penn Museum",
+  },
+  {
     id: "temple22",
     position: [106, 250],
     y: ACROPOLIS_TOP,

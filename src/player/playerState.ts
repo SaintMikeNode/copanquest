@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import type { RapierRigidBody } from "@react-three/rapier";
 
 /**
  * Per-frame player data shared with non-React code (minimap, POI tracker).
@@ -14,4 +15,6 @@ export const playerState = {
   climbing: false,
   /** Set by the dialogue UI: freezes movement while talking. */
   frozen: false,
+  /** The player's rigid body (for ray filters). */
+  body: null as RapierRigidBody | null,
 };

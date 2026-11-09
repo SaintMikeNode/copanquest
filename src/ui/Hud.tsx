@@ -10,11 +10,14 @@ import { Credits } from "./Credits";
 import { Help } from "./Help";
 import { LangToggle } from "./LangToggle";
 import { DialogueBox, Progress, TalkPrompt, Toast } from "./Dialogue";
+import { ActionPrompt, CameraOverlay, GlyphPuzzle, HudButtons, Journal } from "./GameUI";
+import { useCamera } from "../game/camera";
 
 export function Hud() {
   const t = useT();
   const overlay = useGame((s) => s.overlay);
   const dialogue = useGame((s) => s.dialogue);
+  const camOn = useCamera((s) => s.active);
   const setOverlay = useGame((s) => s.setOverlay);
   const close = () => setOverlay(null);
   return (
@@ -29,8 +32,11 @@ export function Hud() {
         <Minimap />
       </button>
       <Progress />
-      {!dialogue && <InfoCard />}
-      <TalkPrompt />
+      <HudButtons />
+      <CameraOverlay />
+      {!dialogue && !camOn && <InfoCard />}
+      {!camOn && <TalkPrompt />}
+      {!camOn && !dialogue && <ActionPrompt />}
       <DialogueBox />
       <Toast />
       {IS_TOUCH && !overlay && !dialogue && <TouchControls />}
@@ -44,6 +50,8 @@ export function Hud() {
           <Credits />
         </Overlay>
       )}
+      {overlay === "journal" && <Journal />}
+      {overlay === "glyphs" && <GlyphPuzzle />}
       {overlay === "help" && (
         <Overlay title={t("help")} onClose={close}>
           <Help />

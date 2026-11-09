@@ -16,6 +16,14 @@ export const shared = {
   /** Distance at which ~63% of a surface's color has turned into haze. */
   fogDist: { value: 3200 },
   time: { value: 0 },
+  /** Time lens: 0 = today, 1 = around AD 800. */
+  lens: { value: 0 },
+  /** Dark interiors (Rosalila chamber + tunnel) as min/max corners, and torch positions. */
+  interiorAMin: { value: new THREE.Vector3() },
+  interiorAMax: { value: new THREE.Vector3() },
+  interiorBMin: { value: new THREE.Vector3() },
+  interiorBMax: { value: new THREE.Vector3() },
+  torches: { value: Array.from({ length: 8 }, () => new THREE.Vector3(0, -999, 0)) },
 };
 
 const lightingPars = /* glsl */ `
@@ -31,6 +39,32 @@ const lightingPars = /* glsl */ `
   uniform vec3 fogColor;
   uniform vec3 sunHaze;
   uniform float fogDist;
+  uniform vec3 interiorAMin;
+  uniform vec3 interiorAMax;
+  uniform vec3 interiorBMin;
+  uniform vec3 interiorBMax;
+  uniform vec3 torches[8];
+  uniform float time;
+
+  float insideBox(vec3 p, vec3 mn, vec3 mx) {
+    // Surfaces sit exactly on the box faces, so the dark zone extends a little past them.
+    vec3 a = smoothstep(mn - 1.0, mn - 0.25, p) * (1.0 - smoothstep(mx + 0.25, mx + 1.0, p));
+    return a.x * a.y * a.z;
+  }
+  /** 0 outdoors … 1 deep inside Rosalila's chamber or tunnel. */
+  float interior(vec3 p) {
+    return max(insideBox(p, interiorAMin, interiorAMax), insideBox(p, interiorBMin, interiorBMax));
+  }
+  /** Warm, flickering torchlight. */
+  vec3 torchLight(vec3 p) {
+    vec3 l = vec3(0.0);
+    for (int i = 0; i < 8; i++) {
+      vec3 d = p - torches[i];
+      float flick = 0.85 + 0.15 * sin(time * 13.0 + float(i) * 2.1) * sin(time * 7.3 + float(i));
+      l += vec3(1.0, 0.62, 0.28) * flick / (1.0 + dot(d, d) * 0.22);
+    }
+    return l;
+  }
 
   /** Aerial perspective shared by the world, the horizon mountains and the clouds. */
   vec3 haze(vec3 c, float depth, vec3 worldPos) {
@@ -60,6 +94,11 @@ const lightingPars = /* glsl */ `
     float sun = max(dot(n, sunDirection), 0.0) * shadow;
     float occl = mix(0.38, 1.0, ao * ao);
     vec3 light = hemi * 0.58 * occl + sunColor * sun * mix(0.75, 1.0, ao) * 0.78;
+    // Inside Rosalila's chamber: dark, lit by torches.
+    float inner = interior(worldPos);
+    if (inner > 0.0 || distance(worldPos, torches[0]) < 22.0) {
+      light = mix(light, hemi * 0.06 * occl, inner) + torchLight(worldPos) * mix(0.35, 1.1, inner) * occl;
+    }
     vec3 c = albedo * light * face;
     // Vivid grade: a touch more saturation and warmth.
     float l = dot(c, vec3(0.299, 0.587, 0.114));
@@ -126,6 +165,9 @@ const blockFragment = /* glsl */ `
   uniform float figLayer;
   uniform float stoneFirst;
   uniform float stoneLast;
+  uniform float pathLayer;
+  uniform float lens;
+  uniform vec4 core; // city core rect (minX, minZ, maxX, maxZ)
   varying vec2 vUv;
   varying float vLayer;
   varying float vAo;
@@ -164,6 +206,18 @@ const blockFragment = /* glsl */ `
       float t = vnoise(floor(vWorld.xz / 6.0) * 0.9);
       albedo *= mix(vec3(0.9, 1.0, 0.85), vec3(1.08, 1.04, 0.9), t);
     }
+    if (lens > 0.001) {
+      // Time lens: Copán around AD 800 — red-painted stucco and cream plaster floors.
+      bool inCore = vWorld.x > core.x && vWorld.z > core.y && vWorld.x < core.z && vWorld.z < core.w;
+      float lum = dot(tex.rgb, vec3(0.299, 0.587, 0.114));
+      vec3 past = albedo;
+      if (base >= stoneFirst && base <= stoneLast) {
+        past = n.y > 0.5 ? vec3(0.86, 0.80, 0.68) * (0.85 + lum * 0.3) : vec3(0.70, 0.22, 0.14) * (0.8 + lum * 0.45);
+      } else if (inCore && ((base == grassLayer && n.y > 0.5) || base == pathLayer)) {
+        past = vec3(0.86, 0.80, 0.68) * (0.9 + lum * 0.2);
+      }
+      albedo = mix(albedo, past, lens);
+    }
     gl_FragColor = vec4(shade(albedo, n, vAo, vDepth, vWorld), 1.0);
     #include <colorspace_fragment>
   }
@@ -182,6 +236,8 @@ export function createBlockMaterial(atlas: THREE.DataArrayTexture, variants: num
       figLayer: { value: L("fig") },
       stoneFirst: { value: L("stone") },
       stoneLast: { value: L("rubble") },
+      pathLayer: { value: L("path") },
+      core: { value: new THREE.Vector4(-90, -50, 145, 380) },
     }),
   });
   m.uniforms.atlas.value = atlas;
@@ -230,6 +286,7 @@ const plantFragment = /* glsl */ `
   precision highp sampler2DArray;
   ${lightingPars}
   uniform sampler2DArray plants;
+  uniform float lens;
   varying vec2 vUv;
   varying float vLayer;
   varying float vDepth;
@@ -238,6 +295,8 @@ const plantFragment = /* glsl */ `
   void main() {
     vec4 tex = texture(plants, vec3(vUv, vLayer));
     if (tex.a < 0.5 || vFade <= 0.0) discard;
+    // Time lens: the city core was paved and swept — wild plants fade away.
+    if (lens > 0.0 && vWorld.x > -90.0 && vWorld.x < 145.0 && vWorld.z > -50.0 && vWorld.z < 380.0 && fract(sin(dot(floor(vWorld.xz * 2.0), vec2(12.9898, 78.233))) * 43758.5453) < lens) discard;
     // Darker near the ground, like the grass is shading itself.
     float ao = mix(0.45, 1.0, smoothstep(0.0, 0.7, vUv.y));
     gl_FragColor = vec4(shade(tex.rgb, vec3(0.0, 1.0, 0.0), ao, vDepth, vWorld), 1.0);

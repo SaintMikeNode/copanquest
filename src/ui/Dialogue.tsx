@@ -1,4 +1,6 @@
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
+import { scriptFor, type Script } from "../game/questLogic";
+import { MayaClock, RankChip } from "./GameUI";
 import { useGame } from "../state/useGame";
 import { useL10n, useT } from "../i18n";
 import { talkInfo, TALKERS } from "../npc/npcData";
@@ -17,10 +19,8 @@ export function TalkPrompt() {
     const onKey = (e: KeyboardEvent) => {
       if (e.code !== "KeyE" && e.code !== "Enter") return;
       const g = useGame.getState();
-      if (g.dialogue) {
-        const info = talkInfo(g.dialogue.id);
-        g.nextLine(info?.lines.length ?? 0);
-      } else if (g.talkTarget) g.openDialogue(g.talkTarget);
+      if (g.dialogue) advance();
+      else if (g.talkTarget) g.openDialogue(g.talkTarget);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -35,18 +35,33 @@ export function TalkPrompt() {
   );
 }
 
+/** The script of the open dialogue (computed once when it opens). */
+let current: Script | null = null;
+
+/** Next line, or close and run the script's end action. */
+function advance() {
+  const g = useGame.getState();
+  if (!g.dialogue || !current) return;
+  if (g.dialogue.line + 1 >= current.lines.length) {
+    const end = current.onEnd;
+    g.closeDialogue();
+    end?.();
+  } else g.nextLine(current.lines.length);
+}
+
 export function DialogueBox() {
   const dialogue = useGame((s) => s.dialogue);
-  const next = useGame((s) => s.nextLine);
   const close = useGame((s) => s.closeDialogue);
   const t = useT();
   const l = useL10n();
+  const dialogueId = dialogue?.id ?? null;
+  const script = useMemo(() => (dialogueId ? scriptFor(dialogueId) : null), [dialogueId]);
+  current = script;
   useEffect(() => {
     playerState.frozen = !!dialogue;
   }, [dialogue]);
-  if (!dialogue) return null;
-  const info = talkInfo(dialogue.id);
-  if (!info) return null;
+  if (!dialogue || !script) return null;
+  const info = script;
   const last = dialogue.line >= info.lines.length - 1;
   return (
     <section className="dialogue" aria-live="polite">
@@ -63,7 +78,7 @@ export function DialogueBox() {
             <i key={i} className={i === dialogue.line ? "on" : ""} />
           ))}
         </span>
-        <button className="primary small" onClick={() => next(info.lines.length)}>
+        <button className="primary small" onClick={advance}>
           {last ? t("close") : t("next")} ▸
         </button>
       </footer>
@@ -79,6 +94,8 @@ export function Progress() {
   const t = useT();
   return (
     <div className="progress">
+      <RankChip />
+      <MayaClock />
       <span className="chip jade-chip">
         <i className="jade-icon" /> {jades}/{JADES.length}
       </span>

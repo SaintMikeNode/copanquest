@@ -1,7 +1,7 @@
 // Turns site data into voxel shapes (for the block renderer) and collider descriptions.
 // Visuals and colliders are separate: steps are decoration only, and every staircase
 // gets one invisible convex wedge (ramp) the character walks on.
-import { BLOCKS, MONUMENTS, MOUNDS, type Face, type Material, type Mound, type Stair } from "./siteData";
+import { BLOCKS, MONUMENTS, MOUNDS, ROSALILA, type Face, type Material, type Mound, type Stair } from "./siteData";
 import { BLOCK, MATERIAL_COLOR } from "../voxel/blocks";
 
 /** A box to rasterize into voxels. Later shapes overwrite earlier ones. */
@@ -15,6 +15,38 @@ export interface Shape {
   fillTo?: number;
   /** Ruin erosion: remove up to this many blocks from the top of each column (seeded). */
   erode?: number;
+  /** Remove blocks instead of adding them (tunnels, chambers). */
+  carve?: boolean;
+}
+
+type Box = [number, number, number, number, number, number]; // minX, minY, minZ, maxX, maxY, maxZ
+
+/** Axis-aligned box minus a hole → up to 6 boxes. */
+function subtract(b: Box, h: Box): Box[] {
+  if (h[0] >= b[3] || h[3] <= b[0] || h[1] >= b[4] || h[4] <= b[1] || h[2] >= b[5] || h[5] <= b[2]) return [b];
+  const out: Box[] = [];
+  const [x0, y0, z0, x1, y1, z1] = b;
+  const hx0 = Math.max(h[0], x0), hy0 = Math.max(h[1], y0), hz0 = Math.max(h[2], z0);
+  const hx1 = Math.min(h[3], x1), hy1 = Math.min(h[4], y1), hz1 = Math.min(h[5], z1);
+  if (x0 < hx0) out.push([x0, y0, z0, hx0, y1, z1]);
+  if (hx1 < x1) out.push([hx1, y0, z0, x1, y1, z1]);
+  if (z0 < hz0) out.push([hx0, y0, z0, hx1, y1, hz0]);
+  if (hz1 < z1) out.push([hx0, y0, hz1, hx1, y1, z1]);
+  if (y0 < hy0) out.push([hx0, y0, hz0, hx1, hy0, hz1]);
+  if (hy1 < y1) out.push([hx0, hy1, hz0, hx1, y1, hz1]);
+  return out;
+}
+
+/** Rosalila's chamber and access tunnel (as boxes). */
+export function rosalilaHoles(): Box[] {
+  const R = ROSALILA;
+  const [cx, cz] = R.center;
+  const [w, h, d] = R.chamber;
+  const T = R.tunnel;
+  return [
+    [cx - w / 2, R.baseY, cz - d / 2, cx + w / 2, R.baseY + h, cz + d / 2],
+    [T.toX, R.baseY, T.z - T.width / 2, T.fromX, R.baseY + T.height, T.z + T.width / 2],
+  ];
 }
 
 /** Where to draw each carved monument (pixel-art mesh, not voxels). */
@@ -187,6 +219,44 @@ export function buildGreybox(): Greybox {
       halfExtents: quarter ? [d / 2, mon.height / 2, w / 2] : [w / 2, mon.height / 2, d / 2],
     });
   }
+  // ---- Rosalila: carve the chamber and tunnel out of Temple 16, then build the temple inside.
+  const holes = rosalilaHoles();
+  for (const [x0, y0, z0, x1, y1, z1] of holes) {
+    g.shapes.push({ position: [(x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2], size: [x1 - x0, y1 - y0, z1 - z0], material: "stone", carve: true });
+    g.shapes.push({ position: [(x0 + x1) / 2, y0, (z0 + z1) / 2], size: [x1 - x0, 0, z1 - z0], material: "gravel" });
+  }
+  g.cuboids = g.cuboids.flatMap((c) => {
+    if (c.rotation) return [c];
+    let boxes: Box[] = [[
+      c.position[0] - c.halfExtents[0], c.position[1] - c.halfExtents[1], c.position[2] - c.halfExtents[2],
+      c.position[0] + c.halfExtents[0], c.position[1] + c.halfExtents[1], c.position[2] + c.halfExtents[2],
+    ]];
+    for (const h of holes) boxes = boxes.flatMap((b) => subtract(b, h));
+    return boxes
+      .filter((b) => b[3] - b[0] > 0.01 && b[4] - b[1] > 0.01 && b[5] - b[2] > 0.01)
+      .map((b) => ({
+        position: [(b[0] + b[3]) / 2, (b[1] + b[4]) / 2, (b[2] + b[5]) / 2] as [number, number, number],
+        halfExtents: [(b[3] - b[0]) / 2, (b[4] - b[1]) / 2, (b[5] - b[2]) / 2] as [number, number, number],
+      }));
+  });
+  const R = ROSALILA;
+  let y = R.baseY;
+  let [sx, sz] = R.size;
+  pushSolid(g, { position: [R.center[0], y + 0.25, R.center[1]], size: [sx + 1, 0.5, sz + 1], material: "rosaGreen" });
+  y += 0.5;
+  R.stories.forEach((h, i) => {
+    pushSolid(g, { position: [R.center[0], y + h / 2, R.center[1]], size: [sx, h, sz], material: "rosaRed" });
+    // Mask frieze and green/yellow cornice.
+    g.shapes.push({ position: [R.center[0], y + h * 0.55, R.center[1]], size: [sx, h * 0.4, sz], material: "rosaMask" });
+    g.shapes.push({ position: [R.center[0], y + h - 0.25, R.center[1]], size: [sx + 0.5, 0.5, sz + 0.5], material: i % 2 ? "rosaYellow" : "rosaGreen" });
+    y += h;
+    sx -= R.inset * 2;
+    sz -= R.inset * 2;
+  });
+  // Roof crest with masks.
+  pushSolid(g, { position: [R.center[0], y + 0.5, R.center[1]], size: [1, 1, 6], material: "rosaMask" });
+  // Doorway on the west face (dark, 2 m wide).
+  g.shapes.push({ position: [R.center[0] - R.size[0] / 2 + 0.5, R.baseY + 2, R.center[1]], size: [1.5, 3, 2], material: "stone", carve: true });
   cached = g;
   return g;
 }

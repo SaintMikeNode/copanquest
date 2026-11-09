@@ -5,6 +5,7 @@ import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
 import { playerState } from "../player/playerState";
 import { useQualityLevel } from "../state/useGame";
+import { dayClock } from "../game/time";
 
 const BUTTERFLY_COLORS = ["#f2c42c", "#ff8a3d", "#6a7fe0", "#f4f1e8", "#e86aa4", "#58c4e8"];
 
@@ -95,10 +96,11 @@ function Pollen({ count }: { count: number }) {
     const mat = new THREE.ShaderMaterial({
       transparent: true,
       depthWrite: false,
-      uniforms: { time: { value: 0 }, center: { value: new THREE.Vector3() } },
+      uniforms: { time: { value: 0 }, center: { value: new THREE.Vector3() }, night: { value: 0 } },
       vertexShader: /* glsl */ `
         uniform float time;
         uniform vec3 center;
+        uniform float night;
         varying float vA;
         void main() {
           vec3 p = position;
@@ -110,14 +112,17 @@ function Pollen({ count }: { count: number }) {
           p.y += center.y;
           vec4 mv = modelViewMatrix * vec4(p, 1.0);
           vA = 0.5 + 0.5 * sin(time * 2.0 + position.x * 3.0);
-          gl_PointSize = clamp(60.0 / -mv.z, 1.5, 4.0);
+          gl_PointSize = clamp((60.0 + night * 60.0) / -mv.z, 1.5, 4.0 + night * 2.0);
           gl_Position = projectionMatrix * mv;
         }
       `,
       fragmentShader: /* glsl */ `
+        uniform float night;
         varying float vA;
         void main() {
-          gl_FragColor = vec4(1.0, 0.96, 0.78, 0.55 * vA);
+          // Pollen by day, fireflies by night.
+          vec3 c = mix(vec3(1.0, 0.96, 0.78), vec3(0.75, 1.0, 0.35), night);
+          gl_FragColor = vec4(c, mix(0.55, 0.95, night) * vA);
         }
       `,
     });
@@ -126,6 +131,7 @@ function Pollen({ count }: { count: number }) {
   useFrame(({ clock }) => {
     mat.uniforms.time.value = clock.elapsedTime;
     mat.uniforms.center.value.copy(playerState.position);
+    mat.uniforms.night.value = dayClock.night;
   });
   return <points geometry={geo} material={mat} frustumCulled={false} />;
 }

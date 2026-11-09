@@ -119,7 +119,9 @@ export function growTree(w: VoxelWorld, ix: number, iy: number, iz: number, kind
     w.addCollider(ix, iy - 2, iz, ix + t - 1, iy + H - 1, iz + t - 1);
     const cy = iy + H - 3;
     const big = 5 + r(2) * 3;
-    const leaf = r(4) < 0.35 ? B.Fig : B.Leaves;
+    // Some trees are in bloom: pink macuelizo and yellow guayacán (native to Honduras).
+    const roll = r(4);
+    const leaf = roll < 0.16 ? B.Blossom : roll < 0.26 ? B.BlossomYellow : roll < 0.5 ? B.Fig : B.Leaves;
     disc(w, ix + 1, cy, iz + 1, big, 3, leaf, seed);
     disc(w, ix + 1, cy + 3, iz + 1, big + 1.5, 3, leaf, seed + 1);
     disc(w, ix + 1, cy + 6, iz + 1, big - 1.5, 2, leaf, seed + 2);
@@ -138,6 +140,55 @@ function goodSpot(w: VoxelWorld, ix: number, iz: number, clear: number): number 
       if (n.id === B.Path || n.id === B.Stone || n.id === B.Stair || n.id === B.Glyph) return -1;
     }
   return s.y;
+}
+
+/**
+ * Fallen facade sculpture and rubble at the foot of the ruins (Copán's buildings were covered
+ * in carved stone mosaics; thousands of fragments lie around the site today).
+ */
+export function scatterFragments(w: VoxelWorld) {
+  for (let iz = 4; iz < NZ - 4; iz += 5)
+    for (let ix = 4; ix < NX - 4; ix += 5) {
+      if (hash2(ix * 5, iz * 3) > 0.12) continue;
+      const s = w.surface(ix, iz);
+      if (s.id !== B.Grass && s.id !== B.GrassStone) continue;
+      let wall = false;
+      for (const [dx, dz] of [[4, 0], [-4, 0], [0, 4], [0, -4]] as const) {
+        const n = w.surface(ix + dx, iz + dz);
+        if (n.y >= s.y + 4 && (n.id === B.Stone || n.id === B.GrassStone || n.id === B.Rubble || n.id === B.Stair)) wall = true;
+      }
+      if (!wall) continue;
+      const k = hash2(iz, ix * 7);
+      w.setIfAir(ix, s.y, iz, k < 0.4 ? B.Glyph : B.Rubble);
+      if (k < 0.2) w.setIfAir(ix + 1, s.y, iz, B.Stone);
+      if (k > 0.75) w.setIfAir(ix, s.y + 1, iz, B.Rubble);
+      w.addCollider(ix, s.y, iz, ix + (k < 0.2 ? 1 : 0), s.y + (k > 0.75 ? 1 : 0), iz);
+    }
+}
+
+/** Stone benches beside the trails. */
+export function placeBenches(w: VoxelWorld) {
+  for (const p of PATHS) {
+    for (let k = 0; k < p.points.length - 1; k++) {
+      const [ax, az] = p.points[k];
+      const [bx, bz] = p.points[k + 1];
+      const len = Math.hypot(bx - ax, bz - az);
+      for (let d = 12; d < len - 6; d += 38) {
+        const t = d / len;
+        const nx = -(bz - az) / len;
+        const nz = (bx - ax) / len;
+        const x = ax + (bx - ax) * t + nx * (p.width / 2 + 1.2);
+        const z = az + (bz - az) * t + nz * (p.width / 2 + 1.2);
+        const cx = toIx(x);
+        const cz = toIz(z);
+        const s = w.surface(cx, cz);
+        if (s.id !== B.Grass) continue;
+        const alongX = Math.abs(bx - ax) > Math.abs(bz - az);
+        for (let q = -2; q <= 2; q++) w.setIfAir(cx + (alongX ? q : 0), s.y, cz + (alongX ? 0 : q), B.Stone);
+        w.addCollider(cx - (alongX ? 2 : 0), s.y, cz - (alongX ? 0 : 2), cx + (alongX ? 2 : 0), s.y, cz + (alongX ? 0 : 2));
+      }
+    }
+  }
 }
 
 /** Leafy bushes hugging the bases of walls and platforms. */
