@@ -261,11 +261,14 @@ export const JAGUAR_LINES: L10n[] = [
 
 export const JAGUAR_NAME: L10n = { es: "Jaguar (b'alam)", en: "Jaguar (b'alam)" };
 
-/** Jaguars roam inside these areas [minX, minZ, maxX, maxZ] (edges of the woods). */
+/** Jaguars roam inside these areas [minX, minZ, maxX, maxZ] (edges of the woods, and the East Court). */
 export const JAGUAR_RANGES: [number, number, number, number][] = [
   [-140, -65, -95, -35],
   [90, 340, 135, 385],
   [150, 40, 195, 120],
+  // The East Court (Court of the Jaguars), east of the Jaguar Stairway and its two stone
+  // jaguars: a game touch, so the court named for them has a living one too.
+  [95, 274, 118, 300],
 ];
 
 /**

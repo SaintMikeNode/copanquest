@@ -282,7 +282,17 @@ export function meshFarTerrain(grid: TerrainGrid, world: VoxelWorld, extent = 10
     const s = cellSize(x, z);
     const ccx = Math.floor(x / s) * s + s / 2;
     const ccz = Math.floor(z / s) * s + s / 2;
-    return quantFar(sampleHeight(grid, ccx, ccz));
+    const h = quantFar(sampleHeight(grid, ccx, ccz));
+    // The ring of cells touching the detailed region rises to meet its edge, so the voxel
+    // ground's dirt side never shows as a brown seam where the far terrain is lower.
+    const ex = Math.min(Math.max(ccx, REGION.minX + 0.25), REGION.maxX - 0.25);
+    const ez = Math.min(Math.max(ccz, REGION.minZ + 0.25), REGION.maxZ - 0.25);
+    if (Math.hypot(ccx - ex, ccz - ez) < s) {
+      const ix = Math.floor((ex - REGION.minX) / BLOCK);
+      const iz = Math.floor((ez - REGION.minZ) / BLOCK);
+      return Math.max(h, REGION.minY + world.groundAt(ix, iz) * BLOCK);
+    }
+    return h;
   };
   const UV = BLOCK; // same pixel density as the near blocks (mipmaps handle the distance)
   let run: { x0: number; x1: number; z0: number; z1: number; h: number; top: number; mb: MeshBuilder } | null = null;

@@ -19,6 +19,7 @@ const inRect = (x: number, z: number, r: [number, number, number, number], pad =
   x >= r[0] - pad && x <= r[2] + pad && z >= r[1] - pad && z <= r[3] + pad;
 const inOpen = (x: number, z: number, pad = 0) => OPEN_AREAS.some((r) => inRect(x, z, r, pad));
 const inBounds = (x: number, z: number) => x >= BOUNDS.minX && x <= BOUNDS.maxX && z >= BOUNDS.minZ && z <= BOUNDS.maxZ;
+const inArrival = (x: number, z: number) => x >= ARRIVAL.minX - 2 && x <= BOUNDS.minX && z >= ARRIVAL.minZ - 2 && z <= ARRIVAL.maxZ + 2;
 
 /** Is (x, z) within r of any trail's centerline? */
 function nearTrail(x: number, z: number, r: number) {
@@ -307,38 +308,43 @@ export function plantTrees(w: VoxelWorld) {
 }
 
 /**
- * A small forest west of the park, around the arrival area outside the entrance gate (±55 m
- * along the fence): denser
- * than the outer woods and clumped, with the clearing (jeep, road) and the fence line kept free.
- * Real trees here (not the far terrain's box trees), so they look like the park's and cast
- * shadows, and they hide most of the view past them.
+ * Small forests just outside the fence, in the detailed voxel world: around the arrival area
+ * west of the entrance gate (±55 m along the fence), and along the south fence below the
+ * Acropolis and Temple 16, where they hide the seam with the far terrain. Denser than the outer
+ * woods and clumped, with the clearing (jeep, road) and the fence line kept free. Real trees,
+ * so they look like the park's and cast shadows. Kept to these stretches: trees are the
+ * costliest voxels on phones.
  */
+const FORESTS: { x0: number; x1: number; z0: number; z1: number }[] = [
+  { x0: REGION.minX + 2, x1: BOUNDS.minX - 5, z0: ARRIVAL.minZ - 55, z1: ARRIVAL.maxZ + 55 },
+  { x0: -30, x1: 165, z0: BOUNDS.maxZ + 5, z1: REGION.maxZ - 2 },
+];
 function plantEntranceForest(w: VoxelWorld, seed: number) {
   const step = 14; // blocks (7 m)
-  const x0 = toIx(REGION.minX + 2);
-  const x1 = toIx(BOUNDS.minX - 5);
-  // Only around the entrance (±55 m of the arrival area): the view out of the gate and the
-  // arrival are what need hiding, and trees are the costliest voxels on phones.
-  const z0 = toIz(ARRIVAL.minZ - 55);
-  const z1 = toIz(ARRIVAL.maxZ + 55);
-  for (let gz = Math.max(0, z0); gz < Math.min(NZ, z1); gz += step)
-    for (let gx = x0; gx < x1; gx += step) {
-      const ix = gx + Math.floor(hash2(gx + 31, gz) * (step - 3));
-      const iz = gz + Math.floor(hash2(gz + 17, gx) * (step - 3));
-      const x = toX(ix);
-      const z = toZ(iz);
-      // The clearing around the jeep and the road, with room for the crowns.
-      if (x > ARRIVAL.minX - 5 && z > ARRIVAL.minZ - 5 && z < ARRIVAL.maxZ + 5) continue;
-      if (nearTrail(x, z, 7)) continue;
-      // Clumps and glades: denser where the noise is high.
-      const p = 0.45 + 0.5 * valueNoise(x * 0.04, z * 0.04, 31);
-      if (hash2(ix + 13, iz + 7) > p) continue;
-      const roll = hash2(ix + 3, iz + 51);
-      const kind: TreeKind = roll < 0.1 ? "ceiba" : roll < 0.4 ? "fig" : "tree";
-      const y = goodSpot(w, ix, iz, kind === "tree" ? 3 : 5);
-      if (y < 0) continue;
-      growTree(w, ix, y, iz, kind, seed++);
-    }
+  for (const f of FORESTS) {
+    const ix0 = Math.max(0, toIx(f.x0));
+    const ix1 = Math.min(NX, toIx(f.x1));
+    const iz0 = Math.max(0, toIz(f.z0));
+    const iz1 = Math.min(NZ, toIz(f.z1));
+    for (let gz = iz0; gz < iz1; gz += step)
+      for (let gx = ix0; gx < ix1; gx += step) {
+        const ix = gx + Math.floor(hash2(gx + 31, gz) * (step - 3));
+        const iz = gz + Math.floor(hash2(gz + 17, gx) * (step - 3));
+        const x = toX(ix);
+        const z = toZ(iz);
+        // The clearing around the jeep and the road, with room for the crowns.
+        if (x > ARRIVAL.minX - 5 && x < BOUNDS.minX && z > ARRIVAL.minZ - 5 && z < ARRIVAL.maxZ + 5) continue;
+        if (nearTrail(x, z, 7)) continue;
+        // Clumps and glades: denser where the noise is high.
+        const p = 0.45 + 0.5 * valueNoise(x * 0.04, z * 0.04, 31);
+        if (hash2(ix + 13, iz + 7) > p) continue;
+        const roll = hash2(ix + 3, iz + 51);
+        const kind: TreeKind = roll < 0.1 ? "ceiba" : roll < 0.4 ? "fig" : "tree";
+        const y = goodSpot(w, ix, iz, kind === "tree" ? 3 : 5);
+        if (y < 0) continue;
+        growTree(w, ix, y, iz, kind, seed++);
+      }
+  }
 }
 
 /**
@@ -369,6 +375,12 @@ export function scatterPlants(
       if (w.get(ix, s.y, iz) !== B.Air) continue;
       const x = toX(ix);
       const z = toZ(iz);
+      // Outside the park only a strip along the fence (and the arrival clearing) can be seen up
+      // close; farther out the woods and the grass hide them, so skip the sprites there.
+      if (!inBounds(x, z) && !inArrival(x, z)) {
+        const out = Math.max(BOUNDS.minX - x, x - BOUNDS.maxX, BOUNDS.minZ - z, z - BOUNDS.maxZ);
+        if (out > 8) continue;
+      }
       if (VILLAGE_RECTS.some((r) => inRect(x, z, r)) && h > 0.05) continue; // tidy around the houses
       const open = inOpen(x, z);
       // Near walls / trunks / path edges → lush.

@@ -152,7 +152,13 @@ function Talker({ index }: { index: number }) {
   useFrame(({ camera }, delta) => {
     const dt = Math.min(delta, 0.1);
     const a = st.current;
-    if (Number.isNaN(a.y)) a.y = ground(a.x, a.z, 60, body.current) ?? 0;
+    if (Number.isNaN(a.y)) {
+      // Wait for the colliders: with the step limit, starting at a wrong height (0) would leave
+      // the actor stuck inside a raised court.
+      const g0 = ground(a.x, a.z, 60, body.current);
+      if (g0 === null) return;
+      a.y = g0;
+    }
     const p = playerState.position;
     const dp = Math.hypot(p.x - a.x, p.z - a.z);
     const talking = useGame.getState().dialogue?.id === t.id;
@@ -267,6 +273,7 @@ function Walker({ index }: { index: number }) {
     // Follow the ground down, and up only by small steps (never onto blocks beside the trail).
     const first = Number.isNaN(a.y);
     const g = ground(a.x, a.z, first ? path.y + 20 : a.y + STEP, body.current);
+    if (first && g === null) return; // colliders not ready yet
     if (g !== null && (first || g - a.y < STEP - 0.05)) a.y = g;
     a.phase += dt * 6.5;
     swing(limbs.current, a.phase, blocked ? 0 : 0.6, w.outfit.basket === true);
@@ -311,7 +318,13 @@ function Jaguar({ index }: { index: number }) {
   useFrame(({ camera, clock }, delta) => {
     const dt = Math.min(delta, 0.1);
     const a = st.current;
-    if (Number.isNaN(a.y)) a.y = ground(a.x, a.z, 60, body.current) ?? 0;
+    if (Number.isNaN(a.y)) {
+      // Wait for the colliders: with the step limit, starting at a wrong height (0) would leave
+      // the actor stuck inside a raised court.
+      const g0 = ground(a.x, a.z, 60, body.current);
+      if (g0 === null) return;
+      a.y = g0;
+    }
     const p = playerState.position;
     const dp = Math.hypot(p.x - a.x, p.z - a.z);
     let moving = false;

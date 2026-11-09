@@ -31,6 +31,7 @@ import { People } from "./npc/People";
 import { Jades } from "./poi/Jades";
 import { Boundary } from "./world/Boundary";
 import { Jeep } from "./world/Jeep";
+import { JaguarStatues } from "./world/JaguarStatues";
 import { Environment } from "./world/Environment";
 import { PerfProbe } from "./world/PerfProbe";
 import { PoiTracker } from "./poi/PoiTracker";
@@ -124,6 +125,7 @@ export default function Game() {
             <Suspense fallback={null}>
               <Jeep />
             </Suspense>
+            <JaguarStatues />
             <Player />
             <People />
             <CameraAim />
