@@ -201,6 +201,7 @@ For Blender: import the PNG as a Displace texture on a 3000 m plane subdivided 1
 - The flat core's terrain collider sits at y = 0, level with the voxel block tops.
 - Ground-level platforms have foundations down to the terrain (`skirt` shapes plus a collider to the bottom of the world). Where the river bank dips under the Acropolis's east edge, the foundation shows layered fill (plaster floors, earth, rubble), like the real El Corte, instead of leaving a hollow.
 - The river's animated texture cross-fades between frames; switching all frames at once made the water blink.
+- A wooden post-and-rail fence marks the edge of the playable area (`src/world/Fence.tsx`, one merged mesh). It stands just inside the invisible boundary walls, joins the entrance gate, and leaves out the river channel (the walls still stop you there). Random trees keep 4 m clear of it.
 
 To test on mobile: in Chrome DevTools, turn on device emulation (e.g. a Moto G-class phone), throttle the CPU 4–6×, use "Fast 4G", then open the debug panel (`F3`).
 

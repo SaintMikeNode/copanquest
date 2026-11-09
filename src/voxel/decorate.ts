@@ -243,6 +243,9 @@ export function plantTrees(w: VoxelWorld) {
       const z = toZ(iz);
       if (inOpen(x, z, 2) || VILLAGE_RECTS.some((r) => inRect(x, z, r, 4))) continue;
       if (Math.hypot(x - WORKSHOP[0], z - WORKSHOP[1]) < 10) continue;
+      // Keep the boundary fence clear of trunks and crowns.
+      const edge = Math.min(Math.abs(x - BOUNDS.minX), Math.abs(x - BOUNDS.maxX), Math.abs(z - BOUNDS.minZ), Math.abs(z - BOUNDS.maxZ));
+      if (edge < 4) continue;
       const forest = !inBounds(x, z);
       const ring = inOpen(x, z, 14);
       const p = forest ? 0.4 : ring ? 0.4 : 0.1;

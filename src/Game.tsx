@@ -11,6 +11,7 @@ import { TerrainCollider } from "./world/Terrain";
 import { SiteColliders } from "./world/Greybox";
 import { VoxelTerrain } from "./voxel/VoxelTerrain";
 import { Rosalila } from "./world/Rosalila";
+import { Fence } from "./world/Fence";
 import { Monuments } from "./world/Monuments";
 import { Macaws } from "./world/Macaws";
 import { Background } from "./world/Background";
@@ -117,6 +118,7 @@ export default function Game() {
           <VoxelTerrain />
           <Monuments />
           <Rosalila />
+          <Fence />
           <Macaws />
           <Jades />
           <Ambient />
