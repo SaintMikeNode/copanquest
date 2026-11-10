@@ -2,6 +2,7 @@ import { useMemo, useRef } from "react";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
 import { CapsuleCollider, CuboidCollider, RigidBody, useRapier, type RapierRigidBody } from "@react-three/rapier";
+import { QuestMarkers } from "./QuestMarkers";
 import { JAGUAR_RANGES, TALKERS, WALKERS, type Outfit } from "./npcData";
 import { jaguarRig, personRig } from "./personModel";
 import { PATHS } from "../world/siteData";
@@ -487,6 +488,7 @@ export function People() {
         <Jaguar key={`j${i}`} index={i} />
       ))}
       <TalkTracker />
+      <QuestMarkers positions={talkables} />
     </>
   );
 }

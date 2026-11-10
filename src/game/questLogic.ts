@@ -85,14 +85,19 @@ export function checkRankUp(before: number) {
   }
 }
 
-/** NPC ids that have something new to say (for the "!" markers). */
-export function npcsWithNews(): string[] {
-  return TALKERS.filter((t) => {
+export type QuestMark = "new" | "ready" | "busy";
+
+/** What each quest giver's floating sign shows (QuestMarkers.tsx); no entry = no sign. */
+export function questMarks(): Record<string, QuestMark> {
+  const marks: Record<string, QuestMark> = {};
+  for (const t of TALKERS) {
     const q = currentQuest(t.id);
-    if (!q) return false;
-    const st = useProgress.getState().quests[q.id];
-    if (!st) return true;
-    const [have, need] = q.progress(questCheck());
-    return have >= need;
-  }).map((t) => t.id);
+    if (!q) continue;
+    if (!useProgress.getState().quests[q.id]) marks[t.id] = "new";
+    else {
+      const [have, need] = q.progress(questCheck());
+      marks[t.id] = have >= need ? "ready" : "busy";
+    }
+  }
+  return marks;
 }

@@ -16,6 +16,7 @@ import { trackSubject } from "./subjects";
 import { getT } from "../i18n";
 import { CharacterLayer } from "./layers";
 import { play } from "../audio/sound";
+import { glow } from "./Glow";
 
 // ---------------------------------------------------------------- shared helpers
 
@@ -97,13 +98,16 @@ function itemModels() {
   return { geometries, material, index };
 }
 
+/** Pickups are drawn larger than life so they read from a distance. */
+const PICKUP_SCALE = 1.7;
+
 export function Pickups() {
   const model = useMemo(itemModels, []);
   const picked = useProgress((s) => s.picked);
   const ground = useGround();
   const ys = useRef<Record<string, number>>({});
   const refs = useRef<Record<string, THREE.Group | null>>({});
-  useFrame(({ clock }) => {
+  useFrame(({ clock, camera }) => {
     const t = clock.elapsedTime;
     for (const p of PICKUPS) {
       const g = refs.current[p.id];
@@ -113,8 +117,11 @@ export function Pickups() {
         if (y > -50) ys.current[p.id] = y;
       }
       const y = ys.current[p.id] ?? 0;
-      g.position.set(p.at[0], y + 0.25 + Math.sin(t * 2 + p.at[0]) * 0.06, p.at[1]);
+      g.position.set(p.at[0], y + 0.45 + Math.sin(t * 2 + p.at[0]) * 0.08, p.at[1]);
       g.rotation.y = t * 0.8 + p.at[1];
+      // The model is small: only drawn nearby. The light shaft (Glow.tsx) shows from far away.
+      g.visible = camera.position.distanceTo(g.position) < 70;
+      if (ys.current[p.id] !== undefined) glow(p.id, p.at[0], y + 0.5, p.at[1]);
       if (near(p.at[0], y + 0.5, p.at[1], 1.3)) {
         const before = rankIndex(computeXp());
         useProgress.getState().addItem(p.item, 1, p.id);
@@ -128,7 +135,7 @@ export function Pickups() {
   return (
     <>
       {PICKUPS.filter((p) => !picked.includes(p.id)).map((p) => (
-        <group key={p.id} ref={(g) => void (refs.current[p.id] = g)}>
+        <group key={p.id} ref={(g) => void (refs.current[p.id] = g)} scale={PICKUP_SCALE}>
           <mesh geometry={model.geometries[model.index[p.item]]} material={model.material} />
           <mesh geometry={model.geometries[5]} material={model.material} position={[0, 0.55, 0]} />
         </group>
@@ -232,6 +239,7 @@ export function Animals() {
     const dt = Math.min(delta, 0.1);
     const p = playerState.position;
     const returned = useProgress.getState().turkeys;
+    const hunting = useProgress.getState().quests.turkeys === "active";
     const step = (c: Critter, speed: number, home: [number, number], radius: number, flee: boolean) => {
       const dp = Math.hypot(p.x - c.x, p.z - c.z);
       let moving = false;
@@ -295,6 +303,8 @@ export function Animals() {
         g.visible = camera.position.distanceTo(g.position) < 90;
       }
       trackSubject(`turkey:${i}`, "turkey", c.x, c.y + 0.4, c.z);
+      // While the kid's mission is on, the turkeys still to find shine too.
+      if (hunting && !returned.includes(id) && !Number.isNaN(c.y)) glow(id, c.x, c.y + 0.4, c.z);
     });
   });
   return (

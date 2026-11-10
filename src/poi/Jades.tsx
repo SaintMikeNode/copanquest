@@ -8,6 +8,7 @@ import type { Tile } from "../voxel/textures";
 import { playerState } from "../player/playerState";
 import { useGame } from "../state/useGame";
 import { getT } from "../i18n";
+import { glow, GLOW_JADE } from "../game/Glow";
 
 function jadeModel() {
   const JADE = hex("#2fae6e");
@@ -49,6 +50,8 @@ export function Jades() {
       m.rotation.y = clock.elapsedTime * 1.5 + i;
       m.rotation.x = 0.6;
       m.position.y = it.pos.y + Math.sin(clock.elapsedTime * 2 + i) * 0.12;
+      // A short green glow: the beads are hidden on purpose, so no tall shaft to give them away.
+      glow(it.id, it.pos.x, it.pos.y, it.pos.z, 1.3, GLOW_JADE);
       if (m.visible && Math.hypot(p.x - it.pos.x, p.z - it.pos.z) < 1.3 && Math.abs(p.y - it.pos.y) < 1.8) {
         const g = useGame.getState();
         g.collectJade(it.id);

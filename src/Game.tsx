@@ -37,6 +37,7 @@ import { Environment } from "./world/Environment";
 import { PerfProbe } from "./world/PerfProbe";
 import { PoiTracker } from "./poi/PoiTracker";
 import { PoiMarkers } from "./poi/PoiMarkers";
+import { Glows } from "./game/Glow";
 import { DigMarkers } from "./game/DigMarkers";
 import { useGame, useQualityLevel } from "./state/useGame";
 import { Hud } from "./ui/Hud";
@@ -177,6 +178,7 @@ export default function Game() {
           <Smoke />
           <Ladders />
           <PoiMarkers />
+          <Glows />
           <DigMarkers />
           <PoiTracker />
           <WorldReady ready={ready} onVisible={() => setVisible(true)} />
