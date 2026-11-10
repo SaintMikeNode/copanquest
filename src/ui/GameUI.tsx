@@ -15,6 +15,7 @@ import { InteractKey } from "./Dialogue";
 import { play } from "../audio/sound";
 import { IS_TOUCH } from "../config";
 import { QuickSettings } from "./QuickSettings";
+import { useExit } from "./presence";
 
 // ---------------------------------------------------------------- HUD buttons + rank
 
@@ -50,11 +51,11 @@ export function HudButtons() {
   return (
     <div className="hud-buttons">
       {fx > 0 && <div key={fx} className="lens-fx" />}
-      <button className={camOn ? "round on" : "round"} onClick={() => toggleCamera()} aria-label={t("camera")} title={t("camera")}>
+      <button className={camOn ? "round on" : "round"} onClick={() => toggleCamera()} aria-label={t("camera")} title={t("camera")} data-tut="camera">
         <i className="px-icon" style={{ backgroundImage: "var(--icon-camera)" }} />
         {!IS_TOUCH && <kbd>C</kbd>}
       </button>
-      <button className="round" onClick={() => setOverlay("journal")} aria-label={t("journal")} title={t("journal")}>
+      <button className="round" onClick={() => setOverlay("journal")} aria-label={t("journal")} title={t("journal")} data-tut="journal">
         <i className="px-icon" style={{ backgroundImage: "var(--icon-book)" }} />
         {!IS_TOUCH && <kbd>E</kbd>}
       </button>
@@ -416,6 +417,9 @@ export function ActionPrompt() {
   const id = useAction((s) => s.id);
   const found = useAction((s) => s.found);
   const talk = useGame((s) => s.talkTarget);
+  // The find card and the dig / hit prompt both animate out (they keep their last content).
+  const [shownFound, foundLeaving] = useExit(found);
+  const [shownKind, kindLeaving] = useExit(!found && !talk && kind);
   const [progress, setProgress] = useState(0);
   const timer = useRef<number | null>(null);
   const digSite = useRef<string | null>(null);
@@ -463,10 +467,10 @@ export function ActionPrompt() {
     window.addEventListener("cq-interact", interact);
     return () => window.removeEventListener("cq-interact", interact);
   });
-  if (found) {
-    const a = ARTIFACTS.find((x) => x.id === found)!;
+  if (shownFound) {
+    const a = ARTIFACTS.find((x) => x.id === shownFound)!;
     return (
-      <section className="dialogue found-card">
+      <section className={foundLeaving ? "dialogue found-card ui-leave" : "dialogue found-card"}>
         <header>
           <h2>⛏ {t("dig.found")}</h2>
         </header>
@@ -486,16 +490,16 @@ export function ActionPrompt() {
       </section>
     );
   }
-  if (!kind || talk) return null;
+  if (!shownKind) return null;
   return (
     <button
-      className="talk-prompt action-prompt"
+      className={kindLeaving ? "talk-prompt action-prompt ui-leave" : "talk-prompt action-prompt"}
       onClick={start}
       onContextMenu={(e) => e.preventDefault()}
       style={{ ["--p" as string]: `${progress * 100}%` }}
     >
-      <InteractKey /> {kind === "dig" ? (progress > 0 ? t("dig.hold") : `⛏ ${t("dig")}`) : `🏐 ${t("hit")}`}
-      {kind === "dig" && <i className="dig-bar" />}
+      <InteractKey /> {shownKind === "dig" ? (progress > 0 ? t("dig.hold") : `⛏ ${t("dig")}`) : `🏐 ${t("hit")}`}
+      {shownKind === "dig" && <i className="dig-bar" />}
     </button>
   );
 }

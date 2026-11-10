@@ -36,6 +36,7 @@ import { Environment } from "./world/Environment";
 import { PerfProbe } from "./world/PerfProbe";
 import { PoiTracker } from "./poi/PoiTracker";
 import { PoiMarkers } from "./poi/PoiMarkers";
+import { DigMarkers } from "./game/DigMarkers";
 import { useGame, useQualityLevel } from "./state/useGame";
 import { Hud } from "./ui/Hud";
 
@@ -148,6 +149,7 @@ export default function Game() {
           <Smoke />
           <Ladders />
           <PoiMarkers />
+          <DigMarkers />
           <PoiTracker />
         </Suspense>
         <PerfProbe />

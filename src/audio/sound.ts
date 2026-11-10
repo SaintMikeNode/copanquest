@@ -7,13 +7,24 @@
 // decoded on first use. Names with variants (pickup-1…6) pick one at random.
 // All files are 128 kbps MP3 (converted from the packs' WAVs with LAME).
 //
-// Browsers only allow sound after a tap or key press: the first one unlocks the context and
-// starts the music. Music and effects can be switched off separately (saved in localStorage).
+// Bedroom (main page): the record on the desk, "La muerte del bardo" by Manuel de Adalid y Gamero
+// (Victor, 1914, Trío Veneciano; public domain, from the Library of Congress National Jukebox),
+// public/music/. It loops with a short pause between plays and can be paused from the record box.
+//
+// Browsers only allow sound after a tap or key press: the first one unlocks the context.
+// Exactly one of the two plays: the game playlist while playing (useGame.playing; it starts from
+// Tiki Party on Jugar), the record everywhere else. Going back to the bedroom always stops and
+// rewinds the game playlist and starts the record from the beginning.
+// Music and effects can be switched off separately (saved in localStorage).
 import { create } from "zustand";
+import { useGame } from "../state/useGame";
 
 const PLAYLIST = ["/audio/music/tiki-party.mp3", "/audio/music/field-day.mp3"];
 const GAP_MS = 5000;
 const MUSIC_VOLUME = 0.35;
+const RECORD = "/music/la-muerte-del-bardo.mp3";
+const RECORD_GAP_MS = 3000;
+const RECORD_VOLUME = 0.6;
 
 /** Effect name → [number of variants, volume]. Files: /audio/sfx/<name>(-<n>).mp3 */
 export const SFX = {
@@ -82,12 +93,27 @@ export const useSound = create<{ music: boolean; sfx: boolean; setMusic: (on: bo
   },
 );
 
+/** The bedroom record: `wanted` = the player hasn't paused it; `spinning` = it is playing now. */
+export const useRecord = create<{ wanted: boolean; spinning: boolean; toggle: () => void; setOn: (on: boolean) => void }>((set, get) => ({
+  wanted: true,
+  spinning: false,
+  toggle: () => get().setOn(!get().wanted),
+  setOn: (on) => {
+    set({ wanted: on });
+    // Turning it on also turns the music back on if it was switched off.
+    if (on && !useSound.getState().music) useSound.getState().setMusic(true);
+    else applyMusic();
+  },
+}));
+
 let ctx: AudioContext | null = null;
 let master: GainNode | null = null;
 let musicGain: GainNode | null = null;
 let musicEl: HTMLAudioElement | null = null;
 let track = 0;
 let gapTimer = 0;
+let recordEl: HTMLAudioElement | null = null;
+let recordGap = 0;
 const buffers = new Map<string, Promise<AudioBuffer | null>>();
 
 function context() {
@@ -149,9 +175,52 @@ function startTrack() {
   musicEl.play().catch(() => {});
 }
 
-function applyMusic() {
+/** Stop the playlist and rewind it to the first song (leaving the game). */
+function stopMusic() {
+  clearTimeout(gapTimer);
+  gapTimer = 0;
+  track = 0;
+  if (musicEl) {
+    musicEl.pause();
+    musicEl.removeAttribute("src");
+    musicEl.load();
+  }
+}
+
+/** The bedroom record: plays whenever the game isn't (and music is on and it isn't paused). */
+function applyRecord() {
   if (!unlocked || !ctx || !master) return;
-  const on = useSound.getState().music;
+  const on = useSound.getState().music && !useGame.getState().playing && useRecord.getState().wanted && !document.hidden;
+  if (!recordEl) {
+    if (!on) return;
+    recordEl = new Audio(RECORD);
+    recordEl.preload = "auto";
+    recordEl.crossOrigin = "anonymous";
+    const g = ctx.createGain();
+    g.gain.value = RECORD_VOLUME;
+    ctx.createMediaElementSource(recordEl).connect(g).connect(master);
+    const spin = () => useRecord.setState({ spinning: !!recordEl && !recordEl.paused });
+    recordEl.addEventListener("play", spin);
+    recordEl.addEventListener("pause", spin);
+    recordEl.addEventListener("ended", () => {
+      spin();
+      recordGap = window.setTimeout(() => {
+        recordGap = 0;
+        if (!recordEl) return;
+        recordEl.currentTime = 0;
+        applyRecord();
+      }, RECORD_GAP_MS);
+    });
+  }
+  if (on) {
+    if (!recordGap && recordEl.paused) recordEl.play().catch(() => {});
+  } else recordEl.pause();
+}
+
+function applyMusic() {
+  applyRecord();
+  if (!unlocked || !ctx || !master) return;
+  const on = useSound.getState().music && useGame.getState().playing;
   if (!musicEl) {
     if (!on) return;
     musicEl = new Audio();
@@ -166,15 +235,17 @@ function applyMusic() {
         gapTimer = 0;
         if (!musicEl) return;
         musicEl.src = PLAYLIST[track];
-        if (useSound.getState().music && !document.hidden) musicEl.play().catch(() => {});
+        if (useSound.getState().music && useGame.getState().playing && !document.hidden) musicEl.play().catch(() => {});
       }, GAP_MS);
     });
     startTrack();
     return;
   }
   if (on) {
-    // Resume where it was (or wait out the gap if it was switched off during one).
-    if (!gapTimer && musicEl.paused) musicEl.play().catch(() => {});
+    // Resume where it was (or wait out the gap if it was switched off during one); after a
+    // stop, start again from the first song.
+    if (!musicEl.getAttribute("src")) startTrack();
+    else if (!gapTimer && musicEl.paused) musicEl.play().catch(() => {});
   } else musicEl.pause();
 }
 
@@ -207,10 +278,25 @@ export function initSound() {
     if (document.hidden) {
       ctx.suspend().catch(() => {});
       musicEl?.pause();
+      recordEl?.pause();
     } else {
       ctx.resume().catch(() => {});
-      if (useSound.getState().music && !gapTimer) musicEl?.play().catch(() => {});
+      if (useSound.getState().music && useGame.getState().playing && !gapTimer && musicEl?.getAttribute("src")) musicEl.play().catch(() => {});
+      applyRecord();
     }
+  });
+  // Game music follows playing: starts on Jugar, stops (and rewinds) on the way out, where the
+  // record starts again from the beginning.
+  useGame.subscribe((s, p) => {
+    if (s.playing === p.playing) return;
+    if (!s.playing) {
+      stopMusic();
+      clearTimeout(recordGap);
+      recordGap = 0;
+      if (recordEl) recordEl.currentTime = 0;
+      useRecord.setState({ wanted: true }); // always back on, even if it was paused before Jugar
+    }
+    applyMusic();
   });
   // Every button click gets a soft tick (buttons can opt out with data-silent).
   document.addEventListener(
@@ -227,5 +313,15 @@ export function initSound() {
  *  `soundDebug(80)` jumps the current song to 80 s (to hear the gap and the next song). */
 export function soundDebug(seek?: number) {
   if (seek !== undefined && musicEl) musicEl.currentTime = seek;
-  return { ctx: ctx?.state ?? null, unlocked, track, src: musicEl?.src ?? null, time: musicEl?.currentTime ?? null, paused: musicEl?.paused ?? null, gap: !!gapTimer, decoded: buffers.size };
+  return {
+    ctx: ctx?.state ?? null,
+    unlocked,
+    track,
+    src: musicEl?.src ?? null,
+    time: musicEl?.currentTime ?? null,
+    paused: musicEl?.paused ?? null,
+    gap: !!gapTimer,
+    record: recordEl ? { time: recordEl.currentTime, paused: recordEl.paused, gap: !!recordGap } : null,
+    decoded: buffers.size,
+  };
 }

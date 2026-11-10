@@ -511,12 +511,14 @@ export const PATHS: PathLine[] = [
   { y: 0, width: 3, points: [[14, 56], [13, 90], [12, 102], [-4, 118], [-24, 136]] },
   // 4: Spur east across the Court of the Hieroglyphic Stairway, south of the ball court
   { y: 0, width: 2.5, points: [[-22, 206], [-4, 210], [20, 208], [38, 205], [50, 204]] },
-  // Across the West Court to Altar Q, then around Temple 16 to the East Court
-  { y: 12, width: 2.5, points: [[-30, 328], [0, 324], [30, 326], [43, 330]] },
+  // Across the West Court to Altar Q, then around Temple 16 to the East Court. Starts at the top
+  // of the Acropolis' west stair (x −33, z 288) and curves north of Platform 13 (x −21…12 with
+  // its east stair, z 321…342) and south of Temple 11's south stair (z ≤ 285): no stonework.
+  { y: 12, width: 2.5, points: [[-33, 288], [-24, 296], [-8, 306], [12, 314], [30, 324], [43, 330]] },
   // 6: Along the foot of Temple 16 through the gap between it (base z 302) and Platform 25 /
   // the back of the Jaguar Stairway (z ≤ 297), both 2 m walls with no steps; then into the East
   // Court well clear of the two stone jaguars, and up to Temple 22.
-  { y: 12, width: 2.5, points: [[30, 326], [44, 300], [60, 299.5], [91, 299.5], [98, 296], [106, 288], [112, 270], [106, 250]] },
+  { y: 12, width: 2.5, points: [[30, 324], [44, 300], [60, 299.5], [91, 299.5], [98, 296], [106, 288], [112, 270], [106, 250]] },
   // 7: East ward: from the Great Plaza around the south end of the east stands to the sacbe,
   // passing between the northeast gallery and Mound 3
   { y: 0, width: 2.5, points: [[24, 44], [36, 62], [56, 62], [80, 52], [100, 40], [114, 19], [146, 17], [151, 20]] },

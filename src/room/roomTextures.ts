@@ -389,22 +389,203 @@ export const copanPosterTex = () =>
 
 /** Tzolk'in calendar poster: the 20 day signs in a ring around a sun face. Async (images). */
 export function calendarPosterTex() {
-  const c = canvas(96, 128, (g, w, h) => {
-    g.fillStyle = "#e7d7ae";
-    g.fillRect(0, 0, w, h);
-    g.strokeStyle = "#7a4a26";
-    g.lineWidth = 2;
-    g.strokeRect(3, 3, w - 6, h - 6);
-    text(g, "TZOLK'IN", w / 2, 12, 9, "#7a2a18");
-    text(g, "Calendario maya", w / 2, h - 9, 6, "#5a3a22", "center", 400);
-    g.fillStyle = "#c98a3a";
+  // A bold painted calendar disc (style after painted Sun Stone murals, but Maya content):
+  // K'inich Ajaw, the Maya sun god, in the center (crossed eyes, k'in flower on the brow, the
+  // T-shaped filed tooth, jade ear spools); four wedges in the Maya direction colors (red east,
+  // white north, black west, yellow south); the 20 Tzolk'in day signs in cartouches; a red ring
+  // with gold studs; a red banner with the title. 13 numbers × 20 day signs = 260 days.
+  const W = 192;
+  const H = 256;
+  const cx = W / 2;
+  const cy = 100;
+  const INK = "#1d1410";
+  const c = canvas(W, H, (g) => {
+    // Pale stone blocks behind the disc.
+    g.fillStyle = "#e6d9bb";
+    g.fillRect(0, 0, W, H);
+    g.strokeStyle = "#b9a684";
+    g.lineWidth = 1.5;
+    for (let row = 0, y = 0; y < H; row++, y += 26) {
+      g.beginPath();
+      g.moveTo(0, y);
+      g.lineTo(W, y);
+      g.stroke();
+      for (let x = row % 2 ? 24 : 0; x < W; x += 48) {
+        g.beginPath();
+        g.moveTo(x, y);
+        g.lineTo(x, y + 26);
+        g.stroke();
+      }
+    }
+    grain(g, W, H, 41, 10);
+    const disc = (r: number, fill: string) => {
+      g.beginPath();
+      g.arc(cx, cy, r, 0, Math.PI * 2);
+      g.fillStyle = fill;
+      g.fill();
+    };
+    const ring = (r: number, w = 2) => {
+      g.beginPath();
+      g.arc(cx, cy, r, 0, Math.PI * 2);
+      g.lineWidth = w;
+      g.strokeStyle = INK;
+      g.stroke();
+    };
+    // Outer red ring with gold studs, orange field.
+    disc(90, INK);
+    disc(88, "#c4321e");
+    for (let k = 0; k < 32; k++) {
+      const a = (k / 32) * Math.PI * 2;
+      g.beginPath();
+      g.arc(cx + Math.cos(a) * 81, cy + Math.sin(a) * 81, k % 2 ? 2 : 3, 0, Math.PI * 2);
+      g.fillStyle = k % 2 ? "#f2c14e" : "#2f8f5a";
+      g.fill();
+      g.lineWidth = 1;
+      g.strokeStyle = INK;
+      g.stroke();
+    }
+    ring(74);
+    disc(73, "#e8962e");
+    // Day-sign cartouches (glyphs drawn in once they load, below).
+    for (let k = 0; k < 20; k++) {
+      const a = (k / 20) * Math.PI * 2 - Math.PI / 2;
+      const x = cx + Math.cos(a) * 61;
+      const y = cy + Math.sin(a) * 61;
+      g.fillStyle = INK;
+      g.beginPath();
+      g.roundRect(x - 9, y - 9, 18, 18, 4);
+      g.fill();
+      g.fillStyle = k % 2 ? "#f6ecd2" : "#f2d9a0";
+      g.beginPath();
+      g.roundRect(x - 7.5, y - 7.5, 15, 15, 3);
+      g.fill();
+    }
+    ring(50);
+    disc(49, "#d9732a");
+    // Four direction wedges: north (top) white, east (right) red, south yellow, west black.
+    const dirs: [number, string][] = [
+      [-Math.PI / 2, "#f4efe2"],
+      [0, "#c4321e"],
+      [Math.PI / 2, "#f2c14e"],
+      [Math.PI, "#2a2422"],
+    ];
+    for (const [a, col] of dirs) {
+      g.beginPath();
+      // An arrow point aimed outward.
+      g.moveTo(cx + Math.cos(a - 0.5) * 29, cy + Math.sin(a - 0.5) * 29);
+      g.lineTo(cx + Math.cos(a - 0.24) * 39, cy + Math.sin(a - 0.24) * 39);
+      g.lineTo(cx + Math.cos(a) * 49, cy + Math.sin(a) * 49);
+      g.lineTo(cx + Math.cos(a + 0.24) * 39, cy + Math.sin(a + 0.24) * 39);
+      g.lineTo(cx + Math.cos(a + 0.5) * 29, cy + Math.sin(a + 0.5) * 29);
+      g.closePath();
+      g.fillStyle = col;
+      g.fill();
+      g.lineWidth = 2;
+      g.strokeStyle = INK;
+      g.stroke();
+    }
+    // Jade discs between the wedges (green: the center of the world).
+    for (let k = 0; k < 4; k++) {
+      const a = Math.PI / 4 + (k * Math.PI) / 2;
+      g.beginPath();
+      g.arc(cx + Math.cos(a) * 40, cy + Math.sin(a) * 40, 5, 0, Math.PI * 2);
+      g.fillStyle = "#2f8f5a";
+      g.fill();
+      g.lineWidth = 1.5;
+      g.strokeStyle = INK;
+      g.stroke();
+      g.beginPath();
+      g.arc(cx + Math.cos(a) * 40, cy + Math.sin(a) * 40, 2, 0, Math.PI * 2);
+      g.fillStyle = "#8fe0b0";
+      g.fill();
+    }
+    // ---- K'inich Ajaw
+    disc(30, INK);
+    disc(28, "#2a63c9"); // sky-blue backing
+    // Jade ear spools.
+    for (const sx of [-1, 1]) {
+      g.beginPath();
+      g.arc(cx + sx * 21, cy + 4, 6.5, 0, Math.PI * 2);
+      g.fillStyle = "#2f8f5a";
+      g.fill();
+      g.lineWidth = 1.5;
+      g.strokeStyle = INK;
+      g.stroke();
+      g.beginPath();
+      g.arc(cx + sx * 21, cy + 4, 2.4, 0, Math.PI * 2);
+      g.fillStyle = "#f4efe2";
+      g.fill();
+    }
+    // Face.
     g.beginPath();
-    g.arc(w / 2, 66, 13, 0, 7);
+    g.roundRect(cx - 15, cy - 18, 30, 36, 8);
+    g.fillStyle = "#e9a25a";
     g.fill();
-    g.fillStyle = "#5a3a22";
-    g.fillRect(w / 2 - 6, 62, 3, 3);
-    g.fillRect(w / 2 + 3, 62, 3, 3);
-    g.fillRect(w / 2 - 4, 70, 8, 2);
+    g.lineWidth = 2;
+    g.strokeStyle = INK;
+    g.stroke();
+    // Headband with the k'in (sun) flower.
+    g.fillStyle = "#c4321e";
+    g.fillRect(cx - 15, cy - 18, 30, 7);
+    g.strokeRect(cx - 15, cy - 18, 30, 7);
+    g.fillStyle = "#f4efe2";
+    for (const [dx, dy] of [[0, -3], [3, 0], [0, 3], [-3, 0]]) {
+      g.beginPath();
+      g.arc(cx + dx * 0.9, cy - 14.5 + dy * 0.7, 1.8, 0, Math.PI * 2);
+      g.fill();
+    }
+    g.fillStyle = "#f2c14e";
+    g.fillRect(cx - 1, cy - 15.5, 2, 2);
+    // Big square eyes, looking cross-eyed.
+    for (const sx of [-1, 1]) {
+      const ex = cx + sx * 7 - 4;
+      g.fillStyle = "#f4efe2";
+      g.fillRect(ex, cy - 9, 8, 7);
+      g.lineWidth = 1.5;
+      g.strokeRect(ex, cy - 9, 8, 7);
+      g.fillStyle = INK;
+      g.fillRect(sx < 0 ? ex + 4.5 : ex + 1, cy - 6, 2.5, 2.5);
+    }
+    // Hooked nose with a nose bead.
+    g.fillStyle = "#d9823e";
+    g.beginPath();
+    g.moveTo(cx - 2, cy - 3);
+    g.lineTo(cx + 2, cy - 3);
+    g.lineTo(cx + 3, cy + 4);
+    g.lineTo(cx - 3, cy + 4);
+    g.closePath();
+    g.fill();
+    g.lineWidth = 1;
+    g.stroke();
+    g.fillStyle = "#2f8f5a";
+    g.fillRect(cx - 1.5, cy + 4, 3, 2);
+    // Open mouth with the T-shaped filed incisor.
+    g.fillStyle = "#7a1d10";
+    g.beginPath();
+    g.roundRect(cx - 8, cy + 7, 16, 8, 2);
+    g.fill();
+    g.lineWidth = 1.5;
+    g.stroke();
+    g.fillStyle = "#f4efe2";
+    g.fillRect(cx - 3, cy + 7.5, 6, 2);
+    g.fillRect(cx - 1, cy + 9.5, 2, 3);
+    // Whisker curls at the corners of the mouth.
+    g.strokeStyle = "#f2c14e";
+    g.lineWidth = 1.5;
+    for (const sx of [-1, 1]) {
+      g.beginPath();
+      g.arc(cx + sx * 11, cy + 13, 3, sx < 0 ? 0 : Math.PI, sx < 0 ? Math.PI * 1.5 : Math.PI * 2.5);
+      g.stroke();
+    }
+    // ---- Title banner.
+    g.fillStyle = INK;
+    g.fillRect(14, 202, W - 28, 40);
+    g.fillStyle = "#c4321e";
+    g.fillRect(16, 204, W - 32, 36);
+    g.fillStyle = "#f2c14e";
+    for (let x = 22; x < W - 22; x += 8) g.fillRect(x, 207, 4, 2);
+    text(g, "TZOLK'IN", cx, 219, 15, "#f2c14e");
+    text(g, "Calendario sagrado maya · 260 días", cx, 233, 7, "#f6ecd2", "center", 400);
   });
   const t = psxTexture(c, false);
   const names = ["imix", "ik", "akbal", "kan", "chikchan", "kimi", "manik", "lamat", "muluk", "ok", "chuwen", "eb", "ben", "ix", "men", "kib", "kaban", "etznab", "kawak", "ajaw"];
@@ -414,7 +595,7 @@ export function calendarPosterTex() {
     const im = new Image();
     im.onload = () => {
       const a = (i / 20) * Math.PI * 2 - Math.PI / 2;
-      g.drawImage(im, 48 + Math.cos(a) * 34 - 6, 66 + Math.sin(a) * 34 - 5.5, 12, 11);
+      g.drawImage(im, cx + Math.cos(a) * 61 - 6, cy + Math.sin(a) * 61 - 5.5, 12, 11);
       if (--left === 0) t.needsUpdate = true;
     };
     im.onerror = () => void (--left === 0 && (t.needsUpdate = true));

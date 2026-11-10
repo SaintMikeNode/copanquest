@@ -82,6 +82,11 @@ export const CREDITS: { heading: Key; items: CreditItem[] }[] = [
   {
     heading: "credits.reference",
     items: [
+      {
+        title: "Esri World Imagery Wayback (release 2024-03-28) — layout check and Ball Court measurements",
+        url: "https://livingatlas.arcgis.com/wayback/",
+        credit: "Esri, Maxar, Earthstar Geographics, and the GIS User Community",
+      },
       { title: "UNAH (2016), actualización del mapa de Copán", url: "https://www.camjol.info/index.php/CE/article/view/5729" },
       { title: "mayaruins.com — Copán map", url: "https://mayaruins.com/copan/copan_map.html" },
       { title: "Mused — Copán 3D", url: "https://mused.com/copan/about" },
@@ -95,6 +100,12 @@ export const CREDITS: { heading: Key; items: CreditItem[] }[] = [
   {
     heading: "credits.audio",
     items: [
+      {
+        title: "La muerte del bardo — Manuel de Adalid y Gamero (Trío Veneciano, Victor, 1914)",
+        url: "https://www.loc.gov/item/jukebox-11139/",
+        credit: "Library of Congress, National Jukebox",
+        license: { es: "Dominio público", en: "Public domain" },
+      },
       {
         title: "Casual Music Pack Vol. 1 — Tiki Party, Field Day",
         url: "https://ovanisound.com",

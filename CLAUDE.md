@@ -30,13 +30,14 @@ build**, or the page asks for new script files the server doesn't know and the g
 - `src/voxel/` — block engine: block types, procedural pixel textures, voxel world, greedy mesher with AO (Web Worker), block shader. Visuals are voxels; physics uses the smooth invisible colliders.
 - `src/player/` — ecctrl character, input bridge (keyboard + ecctrl joystick store → `setMovement`), collision-aware follow camera, `playerState` (mutable per-frame data, never React state).
 - `src/poi/` — point-of-interest data and tracker. **Every fact needs a source.**
-- `src/room/` — the landing page: a PS2-era 3D bedroom whose CRT shows the menu (`Landing.tsx` flow and camera, `RoomScene.tsx` models, `psx.ts` shared material + light rig, `roomTextures.ts` painted textures, `Crt.tsx` CRT shader). Keep it light: it is the first thing every phone loads.
-- `src/ui/` — HUD, minimap, info card, credits, debug overlay, pause menu / journal (language, sound and Ir al inicio live there, not in the HUD; credits only in the start menu), menu + loading background (`MayaBackground.tsx`). Pixel UI textures and HUD icons are drawn in `uiTextures.ts`.
+- `src/room/` — the landing page: a PS2-era 3D bedroom whose CRT shows the menu (`Landing.tsx` flow and camera, `RoomScene.tsx` models, `psx.ts` shared material + light rig, `roomTextures.ts` painted textures, `Crt.tsx` CRT shader, `RecordPlayer.tsx` + `RecordBox.tsx` the clickable record player and its info box, its public-domain track in `public/music/`; `CreditsBookModel.tsx` + `CreditsBook.tsx` the clickable book with "how it was made" (`aboutData.ts`, keep it true to the README) and the credits). Keep it light: it is the first thing every phone loads.
+- `src/ui/` — HUD, minimap, info card, credits, debug overlay, pause menu / journal (language, sound and Ir al inicio live there, not in the HUD; credits in the start menu and in the bedroom's credits book), menu + loading background (`MayaBackground.tsx`). Pixel UI textures and HUD icons are drawn in `uiTextures.ts`.
 - `src/npc/` — villagers, trail walkers and jaguars (`People.tsx`, data in `npcData.ts`). Their ground ray only sees fixed colliders; they step up ≤ 0.6 m and keep ~1.1 m apart.
 - `src/game/` — quests, pickups, digging, ballgame, camera, time lens, Maya calendar.
 - `src/audio/` — Web Audio engine (`sound.ts`: music playlist, effect list `SFX`) and `AudioEvents.tsx` (plays effects by watching the stores). Files in `public/audio/` are 128 kbps MP3 made from the Ovani Sound packs in `../sfx/` with LAME (`brew install lame`; `lame -b 128 --cbr -q 2`). **Never commit them** (license: no redistribution; git-ignored, the repo is public): the live site serves `/audio/*` from the R2 bucket `copanquest-assets` through `worker/index.ts`; upload changed files with `npx cf r2 objects put`.
 - `src/components/PixelBlast/` — React Bits background (MIT + Commons Clause, header kept; added by hand: the project has no shadcn/Tailwind).
 - `src/i18n/` — `es.json` (source of truth) and `en.json`.
+- `branding/` — logo files (icon, wordmark, lockups; SVG with outlined letters + PNG), colors and `build-logo.mjs` to regenerate them.
 
 ## Rules
 

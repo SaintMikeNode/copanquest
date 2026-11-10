@@ -56,7 +56,11 @@ function kidModel() {
   const sleeve = (t: Tile, f: FaceName) => {
     solid(t, C.skin, 0.05, 3);
     if (f === "bottom") return;
-    for (let y = 0; y < Math.ceil(t.h * 0.32); y++) for (let x = 0; x < t.w; x++) t.set(x, y, f === "top" ? C.shirt : y === Math.ceil(t.h * 0.32) - 1 ? C.shirtDark : C.shirt);
+    // The top of the arm (the shoulder) is all shirt; the sides get a sleeve over the top third
+    // (rows counted on the side faces' own height, so the 4-px-deep top face isn't half skin).
+    if (f === "top") return solid(t, C.shirt, 0.05, 3);
+    const k = Math.ceil(t.h * 0.34);
+    for (let y = 0; y < k; y++) for (let x = 0; x < t.w; x++) t.set(x, y, y === k - 1 ? C.shirtDark : C.shirt);
   };
   const leg = (t: Tile, f: FaceName) => {
     solid(t, C.skin, 0.05, 5);
@@ -188,10 +192,10 @@ function PlayerModel({ controller }: { controller: React.RefObject<EcctrlHandle 
       </group>
       {part(2, [0, 0.64, 0])}
       {part(7, [0, 0.66, -0.17])}
-      <group ref={armL} position={[-0.24, 0.82, 0]}>
+      <group ref={armL} position={[-0.24, 0.83, 0]}>
         {part(3, [0, -0.17, 0])}
       </group>
-      <group ref={armR} position={[0.24, 0.82, 0]}>
+      <group ref={armR} position={[0.24, 0.83, 0]}>
         {part(3, [0, -0.17, 0])}
       </group>
       {part(4, [0, 1.03, 0])}

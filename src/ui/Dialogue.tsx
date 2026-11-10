@@ -8,6 +8,7 @@ import { JADES } from "../world/villageData";
 import { POIS } from "../poi/poiData";
 import { playerState } from "../player/playerState";
 import { IS_TOUCH } from "../config";
+import { useExit } from "./presence";
 
 /** Key chip on the prompts: a mouse with its right button lit (none on touch, where you tap the
  * button itself). The words stay as the accessible label and tooltip. */
@@ -49,11 +50,12 @@ export function TalkPrompt() {
       window.removeEventListener("keydown", onKey);
     };
   }, []);
-  if (!target || dialogue) return null;
-  const info = talkInfo(target);
+  const [who, leaving] = useExit(!dialogue && target);
+  if (!who) return null;
+  const info = talkInfo(who);
   if (!info) return null;
   return (
-    <button className="talk-prompt" onClick={() => open(target)}>
+    <button className={leaving ? "talk-prompt ui-leave" : "talk-prompt"} onClick={() => open(who)} data-tut="talk">
       <InteractKey /> {t(info.verb)} · {l(info.name)}
     </button>
   );
@@ -78,28 +80,33 @@ export function DialogueBox() {
   const close = useGame((s) => s.closeDialogue);
   const t = useT();
   const l = useL10n();
-  const dialogueId = dialogue?.id ?? null;
+  // While it closes, the last line stays on screen for the exit animation.
+  const [shown, leaving] = useExit(dialogue);
+  const dialogueId = shown?.id ?? null;
   const script = useMemo(() => (dialogueId ? scriptFor(dialogueId) : null), [dialogueId]);
-  current = script;
+  current = dialogue ? script : null;
   useEffect(() => {
     playerState.frozen = !!dialogue;
   }, [dialogue]);
-  if (!dialogue || !script) return null;
+  if (!shown || !script) return null;
   const info = script;
-  const last = dialogue.line >= info.lines.length - 1;
+  const last = shown.line >= info.lines.length - 1;
   return (
-    <section className="dialogue" aria-live="polite">
+    <section key={shown.id} className={leaving ? "dialogue ui-leave" : "dialogue"} aria-live="polite">
       <header>
         <h2>{l(info.name)}</h2>
         <button className="icon-btn" onClick={close} aria-label={t("close")}>
           ×
         </button>
       </header>
-      <p>{l(info.lines[dialogue.line])}</p>
+      {/* Keyed by line, so each new line slides in. */}
+      <p key={shown.line} className="dialogue-line">
+        {l(info.lines[shown.line])}
+      </p>
       <footer>
         <span className="dots">
           {info.lines.map((_, i) => (
-            <i key={i} className={i === dialogue.line ? "on" : ""} />
+            <i key={i} className={i === shown.line ? "on" : ""} />
           ))}
         </span>
         <button className="primary small" onClick={advance}>

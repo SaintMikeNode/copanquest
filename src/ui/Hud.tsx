@@ -15,6 +15,8 @@ import { useCamera } from "../game/camera";
 import { useAction } from "../game/WorldGame";
 import { DesktopKeys, PauseMenu } from "./DesktopKeys";
 import { AudioEvents } from "../audio/AudioEvents";
+import { Tutorial } from "./Tutorial";
+import { Presence } from "./presence";
 
 /** Desktop mouse-look: free the cursor when UI needs it, and remind how to grab it. */
 function MouseLook({ needsCursor }: { needsCursor: boolean }) {
@@ -48,7 +50,7 @@ export function Hud() {
           progress chips and FPS open from a "Progreso" button. */}
       <div className="hud-left">
         <div className="hud-bar">
-          <button className="pill menu-btn" onClick={() => setOverlay("pause")} aria-label={t("menu")}>
+          <button className="pill menu-btn" onClick={() => setOverlay("pause")} aria-label={t("menu")} data-tut="menu">
             {IS_TOUCH ? <span aria-hidden="true">☰</span> : <kbd>Esc</kbd>} {t("menu")}
           </button>
           {IS_TOUCH && (
@@ -70,33 +72,40 @@ export function Hud() {
       </button>
       <HudButtons />
       <CameraOverlay />
-      {!dialogue && !camOn && <InfoCard />}
+      <InfoCard hidden={!!dialogue || camOn} />
       {!camOn && <TalkPrompt />}
       {!camOn && !dialogue && <ActionPrompt />}
       <DialogueBox />
       <Toast />
       <DesktopKeys />
       <AudioEvents />
+      <Tutorial />
       <MouseLook needsCursor={!!overlay || !!dialogue || !!found} />
       {IS_TOUCH && !overlay && !dialogue && !found && !camOn && <TouchControls />}
-      {overlay === "map" && (
+      <Presence show={overlay === "map"}>
         <Overlay title={t("map")} onClose={close}>
           <Minimap large />
         </Overlay>
-      )}
-      {overlay === "credits" && (
+      </Presence>
+      <Presence show={overlay === "credits"}>
         <Overlay title={t("credits")} onClose={close}>
           <Credits />
         </Overlay>
-      )}
-      {overlay === "journal" && <Journal />}
-      {overlay === "glyphs" && <GlyphPuzzle />}
-      {overlay === "pause" && <PauseMenu />}
-      {overlay === "help" && (
+      </Presence>
+      <Presence show={overlay === "journal"}>
+        <Journal />
+      </Presence>
+      <Presence show={overlay === "glyphs"}>
+        <GlyphPuzzle />
+      </Presence>
+      <Presence show={overlay === "pause"}>
+        <PauseMenu />
+      </Presence>
+      <Presence show={overlay === "help"}>
         <Overlay title={t("help")} onClose={close}>
           <Help />
         </Overlay>
-      )}
+      </Presence>
     </div>
   );
 }

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { GameTitle } from "./GameTitle";
 import { useL10n, useT } from "../i18n";
 import { POIS } from "../poi/poiData";
 import { MayaBackground } from "./MayaBackground";
@@ -29,7 +30,9 @@ export function LoadingScreen({ progress, done = false }: { progress: number; do
       <MayaBackground />
       <div className="loader-card">
         <img src="/favicon.svg" alt="" width={64} height={64} className="loader-logo" />
-        <h1>{t("title")}</h1>
+        <h1>
+          <GameTitle />
+        </h1>
         <p className="loader-stage">{t(progress < 0.3 ? "loading.terrain" : progress < 0.99 ? "loading.city" : "loading.ready")}</p>
         <div className="loader-bar" aria-hidden="true">
           <div style={{ width: `${pct}%` }} />

@@ -20,7 +20,7 @@
 /* ---------- Pixel UI kit (textures from src/ui/uiTextures.ts; style refs: garden/nature MC UIs) ----------
    .px-panel: wood border with a pixel frame + parchment inside; moss trim on top (::before).
    .px-btn: wood plank button; .px-btn.primary: jade. .px-slot: dark inset (chips, slots). */
-.menu-card, .loader-card, .overlay-box, .info-card, .dialogue {
+.menu-card, .loader-card, .overlay-box, .info-card, .dialogue, .maya-window {
   position: relative; border: 18px solid transparent; border-radius: 0;
   border-image: var(--ui-frame) 4 / 12px stretch;
   background-image: var(--ui-paper), var(--ui-wood);
@@ -31,7 +31,7 @@
   box-shadow: inset 3px 3px 0 #b8935c, inset -3px -3px 0 #fff6de, 0 10px 0 rgba(0,0,0,.22);
   color: var(--ink);
 }
-.menu-card::before, .loader-card::before, .overlay-box::before, .info-card::before, .dialogue::before {
+.menu-card::before, .loader-card::before, .overlay-box::before, .info-card::before, .dialogue::before, .maya-window::before {
   content: ""; position: absolute; left: -24px; right: -24px; top: -36px; height: 36px; pointer-events: none;
   background: var(--ui-leaves) repeat-x 0 0 / 144px 36px; image-rendering: pixelated;
 }
@@ -76,8 +76,15 @@ button { font: inherit; cursor: pointer; }
 .maya-bg-fret-bottom { bottom: 0; }
 .menu-card, .loader-card { z-index: 1; }
 @media (prefers-reduced-motion: reduce) { .maya-bg-glyphs { animation: none; } }
-.menu-card { max-width: 420px; width: 100%; text-align: center; padding: 22px 20px; }
-.menu-card h1 { margin: 8px 0 4px; font-size: 2.4rem; color: var(--red); letter-spacing: .5px; text-shadow: 3px 3px 0 #e2c48f; }
+/* Dark jade card with the yellow title, like the title screen drawn on the CRT (room/Crt.tsx). */
+.menu-card {
+  max-width: 420px; width: 100%; text-align: center; padding: 22px 20px;
+  background-image: linear-gradient(180deg, #123a2b 0%, #0b2419 100%), var(--ui-wood);
+  box-shadow: inset 0 0 0 2px #071a12, inset 0 0 24px rgba(0, 0, 0, .45), 0 10px 0 rgba(0,0,0,.25);
+  color: #f0e2bf;
+}
+.menu-card h1 { margin: 8px 0 4px; font-size: 2.4rem; color: #f2c14e; letter-spacing: .5px; text-shadow: 3px 3px 0 #7a1d10; }
+.menu-card img { image-rendering: pixelated; filter: drop-shadow(0 0 10px rgba(242, 193, 78, .35)); }
 .menu-card p { margin: 0 0 20px; line-height: 1.45; }
 .primary { width: 100%; padding: 10px; font-size: 1.35rem; }
 .menu-row { display: flex; gap: 10px; margin-top: 12px; }
@@ -184,11 +191,22 @@ button { font: inherit; cursor: pointer; }
 .toast {
   position: absolute; top: 22%; left: 50%; transform: translateX(-50%); padding: 6px 16px;
   border: 8px solid transparent; border-image: var(--ui-frame) 4 / 8px stretch; background: var(--ui-clay) 0 0 / 32px 32px;
-  image-rendering: pixelated; color: #fff3d6; font-weight: 700; font-size: 1.15rem; text-shadow: var(--outline-clay);
-  text-align: center; max-width: calc(100% - 32px); animation: toast 3.2s ease forwards; pointer-events: none;
+  image-rendering: pixelated; color: #fff3d6; font-weight: 700; font-size: 1.5rem; text-shadow: var(--outline-clay);
+  text-align: center; width: max-content; max-width: calc(100% - 32px); animation: toast 3.2s ease forwards; pointer-events: none;
 }
+@keyframes toast-touch { 0% { opacity: 0; transform: translateY(-10px); } 10%, 80% { opacity: 1; transform: none; } 100% { opacity: 0; } }
 @keyframes toast { 0% { opacity: 0; transform: translate(-50%, -10px); } 10%, 80% { opacity: 1; transform: translate(-50%, 0); } 100% { opacity: 0; } }
+/* With a mouse, the browser's "press Esc to show your cursor" notice sits at the top center while
+   the pointer is locked, so the toast goes to the lower part of the screen, above the talk prompt. */
+@media (pointer: fine) {
+  .toast { top: auto; bottom: calc(max(16px, env(safe-area-inset-bottom)) + 110px); }
+}
 @media (pointer: coarse) {
+  /* Below the minimap, between the left edge and the column of buttons on the right. */
+  .toast {
+    top: calc(max(10px, env(safe-area-inset-top)) + 200px); left: 12px; right: 76px; width: fit-content; max-width: none;
+    margin: 0 auto; transform: none; font-size: 1.3rem; animation-name: toast-touch;
+  }
   .talk-prompt { bottom: calc(205px + env(safe-area-inset-bottom)); }
   .dialogue { bottom: calc(10px + env(safe-area-inset-bottom)); }
 }
@@ -325,15 +343,22 @@ button { font: inherit; cursor: pointer; }
 .landing, .landing-loading { position: fixed; inset: 0; background: #140c08; }
 .landing-canvas { position: absolute !important; inset: 0; }
 /* The scene renders at ~720 px tall and is scaled up smoothly (PS2-era look). */
-.landing-hint {
-  position: absolute; left: 50%; bottom: max(calc(env(safe-area-inset-bottom) + 80px), 9vh); transform: translateX(-50%);
-  display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 12px; font-size: 1rem; cursor: pointer;
-  animation: hint-pulse 2.4s ease-in-out infinite; white-space: nowrap;
+.landing-hints {
+  position: absolute; left: 12px; right: 12px; bottom: max(calc(env(safe-area-inset-bottom) + 80px), 9vh);
+  display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; pointer-events: none;
 }
+.landing-hint {
+  display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 12px; font-size: 1rem; cursor: pointer;
+  animation: hint-pulse 2.4s ease-in-out infinite; white-space: nowrap; pointer-events: auto;
+}
+.landing-record { animation: none; }
+.landing-note { color: #f2c14e; font-weight: 700; display: inline-block; }
+.landing-note.on { animation: note-bob 1s ease-in-out infinite; }
+@keyframes note-bob { 50% { transform: translateY(-3px) rotate(-10deg); } }
 .landing-hint kbd { font: 700 .8rem/1 "Pixelify Sans", system-ui, sans-serif; color: var(--ink); background: #f6ead0; padding: 3px 6px;
   box-shadow: inset 0 -2px 0 #c9b48a, 0 0 0 1px #1f1209; }
 @keyframes hint-pulse { 50% { filter: brightness(1.25); } }
-.landing-in .landing-hint, .landing-out .landing-hint { opacity: 0; transition: opacity .3s; }
+.landing-in .landing-hints, .landing-out .landing-hints { opacity: 0; transition: opacity .3s; }
 /* Credits line floating at the bottom of the bedroom view. */
 .landing-footer {
   position: absolute; left: 50%; bottom: max(calc(env(safe-area-inset-bottom) + 8px), 1.6vh); transform: translateX(-50%);
@@ -362,8 +387,190 @@ button { font: inherit; cursor: pointer; }
     radial-gradient(120% 100% at 50% 50%, transparent 60%, rgba(0,0,0,.55) 100%);
   box-shadow: inset 0 0 6vmin rgba(0,0,0,.6), inset 0 0 1.5vmin rgba(150,255,200,.08);
   animation: crt-flicker 6s steps(1) infinite; }
-.crt-back { position: absolute; z-index: 6; top: calc(clamp(10px, 2.6vmin, 26px) + 12px); left: calc(clamp(10px, 2.6vmin, 26px) + 12px);
-  height: 34px; display: inline-flex; align-items: center; cursor: pointer; }
+/* Volver: a clay button on the same row as the sound / language buttons, in the opposite corner. */
+.menu-back {
+  position: absolute; z-index: 2; left: 12px; top: calc(max(0px, env(safe-area-inset-top)) + 48px);
+  width: auto; height: 46px; padding: 0 16px; display: inline-flex; align-items: center; gap: 6px;
+  font-size: 1.2rem; cursor: pointer;
+}
 .crt .menu-lang { top: calc(max(0px, env(safe-area-inset-top)) + 52px); }
 @keyframes crt-flicker { 0%, 100% { opacity: 1; } 47% { opacity: .92; } 48% { opacity: 1; } 81% { opacity: .95; } 82% { opacity: 1; } }
-@media (prefers-reduced-motion: reduce) { .crt-wrap, .crt-fx, .landing-hint { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .crt-wrap, .crt-fx, .landing-hint, .landing-note { animation: none; } }
+
+/* ---------- First-play tutorial (src/ui/Tutorial.tsx) ---------- */
+.tutorial {
+  position: absolute; z-index: 6; left: 50%; top: calc(max(10px, env(safe-area-inset-top)) + 56px); transform: translateX(-50%);
+  width: min(560px, calc(100% - 344px)); padding: 12px 16px; pointer-events: auto;
+  border: 10px solid transparent; border-image: var(--ui-frame) 4 / 10px stretch;
+  background: var(--ui-paper) 0 0 / 64px 64px; image-rendering: pixelated; color: var(--ink);
+  box-shadow: 0 8px 0 rgba(0,0,0,.25); animation: tut-in .35s ease-out both;
+}
+.tutorial-flash { animation: tut-done .5s ease-out; }
+.tutorial-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.tutorial-head strong { color: var(--red-dark); font-size: 1.5rem; }
+.tutorial-count { font-size: 1.05rem; opacity: .7; }
+.tutorial p { margin: 6px 0 10px; line-height: 1.35; font-size: 1.3rem; }
+.tutorial-foot { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.tutorial-foot .dots { display: flex; gap: 5px; }
+.tutorial-foot .dots i { width: 9px; height: 9px; background: #c9b48a; box-shadow: 0 0 0 1px #6b4a2e; }
+.tutorial-foot .dots i.on { background: var(--red); }
+.tutorial-foot .dots i.now { background: #f2c14e; }
+.tutorial-foot .px-btn { padding: 4px 12px; font-size: 1.1rem; margin-left: auto; }
+@keyframes tut-in { from { opacity: 0; transform: translate(-50%, -8px); } to { opacity: 1; transform: translate(-50%, 0); } }
+@keyframes tut-done { 40% { filter: brightness(1.25); } }
+/* The HUD control the current step points at. */
+body[data-tut="camera"] [data-tut="camera"], body[data-tut="journal"] [data-tut="journal"],
+body[data-tut="menu"] [data-tut="menu"], body[data-tut="talk"] [data-tut="talk"] { animation: tut-pulse 1.1s ease-in-out infinite; }
+@keyframes tut-pulse { 50% { filter: brightness(1.35); box-shadow: 0 0 0 4px #f2c14e, 0 0 18px 6px rgba(242, 193, 78, .6); } }
+/* Narrow desktop windows: no room beside the minimap, so the card goes below it. */
+@media (min-width: 521px) and (max-width: 900px) {
+  .tutorial { width: min(560px, calc(100% - 24px)); top: calc(max(10px, env(safe-area-inset-top)) + 200px); }
+}
+@media (max-width: 520px) {
+  .tutorial { width: calc(100% - 24px); top: auto; bottom: calc(max(12px, env(safe-area-inset-bottom)) + 150px); }
+  .tutorial-head strong { font-size: 1.3rem; }
+  .tutorial p { font-size: 1.12rem; }
+}
+@media (prefers-reduced-motion: reduce) { .tutorial, [data-tut] { animation: none !important; } }
+
+/* ---------- Record box (src/room/RecordBox.tsx): a one-page credits book (see Credits book below) ---------- */
+/* Sleeve with the disc sliding out to the right; the disc spins while the music plays. */
+.record-art { position: relative; width: 214px; height: 150px; margin-top: 10px; }
+.record-sleeve {
+  position: absolute; left: 0; top: 0; z-index: 1; width: 124px; height: 140px; display: grid; place-items: center;
+  background: radial-gradient(circle at 50% 50%, #c79a5a 0 22px, transparent 23px), repeating-linear-gradient(45deg, #b8874a 0 6px, #ad7c40 6px 12px);
+  box-shadow: inset 0 0 0 4px #7a5230, 4px 6px 0 rgba(0,0,0,.25);
+}
+.record-sleeve span { font-size: 2.4rem; color: #fff3d6; text-shadow: 2px 2px 0 #5a3418; }
+.record-disc {
+  position: absolute; left: 78px; top: 2px; width: 136px; height: 136px; border-radius: 50%; display: grid; place-items: center;
+  background: repeating-radial-gradient(circle, #1a1816 0 2px, #26221e 2px 3px);
+  box-shadow: 0 0 0 2px #0d0c0b, 3px 5px 0 rgba(0,0,0,.25);
+  animation: record-out .6s .15s ease-out both;
+}
+.record-disc::after {
+  content: ""; position: absolute; inset: 0; border-radius: 50%;
+  background: conic-gradient(from 20deg, transparent 0 40deg, rgba(255,240,220,.14) 50deg, transparent 60deg 220deg, rgba(255,240,220,.1) 230deg, transparent 240deg);
+}
+.record-disc.spin .record-label, .record-disc.spin::after { animation: record-spin 1.6s linear infinite; }
+.record-label {
+  width: 52px; height: 52px; border-radius: 50%; display: grid; place-content: center; text-align: center;
+  background: radial-gradient(circle, #e8e0d0 0 2px, #7a2418 3px); box-shadow: inset 0 0 0 3px #7a2418, inset 0 0 0 4px #d9b25a;
+  color: #e8c66a; line-height: 1; font-size: .55rem;
+}
+.record-label b { font-size: .62rem; letter-spacing: .04em; margin-bottom: 14px; }
+.record-label i { font-style: normal; }
+.record-page { display: grid; grid-template-columns: 214px minmax(0, 1fr); gap: 18px; align-items: start; }
+.record-page h3 { margin-top: 10px; }
+.record-kind { font-style: italic; }
+@keyframes record-out { from { transform: translateX(-70px); } }
+@keyframes record-spin { to { transform: rotate(360deg); } }
+@media (max-width: 560px) {
+  .record-page { grid-template-columns: minmax(0, 1fr); gap: 4px; }
+  .record-art { margin: 4px auto -18px; transform: scale(.85); transform-origin: top center; }
+}
+@media (prefers-reduced-motion: reduce) { .record-disc, .record-disc *, .record-disc::after { animation: none !important; } }
+
+/* ---------- UI enter / exit (src/ui/presence.tsx) ----------
+   Panels pop in on mount; `.ui-leave` (added while they close) plays the way out. Only opacity
+   and the individual `translate` / `scale` properties move, so it all runs on the compositor and
+   each panel keeps its own `transform` (the translateX(-50%) centering). */
+.ui-presence { display: contents; }
+.ui-leave, .ui-leave * { pointer-events: none !important; }
+
+/* Bottom panels (place card, dialogue, find card): rise and unfold from the bottom edge, like an
+   RPG text window, with a little overshoot; the leaf trim drops in just after. */
+.info-card, .dialogue { transform-origin: 50% 100%; animation: ui-panel-in .34s cubic-bezier(.2, .9, .25, 1.15) both; }
+.info-card::before, .dialogue::before { animation: ui-trim-in .42s .08s cubic-bezier(.2, .9, .3, 1.3) both; }
+.info-card.ui-leave, .dialogue.ui-leave { animation: ui-panel-out .19s ease-in both; }
+.info-card.ui-leave::before, .dialogue.ui-leave::before { animation: none; }
+@keyframes ui-panel-in {
+  0% { opacity: 0; translate: 0 26px; scale: .94 .55; }
+  55% { opacity: 1; translate: 0 -4px; scale: 1.015 1.04; }
+  100% { opacity: 1; translate: 0 0; scale: 1 1; }
+}
+@keyframes ui-panel-out { to { opacity: 0; translate: 0 20px; scale: .96 .7; } }
+@keyframes ui-trim-in { from { opacity: 0; translate: 0 10px; } }
+/* Each new dialogue line slides in. */
+.dialogue-line { animation: ui-line-in .24s ease-out both; }
+@keyframes ui-line-in { from { opacity: 0; translate: 10px 0; } }
+
+/* Prompts (talk, dig, hit): pop from a small chip. */
+.talk-prompt { animation: ui-prompt-in .26s cubic-bezier(.2, .9, .3, 1.4) both; }
+.talk-prompt.ui-leave { animation: ui-prompt-out .17s ease-in both; }
+@keyframes ui-prompt-in { from { opacity: 0; translate: 0 12px; scale: .7; } }
+@keyframes ui-prompt-out { to { opacity: 0; translate: 0 8px; scale: .85; } }
+
+/* Windows (journal, map, pause, help, credits, record box): the backdrop fades, the box pops. */
+.overlay, .maya-modal { animation: ui-fade-in .2s ease-out both; }
+.overlay-box, .book { animation: ui-box-in .32s cubic-bezier(.2, .9, .25, 1.2) both; }
+.ui-leave .overlay, .ui-leave .maya-modal { animation: ui-fade-out .19s ease-in both; }
+.ui-leave .overlay-box, .ui-leave .book { animation: ui-box-out .19s ease-in both; }
+@keyframes ui-fade-in { from { opacity: 0; } }
+@keyframes ui-fade-out { to { opacity: 0; } }
+@keyframes ui-box-in {
+  0% { opacity: 0; translate: 0 22px; scale: .9; }
+  60% { opacity: 1; translate: 0 -3px; scale: 1.015; }
+  100% { opacity: 1; translate: 0 0; scale: 1; }
+}
+@keyframes ui-box-out { to { opacity: 0; translate: 0 14px; scale: .94; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .info-card, .dialogue, .info-card::before, .dialogue::before, .dialogue-line, .talk-prompt,
+  .overlay, .overlay-box, .maya-modal, .book { animation: none !important; }
+}
+
+/* ---------- Bedroom windows: credits book (CreditsBook.tsx) and record box (RecordBox.tsx) ----------
+   The start menu's card (dark jade, wood frame, leaf trim; yellow titles, clay / wood pixel
+   buttons) floating over the 3D room, which stays visible behind a light dim. */
+.maya-modal {
+  position: absolute; inset: 0; z-index: 8; display: grid; place-items: center;
+  grid-template-rows: minmax(0, 1fr); grid-template-columns: minmax(0, 1fr);
+  padding: calc(max(0px, env(safe-area-inset-top)) + 60px) 14px calc(max(0px, env(safe-area-inset-bottom)) + 24px);
+  background: radial-gradient(80% 70% at 50% 50%, rgba(10, 6, 4, .2), rgba(10, 6, 4, .55));
+}
+.maya-window { position: relative; z-index: 1; }
+.book {
+  width: min(980px, 100%); height: min(640px, 100%); padding: 12px;
+  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); gap: 12px;
+  background-image: linear-gradient(180deg, #123a2b 0%, #0b2419 100%), var(--ui-wood);
+  box-shadow: inset 0 0 0 2px #071a12, inset 0 0 24px rgba(0, 0, 0, .45), 0 10px 0 rgba(0,0,0,.3);
+  color: #f0e2bf;
+}
+.book-page {
+  overflow: auto; padding: 16px 20px 18px; overscroll-behavior: contain;
+  background: rgba(3, 14, 10, .45); box-shadow: inset 0 0 0 2px rgba(47, 154, 102, .25), inset 0 0 18px rgba(0, 0, 0, .35);
+  scrollbar-color: #2f9a66 transparent; scrollbar-width: thin;
+}
+.book-page h2 { margin: 0 0 8px; font-size: 1.8rem; color: #f2c14e; text-shadow: 3px 3px 0 #7a1d10; line-height: 1.1; }
+.book-page h3 { margin: 14px 0 4px; font-size: 1.1rem; color: #9be3b5; letter-spacing: .02em; }
+.book-page p { margin: 0 0 7px; font-size: 1.02rem; line-height: 1.45; }
+.book-page .credits { font-size: .95rem; }
+.book-page .credits h3 { color: #9be3b5; }
+.book-page a, .book-page .credits a { color: #f2c14e; font-weight: 700; }
+.book-page a:hover { color: #ffe08a; }
+.book-links { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-top: 14px !important; }
+.book .icon-btn { z-index: 3; top: -12px; right: -12px; }
+.book-tabs { display: none; }
+.book-kicker { margin: 0 0 2px !important; font-size: .9rem !important; text-transform: uppercase; letter-spacing: .1em; color: #9be3b5; }
+.book-note { font-size: .95rem !important; opacity: .8; }
+.book-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0 4px; }
+.book-actions .primary { width: auto; padding: 4px 18px; font-size: 1.1rem; }
+/* One page only (the record box). */
+.book.book-single { width: min(720px, 100%); height: auto; max-height: 100%; grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, auto); }
+@media (max-width: 720px) {
+  .book { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); height: 100%; padding: 8px; gap: 8px; }
+  .book-tabs { display: flex; gap: 6px; }
+  .book-tabs button { flex: 1; padding: 2px 6px; font-size: 1rem; }
+  .book-page { padding: 12px 14px; }
+  .book-show-0 .book-right, .book-show-1 .book-left { display: none; }
+  .book-page h2 { font-size: 1.45rem; }
+  .maya-modal { padding-top: calc(max(0px, env(safe-area-inset-top)) + 52px); padding-bottom: calc(max(0px, env(safe-area-inset-bottom)) + 14px); }
+}
+
+/* Game title: open up the capital C (Pixelify Sans' C is nearly closed and reads as an O). The
+   notch is cut from the right side at mid-height; padding keeps the 3px text shadow inside. */
+.title-c {
+  display: inline-block; padding-right: 4px; margin-right: -4px;
+  clip-path: polygon(0 0, 100% 0, 100% 44%, 58% 44%, 58% 63%, 100% 63%, 100% 100%, 0 100%);
+}

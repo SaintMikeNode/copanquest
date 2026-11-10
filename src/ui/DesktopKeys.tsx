@@ -15,6 +15,7 @@ import { Overlay } from "./Overlay";
 import { Help } from "./Help";
 import { QuickSettings } from "./QuickSettings";
 import { exitToHome } from "./exitToHome";
+import { useTutorial } from "./Tutorial";
 import { IS_TOUCH } from "../config";
 
 const typing = (e: KeyboardEvent) => {
@@ -113,6 +114,14 @@ export function PauseMenu() {
           }}
         >
           ⌂ {t("respawn")}
+        </button>
+        <button
+          onClick={() => {
+            useTutorial.getState().start();
+            resume();
+          }}
+        >
+          🎓 {t("tut.again")}
         </button>
         <button onClick={exitToHome}>🏠 {t("home")}</button>
       </div>

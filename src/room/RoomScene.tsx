@@ -9,6 +9,9 @@ import { useFrame, type ThreeEvent } from "@react-three/fiber";
 import { psxLights, psxMaterial } from "./psx";
 import * as T from "./roomTextures";
 import { CrtScreen } from "./Crt";
+import { RecordPlayer } from "./RecordPlayer";
+import { CreditsBookModel } from "./CreditsBookModel";
+import { HandHint } from "./HandHint";
 import { RoundedBoxGeometry } from "three/examples/jsm/geometries/RoundedBoxGeometry.js";
 import { ConvexGeometry } from "three/examples/jsm/geometries/ConvexGeometry.js";
 
@@ -24,16 +27,18 @@ const deskShadows: [number, number, number, number][] = [
   [-0.05, -1.3, 0.62, 0.56], // PC + monitor
   [-0.42, -1.36, 0.2, 0.2], // speakers
   [0.32, -1.36, 0.2, 0.2],
-  [-0.5, -1.02, 0.13, 0.13], // mug
+  [0.22, -0.94, 0.13, 0.13], // mug
   [-0.76, -1.45, 0.26, 0.26], // lamp
   [0.6, -1.5, 0.15, 0.15], // lava lamp
   [0.84, -1.42, 0.36, 0.3], // game boxes
   [0.38, -0.99, 0.09, 0.13], // mouse
-  [0.53, -1.23, 0.18, 0.16], // floppies
-  [-0.74, -0.99, 0.44, 0.44], // hat
+  [0.27, -1.2, 0.18, 0.16], // floppies
+  [0.57, -1.215, 0.42, 0.34], // record player
+  [-0.79, -1.23, 0.33, 0.33], // hat
+  [-0.47, -0.985, 0.25, 0.31], // credits book
   [0.88, -1.02, 0.27, 0.34], // field notebook
   [0.64, -1.0, 0.3, 0.2], // trowel
-  [-0.3, -0.88, 0.16, 0.1], // magnifier
+  [-0.84, -0.94, 0.16, 0.12], // magnifier
 ];
 /** Window in the back wall, behind the right end of the desk. */
 const WIN = { x0: 0.95, x1: 1.95, y0: 1.0, y1: 2.12 };
@@ -123,12 +128,18 @@ function frustum(wFront: number, hFront: number, wBack: number, hBack: number, d
 
 export function RoomScene({
   onMonitor,
+  onRecord,
+  onBook,
+  bookOpen,
   prompt,
   power,
   boost,
   hover,
 }: {
   onMonitor: () => void;
+  onRecord: () => void;
+  onBook: () => void;
+  bookOpen: { current: number };
   prompt: string;
   power: { current: number };
   boost: { current: number };
@@ -622,6 +633,8 @@ export function RoomScene({
         <group position={[SCREEN.center.x, SCREEN.center.y, -1.15]}>
           <CrtScreen size={SCREEN.size} prompt={prompt} power={power} boost={boost} />
         </group>
+        {/* Pointing hand over the monitor (hidden while the camera zooms into the screen). */}
+        <HandHint position={[-0.05, 1.38, -1.17]} scale={0.065} hidden={() => boost.current > 0.02} />
       </group>
 
       {/* Keyboard, mouse and Maya mousepad. */}
@@ -630,7 +643,7 @@ export function RoomScene({
       <mesh geometry={geo.sphere} material={M.beige} position={[0.38, 0.77, -0.99]} scale={[0.03, 0.02, 0.05]} />
 
       {/* Café de Honduras mug. */}
-      <group position={[-0.5, 0.75, -1.02]}>
+      <group position={[0.22, 0.75, -0.94]} rotation={[0, 0.7, 0]}>
         <mesh geometry={geo.cyl8} material={[M.mug, M.white, M.black]} scale={[0.04, 0.1, 0.04]} position={[0, 0.05, 0]} />
         <mesh material={M.white} position={[0.048, 0.055, 0]}>
           <torusGeometry args={[0.022, 0.007, 8, 12]} />
@@ -639,12 +652,20 @@ export function RoomScene({
 
       {/* Floppy disks and a CD. */}
       {M.floppies.map((m, i) => (
-        <mesh key={i} material={[M.black, M.black, m, M.black, M.black, M.black]} position={[0.5 + i * 0.03, DESK_TOP + 0.002 + i * 0.0045, -1.24 + i * 0.015]} rotation={[0, 0.2 + i * 0.35, 0]}>
+        <mesh key={i} material={[M.black, M.black, m, M.black, M.black, M.black]} position={[0.24 + i * 0.03, DESK_TOP + 0.002 + i * 0.0045, -1.21 + i * 0.015]} rotation={[0, 0.2 + i * 0.35, 0]}>
           <boxGeometry args={box(0.09, 0.004, 0.09)} />
         </mesh>
       ))}
+      {/* Record player (clickable: opens the record box). */}
+      <group position={[0.57, DESK_TOP, -1.215]} rotation={[0, -0.12, 0]} scale={1.22}>
+        <RecordPlayer position={[0, 0, 0]} onOpen={onRecord} hover={hover} />
+      </group>
+      {/* Credits book (clickable: opens the credits book). */}
+      <group position={[-0.47, DESK_TOP, -0.985]} rotation={[0, 0.1, 0]} scale={1.18}>
+        <CreditsBookModel onOpen={onBook} hover={hover} open={bookOpen} />
+      </group>
       {/* The explorer's hat, like the player's: khaki straw, dark band. */}
-      <group position={[-0.74, DESK_TOP, -0.99]} rotation={[0.04, 0.4, -0.03]}>
+      <group position={[-0.79, DESK_TOP + 0.003, -1.23]} rotation={[0.03, 0.4, -0.02]} scale={0.75}>
         <mesh geometry={geo.cyl8} material={M.hat} scale={[0.19, 0.012, 0.19]} position={[0, 0.008, 0]} />
         <mesh geometry={geo.cyl8} material={M.hat} scale={[0.1, 0.1, 0.1]} position={[0, 0.062, 0]} />
         <mesh geometry={geo.cyl8} material={M.hatBand} scale={[0.103, 0.026, 0.103]} position={[0, 0.027, 0]} />
@@ -671,7 +692,7 @@ export function RoomScene({
         </mesh>
         <mesh geometry={geo.cyl8} material={M.handle} scale={[0.013, 0.11, 0.013]} position={[0, 0.02, 0.145]} rotation={[Math.PI / 2, 0, 0]} />
       </group>
-      <group position={[-0.34, DESK_TOP, -0.89]} rotation={[0, -0.6, 0]} scale={1.3}>
+      <group position={[-0.82, DESK_TOP, -0.93]} rotation={[0, 2.6, 0]} scale={1.3}>
         <mesh material={M.black} position={[0, 0.005, 0]} rotation={[Math.PI / 2, 0, 0]}>
           <torusGeometry args={[0.035, 0.005, 6, 20]} />
         </mesh>

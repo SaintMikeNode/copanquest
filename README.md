@@ -1,4 +1,34 @@
-# CopánQuest
+<p align="center">
+  <img src="branding/copanquest-logo-square-1024.png" width="220" alt="CopánQuest logo: a stepped Maya pyramid and the CopánQuest wordmark on a dark jade CRT screen">
+</p>
+
+<h1 align="center">CopánQuest</h1>
+
+<p align="center">
+  <strong>Explora la ciudad maya de Copán, Honduras, en 3D y desde el navegador.</strong><br>
+  <em>Explore the Maya city of Copán, Honduras, in 3D, right in your browser.</em>
+</p>
+
+<p align="center">
+  <a href="https://copanquest.todosenlaweb.com"><img src="https://img.shields.io/badge/website-copanquest.todosenlaweb.com-2f9a66" alt="website: copanquest.todosenlaweb.com"></a>
+  <a href="https://todosenlaweb.com"><img src="https://img.shields.io/badge/part%20of-Todos%20en%20la%20Web-b3402a" alt="part of Todos en la Web"></a>
+  <a href="https://nerdypunk.dev"><img src="https://img.shields.io/badge/by-nerdypunkdev-e9b949" alt="by nerdypunkdev"></a>
+  <br>
+  <img src="https://img.shields.io/badge/languages-Espa%C3%B1ol%20%C2%B7%20English-5a6acf" alt="languages: Español · English">
+  <img src="https://img.shields.io/badge/privacy-no%20tracking-2f9a66" alt="privacy: no tracking">
+  <img src="https://img.shields.io/badge/plays%20on-phone%20%C2%B7%20desktop%20%C2%B7%20offline%20(PWA)-6b4a8f" alt="plays on phone, desktop, offline (PWA)">
+  <br>
+  <img src="https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white" alt="TypeScript">
+  <img src="https://img.shields.io/badge/React-149ECA?logo=react&logoColor=white" alt="React">
+  <img src="https://img.shields.io/badge/three.js-000000?logo=threedotjs&logoColor=white" alt="three.js">
+  <img src="https://img.shields.io/badge/React%20Three%20Fiber-000000?logo=react&logoColor=white" alt="React Three Fiber">
+  <img src="https://img.shields.io/badge/Rapier-physics-1f6f5c" alt="Rapier physics">
+  <img src="https://img.shields.io/badge/Vite-646CFF?logo=vite&logoColor=white" alt="Vite">
+  <img src="https://img.shields.io/badge/PWA-5A0FC8?logo=pwa&logoColor=white" alt="PWA">
+  <img src="https://img.shields.io/badge/Cloudflare%20Workers-F38020?logo=cloudflareworkers&logoColor=white" alt="Cloudflare Workers">
+</p>
+
+---
 
 Un juego web en 3D para que niñas y niños de Honduras exploren las ruinas mayas de **Copán**.
 *A web-based 3D exploration game where Honduran kids explore the Maya ruins of Copán.*
@@ -51,7 +81,7 @@ Dev tools: `npm run dev` or `?debug` in the URL enables the collider view. `F3` 
 
 ## Landing page: the bedroom
 
-The main page (`src/room/`) is a late-90s / early-2000s Honduran kid's bedroom in a PS2-era style, an original scene: desk with a beige PC and CRT, desk lamp, lava lamp, Café de Honduras mug, Maya mousepad, fictional game boxes (CopánQuest, Selva Kart, Jade Raiders…), a shelf with books, a mini Copán stela, a jade mask and a toy macaw, posters (scarlet macaw, the national bird; a Tzolk'in calendar with the 20 day signs; a Copán travel poster), a Honduran flag pennant, a Maya step-fret rug, an office chair, a school backpack, magazines and a power strip with cables under the desk, a Rosalila temple banner, a map of Honduras with Copán marked, a Lenca clay vase (La Campa pottery), a clay jaguar figurine, a cork board behind the monitor (polaroids of Copán, a bus ticket, the school timetable), a jade mosaic mask (souvenir replica) on the wall to its right, soccer things (a classic truncated-icosahedron ball, a blue-and-white HONDURAS scarf, a #10 jersey on the chair, a "La H · España 82" poster for Honduras' first World Cup; generic designs, no crests or logos), and a *celosía* (louvered glass jalousie window, aluminum frame, concrete sill) behind the desk with an orchid (the national flower) on the sill. Outside, in layers: a late-afternoon sky over hills, the town (white walls, red clay-tile roofs, a church bell tower), a power line with a scarlet macaw, pines (the national tree) and banana leaves.
+The main page (`src/room/`) is a late-90s / early-2000s Honduran kid's bedroom in a PS2-era style, an original scene: desk with a beige PC and CRT, desk lamp, lava lamp, Café de Honduras mug, Maya mousepad, fictional game boxes (CopánQuest, Selva Kart, Jade Raiders…), a shelf with books, a mini Copán stela, a jade mask and a toy macaw, posters (scarlet macaw, the national bird; a painted Tzolk'in calendar disc: K'inich Ajaw, the Maya sun god, in the center, wedges in the Maya direction colors (red east, white north, black west, yellow south) and the 20 day signs in cartouches; a Copán travel poster), a Honduran flag pennant, a Maya step-fret rug, an office chair, a school backpack, magazines and a power strip with cables under the desk, a Rosalila temple banner, a map of Honduras with Copán marked, a Lenca clay vase (La Campa pottery), a clay jaguar figurine, a cork board behind the monitor (polaroids of Copán, a bus ticket, the school timetable), a jade mosaic mask (souvenir replica) on the wall to its right, soccer things (a classic truncated-icosahedron ball, a blue-and-white HONDURAS scarf, a #10 jersey on the chair, a "La H · España 82" poster for Honduras' first World Cup; generic designs, no crests or logos), and a *celosía* (louvered glass jalousie window, aluminum frame, concrete sill) behind the desk with an orchid (the national flower) on the sill. Outside, in layers: a late-afternoon sky over hills, the town (white walls, red clay-tile roofs, a church bell tower), a power line with a scarlet macaw, pines (the national tree) and banana leaves.
 
 - **Look** (`psx.ts`): one shared material, per-pixel lighting from a fixed rig (warm lamp spot, sun through the window, CRT glow, lava lamp), light ordered dither, haze; textures are painted in code (`roomTextures.ts`, stored at 2×). The scene renders at ~720 px tall and scales up smoothly. Rounded boxes and 12–20-sided cylinders for the plastic and wood.
 - **CRT** (`Crt.tsx`): a bulged screen mesh with a CRT shader (barrel curvature, scanlines, RGB mask, chromatic fringe, vignette, flicker, power-on) over a small canvas title screen.
@@ -80,7 +110,7 @@ The main page (`src/room/`) is a late-90s / early-2000s Honduran kid's bedroom i
 
 ## Sound
 
-`src/audio/sound.ts`: Web Audio engine. Music plays Tiki Party → 5 s pause → Field Day → 5 s pause → around again, starting on the first tap or key press (browsers block sound before that). The ♫ / 🔊 buttons in the start menu, the pause menu and the journal switch music and effects off separately (saved in `localStorage`). Every button click ticks; `src/audio/AudioEvents.tsx` plays effects by watching the stores (windows, dialogue, places, pickups, jade, digging, finds, quests, photos, camera, time lens, respawn); jump, ball hit, rank up and errors are played where they happen. Footsteps (`Player.tsx`): one per stride of ground covered (longer when running), soft dirt on the terrain and gravel on stone (the ground ray hits a non-trimesh collider: mounds, stairs, floors), a louder step on landing and a wood knock per ladder rung. The step sounds are the first ~0.25 s of the pack's Dirt/Gravel Interaction clips, trimmed with a fade-out before encoding. Sound effects are cached by the service worker after first use; music streams.
+`src/audio/sound.ts`: Web Audio engine. Music plays Tiki Party → 5 s pause → Field Day → 5 s pause → around again, only while playing: it starts from Tiki Party when the player presses Jugar and stops (rewinding) when they go back to the main page. The bedroom plays the record on the desk instead (`useRecord` in `sound.ts`; `src/room/RecordPlayer.tsx` spins it, `RecordBox.tsx` is the info box with play / pause): exactly one of the two plays at a time, and every return to the bedroom restarts the record from the beginning. The ♫ / 🔊 buttons in the start menu, the pause menu and the journal switch music and effects off separately (saved in `localStorage`). Every button click ticks; `src/audio/AudioEvents.tsx` plays effects by watching the stores (windows, dialogue, places, pickups, jade, digging, finds, quests, photos, camera, time lens, respawn); jump, ball hit, rank up and errors are played where they happen. Footsteps (`Player.tsx`): one per stride of ground covered (longer when running), soft dirt on the terrain and gravel on stone (the ground ray hits a non-trimesh collider: mounds, stairs, floors), a louder step on landing and a wood knock per ladder rung. The step sounds are the first ~0.25 s of the pack's Dirt/Gravel Interaction clips, trimmed with a fade-out before encoding. Sound effects are cached by the service worker after first use; music streams.
 
 ## Game loop
 
@@ -288,6 +318,7 @@ The in-game **Créditos** screen (`src/ui/creditsData.ts`) must stay in sync wit
 - Pixelify Sans font by The Pixelify Sans Project Authors, **SIL OFL 1.1** (bundled via `@fontsource/pixelify-sans`): https://github.com/eifetx/Pixelify-Sans
 - Maya day signs (tzolk'in) for the menu and loading background, from Wikimedia Commons: 19 signs by **Bluebalam**, **CC BY-SA 4.0**; Ok by CJLL Wright (vector by ExtendedPartition), **CC BY 2.5**. Kept as SVGs in `public/glyphs/` (per-file list in `public/glyphs/LICENSE.txt`) and drawn as pixel art at runtime by `src/ui/MayaBackground.tsx`; the adapted images are under the same licences.
 - **PixelBlast** background from React Bits by David Haz, **MIT + Commons Clause** (copyright notice kept in `src/components/PixelBlast/PixelBlast.jsx`): https://reactbits.dev/backgrounds/pixel-blast. Added by hand instead of `npx shadcn add` (the project has no shadcn/Tailwind setup); one change: the canvas is created per effect run so it survives React StrictMode.
+- Bedroom music: *La muerte del bardo* (fantasia for violin, cello and harp) by the Honduran composer **Manuel de Adalid y Gamero** (1872–1947), recorded by the Venetian Trio for Victor on 21 September 1914 (disc 67043). **Public domain** (US sound recording published before 1923; the composer died in 1947, so the work is free in Honduras too, life + 75). Digitized by the Library of Congress, National Jukebox: https://www.loc.gov/item/jukebox-11139/ (mirror: https://archive.org/details/loc-jukebox-11139-la-muerte-del-bardo). The MP3 is the original file, unchanged, in `public/music/` (committed, unlike the Ovani files). The disc label in the room and the box is drawn, not the Victor label scan (trademark).
 - Music: *Tiki Party* and *Field Day* (Main versions) from **Ovani Sound**'s Casual Music Pack Vol. 1; sound effects from Ovani Sound's Cozy Casual Sound FX Pack Vol. 2. **Ovani Sound royalty-free license** (https://ovanisound.com/policies/terms-of-service): used inside the game only, not redistributed as a pack. Converted from the packs' WAVs to 128 kbps MP3 with LAME (`lame -b 128 --cbr -q 2`) into `public/audio/`; the effect → file map is `SFX` in `src/audio/sound.ts`. **The MP3s are not in Git** (the license forbids redistributing the files on their own; `public/audio/` is git-ignored). On the live site the Worker script `worker/index.ts` serves `/audio/*` from the R2 bucket `copanquest-assets` (binding `AUDIO`, `assets.runWorkerFirst` in `cloudflare.config.ts`, byte ranges supported); anything missing falls back to the built assets, so local dev and preview use your local copy of `public/audio/`. To change a sound: re-encode it, then `npx cf r2 objects put audio/sfx/<name>.mp3 --bucket-name copanquest-assets --file public/audio/sfx/<name>.mp3 --content-type audio/mpeg`. Clones without the audio still run, silently.
 - Fact sources for the info cards: Wikipedia (CC BY-SA), Penn Museum *Expedition*, mayaruins.com, Uncovered History, ahutnick.github.io/copanaltarqkings, Mesoweb, Asociación Copán, and Sugiyama et al. 2018 (*PLOS ONE*). See `src/ui/creditsData.ts`.
 

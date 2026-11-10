@@ -67,6 +67,27 @@ const fragment = /* glsl */ `
   }
 `;
 
+/** "CopánQuest" centered at (cx, cy). Pixelify Sans' capital C is nearly closed and reads as an
+ *  O, so it's drawn clipped with a notch cut from its right side (like .title-c in styles.css). */
+function drawTitle(g: CanvasRenderingContext2D, cx: number, cy: number, color: string) {
+  const rest = "opánQuest";
+  const wc = g.measureText("C").width;
+  const total = g.measureText("C" + rest).width;
+  const x0 = cx - total / 2;
+  const size = 36;
+  g.save();
+  g.fillStyle = color;
+  g.textAlign = "left";
+  g.fillText(rest, x0 + wc, cy);
+  g.beginPath();
+  g.rect(x0 - 4, cy - size, wc + 8, size * 2);
+  // Notch: right part of the letter around the middle (evenodd cuts it out of the clip).
+  g.rect(x0 + wc * 0.58, cy - size * 0.1, wc, size * 0.2);
+  g.clip("evenodd");
+  g.fillText("C", x0, cy);
+  g.restore();
+}
+
 /** Title screen: dark jade, logo, title and a blinking prompt. */
 function drawScreen(g: CanvasRenderingContext2D, logo: HTMLImageElement | null, prompt: string, on: boolean) {
   const grad = g.createLinearGradient(0, 0, 0, H);
@@ -86,10 +107,8 @@ function drawScreen(g: CanvasRenderingContext2D, logo: HTMLImageElement | null, 
   g.textAlign = "center";
   g.textBaseline = "middle";
   g.font = '700 36px "Pixelify Sans", system-ui, sans-serif';
-  g.fillStyle = "#7a1d10";
-  g.fillText("CopánQuest", W / 2 + 2, 98 + 2);
-  g.fillStyle = "#f2c14e";
-  g.fillText("CopánQuest", W / 2, 98);
+  drawTitle(g, W / 2 + 2, 98 + 2, "#7a1d10");
+  drawTitle(g, W / 2, 98, "#f2c14e");
   g.font = '400 11px "Pixelify Sans", system-ui, sans-serif';
   g.fillStyle = "#9be3b5";
   g.fillText("Copán, Honduras · ca. 800 d. C.", W / 2, 122);

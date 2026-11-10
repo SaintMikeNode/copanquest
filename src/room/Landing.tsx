@@ -2,19 +2,27 @@
 // the computer, or the hint button zooms the camera into the CRT; then the game menu appears
 // "on the screen" (Menu in CRT mode). Esc / Volver zooms back out. The Copán world itself only
 // loads when the player presses Jugar (the game chunk is fetched once they zoom in).
+// The book on the desk works the same way (C, a click on it or the Créditos button): the
+// camera flies down to it while its cover opens, then the credits book appears over it.
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { RoomScene, SCREEN } from "./RoomScene";
+import { BOOK_FOCUS } from "./CreditsBookModel";
 import { psxLights } from "./psx";
 import { Menu } from "../ui/Menu";
 import { useT } from "../i18n";
 import { useGame } from "../state/useGame";
 import { IS_TOUCH } from "../config";
-import { play } from "../audio/sound";
+import { play, useRecord } from "../audio/sound";
+import { RecordBox } from "./RecordBox";
+import { CreditsBook } from "./CreditsBook";
+import { Presence } from "../ui/presence";
 
 /** room → in (camera moves) → screen (menu shown) → leaving (menu fades) → out (camera moves back) → room */
 type Phase = "room" | "in" | "screen" | "leaving" | "out";
+/** What the camera zooms to: the computer's screen or the book on the desk. */
+type Focus = "screen" | "book";
 /** Menu crossfade over the CRT, both ways (matches .crt / .crt-leave in styles.css). */
 const FADE_MS = 380;
 
@@ -39,11 +47,12 @@ function poses(aspect: number, fov: number) {
   const portrait = aspect < 0.9;
   const want = portrait ? 1.9 : 2.6;
   const d = THREE.MathUtils.clamp(want / 2 / (Math.tan(half) * aspect), 1.45, 3.0);
-  // Phones: shift right so the window behind the desk stays in the frame.
-  const cx = portrait ? 0.42 : 0.1;
+  // Phones: centered on the computer, wide enough to show the book (left) and the record
+  // player (right) too (a wider lens in portrait, see PORTRAIT_FOV).
+  const cx = portrait ? -0.05 : 0.1;
   const room = {
     pos: new THREE.Vector3(cx, 1.42, -1.25 + d),
-    look: new THREE.Vector3(cx - 0.1, 1.17, -1.25),
+    look: new THREE.Vector3(portrait ? cx : cx - 0.1, 1.17, -1.25),
   };
   const dh = SCREEN.size[1] / 2 / Math.tan(half) / 0.94;
   const dw = SCREEN.size[0] / 2 / (Math.tan(half) * aspect) / 0.96;
@@ -51,12 +60,39 @@ function poses(aspect: number, fov: number) {
     pos: SCREEN.center.clone().add(new THREE.Vector3(0, 0, Math.max(dh, dw) + 0.015)),
     look: SCREEN.center.clone(),
   };
-  return { room, screen };
+  // Above the open book, looking down at the spine from the front, the two pages filling the view.
+  const bw = (portrait ? 0.42 : 0.6) / 2 / (Math.tan(half) * aspect);
+  const bh = 0.36 / 2 / Math.tan(half);
+  const bd = Math.max(bw, bh, 0.3);
+  const book = {
+    pos: BOOK_FOCUS.clone().add(new THREE.Vector3(0, 0.82, 0.57).multiplyScalar(bd)),
+    look: BOOK_FOCUS.clone(),
+  };
+  return { room, screen, book };
 }
 
 const SCREEN_GLOW = psxLights.uScreenColor.value.clone();
+/** Lens: a little wider in portrait (phones), so the whole desk fits across. */
+const FOV = 55;
+const PORTRAIT_FOV = 64;
 
-function CameraRig({ phase, on, onArrive, power, boost }: { phase: Phase; on: boolean; onArrive: (p: Phase) => void; power: { current: number }; boost: { current: number } }) {
+function CameraRig({
+  phase,
+  focus,
+  on,
+  onArrive,
+  power,
+  boost,
+  bookOpen,
+}: {
+  phase: Phase;
+  focus: Focus;
+  on: boolean;
+  onArrive: (p: Phase) => void;
+  power: { current: number };
+  boost: { current: number };
+  bookOpen: { current: number };
+}) {
   const camera = useThree((s) => s.camera) as THREE.PerspectiveCamera;
   const size = useThree((s) => s.size);
   const setFrameloop = useThree((s) => s.setFrameloop);
@@ -78,8 +114,18 @@ function CameraRig({ phase, on, onArrive, power, boost }: { phase: Phase; on: bo
     if (phase === "in" && before < 1 && t.current >= 1) onArrive("screen");
     if (phase === "out" && before > 0 && t.current <= 0) onArrive("room");
     const k = ease(t.current);
-    boost.current = k;
-    const { room, screen } = poses(size.width / size.height, camera.fov);
+    // The CRT's zoom glow only for the screen; the book's cover opens over the second half.
+    boost.current = focus === "screen" ? k : 0;
+    bookOpen.current = focus === "book" ? THREE.MathUtils.smoothstep(t.current, 0.45, 0.95) : 0;
+    const aspect = size.width / size.height;
+    const fov = aspect < 0.9 ? PORTRAIT_FOV : FOV;
+    if (camera.fov !== fov) {
+      camera.fov = fov;
+      camera.updateProjectionMatrix();
+    }
+    const p = poses(aspect, camera.fov);
+    const { room } = p;
+    const screen = focus === "book" ? p.book : p.screen;
     // A gentle idle sway in the room view.
     sway.current += d;
     const s = (1 - k) * 0.025;
@@ -104,27 +150,34 @@ function SnapGrid() {
 
 const Scene = memo(function Scene({
   phase,
+  focus,
   on,
   onArrive,
   onMonitor,
+  onRecord,
+  onBook,
   prompt,
   hover,
 }: {
   phase: Phase;
+  focus: Focus;
   on: boolean;
   onArrive: (p: Phase) => void;
   onMonitor: () => void;
+  onRecord: () => void;
+  onBook: () => void;
   prompt: string;
   hover: (on: boolean) => void;
 }) {
   const power = useRef(0);
   const boost = useRef(0);
+  const bookOpen = useRef(0);
   return (
     <>
       <color attach="background" args={["#140c08"]} />
-      <CameraRig phase={phase} on={on} onArrive={onArrive} power={power} boost={boost} />
+      <CameraRig phase={phase} focus={focus} on={on} onArrive={onArrive} power={power} boost={boost} bookOpen={bookOpen} />
       <SnapGrid />
-      <RoomScene onMonitor={onMonitor} prompt={prompt} power={power} boost={boost} hover={hover} />
+      <RoomScene onMonitor={onMonitor} onRecord={onRecord} onBook={onBook} bookOpen={bookOpen} prompt={prompt} power={power} boost={boost} hover={hover} />
     </>
   );
 });
@@ -136,22 +189,45 @@ export default function Landing({ onIntent }: { onIntent: () => void }) {
   const on = true;
   const [webgl] = useState(hasWebGL);
   const [pointer, setPointer] = useState(false);
+  const spinning = useRecord((s) => s.spinning);
+  const [record, setRecord] = useState(false);
+  const [focus, setFocus] = useState<Focus>("screen");
+  const focusRef = useRef(focus);
+  focusRef.current = focus;
+  // The record box over the room: Esc closes it, other keys are ignored.
+  const modalRef = useRef(false);
+  modalRef.current = record;
   const phaseRef = useRef(phase);
   phaseRef.current = phase;
+  const openRecord = useCallback(() => {
+    if (phaseRef.current !== "room" && phaseRef.current !== "out") return;
+    play("open");
+    setRecord(true);
+  }, []);
+  const reduceMotion = () => !!window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+  // Fly down to the book on the desk; its cover opens on the way and the pages appear on arrival.
+  const openBook = useCallback(() => {
+    if (phaseRef.current !== "room") return;
+    play("page");
+    setRecord(false);
+    setFocus("book");
+    setPhase(reduceMotion() ? "screen" : "in");
+  }, []);
   const dpr = useMemo(() => Math.min(1, Math.max(0.25, RENDER_HEIGHT / window.innerHeight)), []);
 
   const zoomIn = useCallback(() => {
-    if (phaseRef.current !== "room" && phaseRef.current !== "out") return;
+    if (phaseRef.current !== "room") return;
+    setRecord(false);
+    setFocus("screen");
     onIntent(); // start downloading the game while the camera moves
     play("lens");
-    const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
-    setPhase(reduce ? "screen" : "in");
+    setPhase(reduceMotion() ? "screen" : "in");
   }, [onIntent]);
   const leaveTimer = useRef(0);
   const zoomOut = useCallback(() => {
     if (phaseRef.current !== "screen") return;
-    play("close");
-    // Fade the menu out over the 3D screen first, then pull the camera back.
+    play(focusRef.current === "book" ? "page" : "close");
+    // Fade the menu (or the book's pages) out first, then pull the camera back.
     setPhase("leaving");
     leaveTimer.current = window.setTimeout(() => setPhase("out"), FADE_MS);
   }, []);
@@ -160,6 +236,25 @@ export default function Landing({ onIntent }: { onIntent: () => void }) {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (useGame.getState().overlay) return; // help/credits windows handle their own keys
+      // M: record player on/off; C: credits book open/closed (in the bedroom view only, and not
+      // with Ctrl / Cmd / Alt, so copying text still works).
+      const plain = !e.ctrlKey && !e.metaKey && !e.altKey && !e.repeat;
+      const inRoom = phaseRef.current === "room" || phaseRef.current === "out";
+      const reading = focusRef.current === "book" && phaseRef.current === "screen";
+      if (plain && (inRoom || reading) && e.code === "KeyM") {
+        const r = useRecord.getState();
+        r.setOn(!r.spinning);
+        return;
+      }
+      if (plain && e.code === "KeyC") {
+        if (reading) zoomOut();
+        else if (phaseRef.current === "room") openBook();
+        return;
+      }
+      if (modalRef.current) {
+        if (e.code === "Escape") setRecord(false);
+        return;
+      }
       if (e.code === "Space" || e.code === "Enter") {
         if (phaseRef.current === "room") {
           e.preventDefault();
@@ -171,7 +266,7 @@ export default function Landing({ onIntent }: { onIntent: () => void }) {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [zoomIn, zoomOut]);
+  }, [zoomIn, zoomOut, openBook]);
 
   // No WebGL: just the menu.
   if (!webgl) return <Menu />;
@@ -182,14 +277,14 @@ export default function Landing({ onIntent }: { onIntent: () => void }) {
       <Canvas
         className="landing-canvas"
         dpr={dpr}
-        camera={{ fov: 55, near: 0.02, far: 30 }}
+        camera={{ fov: FOV, near: 0.02, far: 30 }}
         gl={{ antialias: true, powerPreference: "low-power" }}
         onPointerMissed={() => {
           // On phones any tap that isn't on the monitor still opens the computer.
           if (IS_TOUCH) zoomIn();
         }}
       >
-        <Scene phase={phase} on={on} onArrive={setPhase} onMonitor={zoomIn} prompt={prompt} hover={setPointer} />
+        <Scene phase={phase} focus={focus} on={on} onArrive={setPhase} onMonitor={zoomIn} onRecord={openRecord} onBook={openBook} prompt={prompt} hover={setPointer} />
       </Canvas>
       {(phase === "room" || phase === "out") && (
         <footer className="landing-footer">
@@ -208,11 +303,28 @@ export default function Landing({ onIntent }: { onIntent: () => void }) {
         </footer>
       )}
       {(phase === "room" || phase === "out") && (
-        <button className="landing-hint pill" onClick={zoomIn}>
-          {IS_TOUCH ? "👆" : <kbd>{t("room.key")}</kbd>} {t("room.hint")}
-        </button>
+        <div className="landing-hints">
+          <button className="landing-hint pill" onClick={zoomIn}>
+            {IS_TOUCH ? "👆" : <kbd>{t("room.key")}</kbd>} {t("room.hint")}
+          </button>
+          {/* Turns the record player on or off (it reflects whether the record is really playing). */}
+          <button className="landing-hint landing-record pill" onClick={() => useRecord.getState().setOn(!spinning)} aria-pressed={spinning}>
+            {!IS_TOUCH && <kbd>M</kbd>}
+            <span className={spinning ? "landing-note on" : "landing-note"}>♪</span> {t(spinning ? "room.recordOff" : "room.recordOn")}
+          </button>
+          <button className="landing-hint landing-record pill" onClick={openBook}>
+            {!IS_TOUCH && <kbd>C</kbd>}
+            <span className="landing-note">✦</span> {t("credits")}
+          </button>
+        </div>
       )}
-      {(phase === "screen" || phase === "leaving") && (
+      <Presence show={record && (phase === "room" || phase === "out")}>
+        <RecordBox onClose={() => setRecord(false)} />
+      </Presence>
+      <Presence show={focus === "book" && phase === "screen"}>
+        <CreditsBook onClose={zoomOut} />
+      </Presence>
+      {focus === "screen" && (phase === "screen" || phase === "leaving") && (
         <div className={phase === "leaving" ? "crt-wrap crt-leave" : "crt-wrap"}>
           <Menu crt onBack={zoomOut} />
         </div>
