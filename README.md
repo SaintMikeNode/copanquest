@@ -309,7 +309,7 @@ All player-facing facts must be verifiable. Each POI in `src/poi/poiData.ts` has
 
 ## Credits and licensing
 
-CopánQuest's own code and assets are under the **MIT license** ([LICENSE](LICENSE)). The third-party material below keeps its own license (also summarized at the end of `LICENSE`); the Ovani Sound audio is not in the repository at all.
+CopánQuest's own code and assets are under the **MIT license** ([LICENSE](LICENSE)). The third-party material below keeps its own license (summarized in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)); the Ovani Sound audio is not in the repository at all.
 
 The in-game **Créditos** screen (`src/ui/creditsData.ts`) must stay in sync with this list.
 
