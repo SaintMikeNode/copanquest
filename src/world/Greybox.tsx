@@ -2,6 +2,7 @@ import { use, useMemo } from "react";
 import { voxelPromise } from "../voxel/VoxelTerrain";
 import { ConvexHullCollider, CuboidCollider, RigidBody } from "@react-three/rapier";
 import { buildGreybox } from "./buildGreybox";
+import { DECO_GROUPS } from "./groups";
 
 /** Invisible colliders for the site: boxes for platforms and monuments, wedges for stairs. */
 export function SiteColliders() {
@@ -19,7 +20,7 @@ export function SiteColliders() {
         <CuboidCollider key={`c${i}`} args={c.halfExtents} position={c.position} rotation={c.rotation} />
       ))}
       {deco.map((d, i) => (
-        <CuboidCollider key={`d${i}`} args={d.h} position={d.p} />
+        <CuboidCollider key={`d${i}`} args={d.h} position={d.p} collisionGroups={DECO_GROUPS} />
       ))}
       {g.ramps.map((pts, i) => (
         <ConvexHullCollider key={`r${i}`} args={[pts]} />

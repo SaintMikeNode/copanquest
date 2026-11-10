@@ -10,6 +10,7 @@ import { useGame } from "../state/useGame";
 import { trackSubject } from "../game/subjects";
 import { lensMix } from "../game/lens";
 import { CharacterLayer } from "../game/layers";
+import { NO_DECO_FILTER } from "../world/groups";
 
 const DRAW_DIST = 95;
 const TALK_DIST = 2.8;
@@ -55,18 +56,46 @@ const STEP = 0.6;
 /** Highest drop an actor walks off (m). */
 const DROP = 1.2;
 
-/** Ground height under (x, z), searching down from `fromY`. */
+/** Ground height under (x, z), searching down from `fromY`. `bare`: ignore decorations (bushes…). */
 function useGround() {
   const { world, rapier } = useRapier();
   const ray = useMemo(() => new rapier.Ray({ x: 0, y: 0, z: 0 }, { x: 0, y: -1, z: 0 }), [rapier]) as Ray;
-  return (x: number, z: number, fromY: number, exclude?: RapierRigidBody | null) => {
+  return (x: number, z: number, fromY: number, exclude?: RapierRigidBody | null, bare = false) => {
     ray.origin = { x, y: fromY, z };
     // Only the fixed world counts as ground: other characters' bodies (kinematic) and the
     // player (dynamic) would otherwise lift an actor into the air when they meet.
     const flags = rapier.QueryFilterFlags.EXCLUDE_SENSORS | rapier.QueryFilterFlags.EXCLUDE_KINEMATIC | rapier.QueryFilterFlags.EXCLUDE_DYNAMIC;
-    const hit = world.castRay(ray, 80, true, flags, undefined, undefined, exclude ?? undefined);
+    const hit = world.castRay(ray, 80, true, flags, bare ? NO_DECO_FILTER : undefined, undefined, exclude ?? undefined);
     return hit ? fromY - hit.timeOfImpact : null;
   };
+}
+
+type Ground = ReturnType<typeof useGround>;
+/** Spots tried around an actor's home: the home, then two rings. */
+const SPAWN_OFFSETS: [number, number][] = [[0, 0]];
+for (const r of [1.2, 2.4, 3.6]) for (let k = 0; k < 8; k++) SPAWN_OFFSETS.push([Math.cos((k / 8) * Math.PI * 2) * r, Math.sin((k / 8) * Math.PI * 2) * r]);
+
+/** True when the ground found at (x, z) is the top of a decoration (a bush is built of half-meter
+ *  blocks, low enough to climb one step at a time): actors walk around them instead. */
+function onDeco(ground: Ground, x: number, z: number, g: number, exclude: RapierRigidBody | null) {
+  const bare = ground(x, z, g + 0.05, exclude, true);
+  return bare !== null && g - bare > 0.25;
+}
+
+/**
+ * Where an actor first stands near (x, z): dropped from high up (so raised courts work), but
+ * never on top of a bush, trunk or village box: if a decoration is there, the nearest bare spot.
+ * Null while the colliders aren't there yet.
+ */
+function spawnSpot(ground: Ground, x: number, z: number, exclude: RapierRigidBody | null) {
+  for (const [dx, dz] of SPAWN_OFFSETS) {
+    const all = ground(x + dx, z + dz, 60, exclude);
+    if (all === null) return null;
+    const bare = ground(x + dx, z + dz, 60, exclude, true);
+    if (bare !== null && Math.abs(all - bare) < 0.25) return { x: x + dx, z: z + dz, y: all };
+  }
+  const y = ground(x, z, 60, exclude, true);
+  return y === null ? null : { x, z, y };
 }
 
 interface Limbs {
@@ -155,9 +184,11 @@ function Talker({ index }: { index: number }) {
     if (Number.isNaN(a.y)) {
       // Wait for the colliders: with the step limit, starting at a wrong height (0) would leave
       // the actor stuck inside a raised court.
-      const g0 = ground(a.x, a.z, 60, body.current);
-      if (g0 === null) return;
-      a.y = g0;
+      const s0 = spawnSpot(ground, a.x, a.z, body.current);
+      if (s0 === null) return;
+      a.x = a.tx = s0.x;
+      a.z = a.tz = s0.z;
+      a.y = s0.y;
     }
     const p = playerState.position;
     const dp = Math.hypot(p.x - a.x, p.z - a.z);
@@ -182,7 +213,7 @@ function Talker({ index }: { index: number }) {
         const nx = a.x + (dx / d) * Math.min(sp, d);
         const nz = a.z + (dz / d) * Math.min(sp, d);
         const g = ground(nx, nz, a.y + STEP, body.current);
-        if (g === null || g - a.y > STEP - 0.05 || a.y - g > DROP || nearestActor(t.id, nx, nz, SPACE)) {
+        if (g === null || g - a.y > STEP - 0.05 || a.y - g > DROP || onDeco(ground, nx, nz, g, body.current) || nearestActor(t.id, nx, nz, SPACE)) {
           // Wall, block, ledge or someone ahead: stay put and pick another spot after a pause.
           a.tx = a.x;
           a.tz = a.z;
@@ -321,9 +352,11 @@ function Jaguar({ index }: { index: number }) {
     if (Number.isNaN(a.y)) {
       // Wait for the colliders: with the step limit, starting at a wrong height (0) would leave
       // the actor stuck inside a raised court.
-      const g0 = ground(a.x, a.z, 60, body.current);
-      if (g0 === null) return;
-      a.y = g0;
+      const s0 = spawnSpot(ground, a.x, a.z, body.current);
+      if (s0 === null) return;
+      a.x = a.tx = s0.x;
+      a.z = a.tz = s0.z;
+      a.y = s0.y;
     }
     const p = playerState.position;
     const dp = Math.hypot(p.x - a.x, p.z - a.z);
@@ -349,7 +382,7 @@ function Jaguar({ index }: { index: number }) {
         const nx = a.x + (dx / d) * Math.min(sp, d);
         const nz = a.z + (dz / d) * Math.min(sp, d);
         const g = ground(nx, nz, a.y + STEP, body.current);
-        if (g === null || g - a.y > STEP - 0.05 || a.y - g > DROP || nearestActor(id, nx, nz, SPACE + 0.4)) {
+        if (g === null || g - a.y > STEP - 0.05 || a.y - g > DROP || onDeco(ground, nx, nz, g, body.current) || nearestActor(id, nx, nz, SPACE + 0.4)) {
           a.tx = a.x;
           a.tz = a.z;
           a.wait = 0.5;
