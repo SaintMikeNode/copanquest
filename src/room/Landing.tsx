@@ -302,15 +302,11 @@ export default function Landing({ onIntent }: { onIntent: () => void }) {
       </Canvas>
       {(phase === "room" || phase === "out") && (
         <footer className="landing-footer">
-          {t("footer.a")}{" "}
+          {t("footer.lead")}{" "}
           <a href="https://github.com/SaintMikeNode/copanquest" target="_blank" rel="noopener noreferrer">
-            {t("footer.project")}
+            {t("footer.openSource")}
           </a>{" "}
-          {t("footer.by")}{" "}
-          <a href="https://nerdypunk.dev" target="_blank" rel="noopener noreferrer">
-            nerdypunkdev
-          </a>{" "}
-          {t("footer.partOf")}{" "}
+          {t("footer.of")}{" "}
           <a href="https://todosenlaweb.com" target="_blank" rel="noopener noreferrer">
             Todos en la Web
           </a>

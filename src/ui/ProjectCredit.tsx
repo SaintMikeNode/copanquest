@@ -1,6 +1,6 @@
-// "Un proyecto de código abierto por nerdypunkdev como parte de Todos en la Web", with the same
-// links as the bedroom page's footer (Landing.tsx). Shown at the top of the credits and in the
-// pause menu.
+// "Un proyecto de código abierto por nerdypunkdev como parte de Todos en la Web", linking the repo,
+// nerdypunk.dev and todosenlaweb.com. Shown at the top of the credits and in the pause menu. (The
+// bedroom page's footer in Landing.tsx is shorter and doesn't name the author.)
 import { useT } from "../i18n";
 
 export function ProjectCredit() {

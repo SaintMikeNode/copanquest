@@ -87,7 +87,7 @@ The main page (`src/room/`) is a late-90s / early-2000s Honduran kid's bedroom i
 - **Look** (`psx.ts`): one shared material, per-pixel lighting from a fixed rig (warm lamp spot, sun through the window, CRT glow, lava lamp), light ordered dither, haze; textures are painted in code (`roomTextures.ts`, stored at 2×). The scene renders at ~720 px tall and scales up smoothly. Rounded boxes and 12–20-sided cylinders for the plastic and wood.
 - **CRT** (`Crt.tsx`): a bulged screen mesh with a CRT shader (barrel curvature, scanlines, RGB mask, chromatic fringe, vignette, flicker, power-on) over a small canvas title screen.
 - **Flow** (`Landing.tsx`): Space / Enter, a click on the computer, a tap anywhere on phones, or the "Usar computadora" button zooms the camera into the monitor; then the menu appears "on the screen" (`Menu` in CRT mode: beige bezel, curved glass, scanlines) with a Volver button (Esc / Backspace zooms back out). The room stops rendering while the menu covers it. The game chunk is fetched when the zoom starts, and the Copán world builds only when the player presses Jugar. Without WebGL the plain menu shows.
-- **Footer**: a floating credits line ("Un proyecto de código abierto por nerdypunkdev como parte de Todos en la Web") linking the repo, nerdypunk.dev and todosenlaweb.com; hidden while zoomed in.
+- **Footer**: a floating line, "Un proyecto educativo de código abierto de Todos en la Web" ("código abierto" links the repo, "Todos en la Web" links todosenlaweb.com); hidden while zoomed in. The author credit is in the credits.
 - **Chunks**: index (UI shell) → Landing + `engine-3d` (three + R3F, shared with the game, ~250 KB gzip) → Game (~930 KB gzip).
 
 ## Game features
