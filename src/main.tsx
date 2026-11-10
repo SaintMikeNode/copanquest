@@ -8,8 +8,10 @@ import { installUiTextures } from "./ui/uiTextures";
 import { initSound } from "./audio/sound";
 import { ErrorBoundary } from "./ui/ErrorBoundary";
 import { installStaleReload } from "./staleReload";
+import { initInstall } from "./installApp";
 
 installStaleReload();
+initInstall();
 installUiTextures();
 initSound();
 

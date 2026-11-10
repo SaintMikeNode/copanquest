@@ -9,6 +9,7 @@ import { Credits } from "./Credits";
 import { Help } from "./Help";
 import { Presence } from "./presence";
 import { ReportBug } from "./ReportBug";
+import { InstallApp } from "./InstallApp";
 
 /**
  * Start menu. `crt`: shown "inside" the bedroom computer's monitor (Landing.tsx), with a
@@ -45,7 +46,10 @@ export function Menu({ crt = false, onBack }: { crt?: boolean; onBack?: () => vo
           <button onClick={() => setOverlay("help")}>{t("help")}</button>
           <button onClick={() => setOverlay("credits")}>{t("credits")}</button>
         </div>
-        <ReportBug className="px-btn menu-report" />
+        <div className="menu-row menu-extra">
+          <InstallApp className="px-btn menu-small" />
+          <ReportBug className="px-btn menu-small" />
+        </div>
       </div>
       <Presence show={overlay === "credits"}>
         <Overlay title={t("credits")} onClose={() => setOverlay(null)}>

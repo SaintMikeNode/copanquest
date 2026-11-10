@@ -7,6 +7,7 @@
 // the key to the page, so losing the capture unexpectedly also opens the pause menu.
 import { useEffect, useRef } from "react";
 import { ReportBug } from "./ReportBug";
+import { InstallApp } from "./InstallApp";
 import { ProjectCredit } from "./ProjectCredit";
 import { useGame } from "../state/useGame";
 import { useT } from "../i18n";
@@ -127,6 +128,7 @@ export function PauseMenu() {
           🎓 {t("tut.again")}
         </button>
         <button onClick={exitToHome}>🏠 {t("home")}</button>
+        <InstallApp className="px-btn pause-report" />
         <ReportBug className="px-btn pause-report" />
       </div>
       <QuickSettings />

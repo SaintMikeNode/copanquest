@@ -146,5 +146,13 @@
   "room.recordOn": "Turn on record player",
   "room.recordOff": "Turn off record player",
   "book.about": "How it was made",
-  "report": "Report a bug"
+  "report": "Report a bug",
+  "install": "Install app",
+  "install.why": "Install CopánQuest on your phone: it opens from its own icon, full screen, like any other app.",
+  "install.ios1": "Tap Safari's Share button (the square with the arrow pointing up).",
+  "install.ios2": "Scroll down and choose “Add to Home Screen”.",
+  "install.ios3": "Tap “Add”. CopánQuest will appear with your apps.",
+  "install.and1": "Open the browser menu (the three dots ⋮).",
+  "install.and2": "Choose “Install app” or “Add to Home screen”.",
+  "install.and3": "Confirm. CopánQuest will appear with your apps."
 }

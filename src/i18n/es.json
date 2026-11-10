@@ -146,5 +146,13 @@
   "room.recordOn": "Encender tocadiscos",
   "room.recordOff": "Apagar tocadiscos",
   "book.about": "Cómo se hizo",
-  "report": "Reportar un error"
+  "report": "Reportar un error",
+  "install": "Instalar app",
+  "install.why": "Instala CopánQuest en tu teléfono: se abre desde su propio ícono, en pantalla completa, como cualquier app.",
+  "install.ios1": "Toca el botón Compartir de Safari (el cuadrito con la flecha hacia arriba).",
+  "install.ios2": "Baja y elige «Añadir a pantalla de inicio».",
+  "install.ios3": "Toca «Añadir». CopánQuest aparecerá con tus apps.",
+  "install.and1": "Abre el menú del navegador (los tres puntos ⋮).",
+  "install.and2": "Elige «Instalar app» o «Añadir a pantalla de inicio».",
+  "install.and3": "Confirma. CopánQuest aparecerá con tus apps."
 }

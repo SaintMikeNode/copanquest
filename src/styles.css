@@ -669,12 +669,18 @@ body[data-tut="menu"] [data-tut="menu"], body[data-tut="talk"] [data-tut="talk"]
 /* "Reportar un error" (ReportBug.tsx): a wooden button under the start menu's row and in the
    pause menu's list; the project credit line (ProjectCredit.tsx). */
 .report-bug { display: flex; align-items: center; justify-content: center; text-decoration: none; cursor: pointer; }
-.menu-report { margin-top: 10px; padding: 4px 10px; font-size: .95rem; }
+.menu-extra { margin-top: 10px; }
+.menu-extra .menu-small { flex: 1; padding: 4px 8px; font-size: .95rem; }
 .pause-report { padding: 6px 12px; font-size: 1.1rem; }
 .project-credit { font-size: .9rem; line-height: 1.45; }
 .project-credit a { color: var(--red-dark); font-weight: 700; }
 .book-page .project-credit a { color: #f2c14e; }
 .overlay-body > .project-credit { justify-self: stretch; text-align: center; margin: 0 0 10px; padding-bottom: 8px; border-bottom: 2px dashed #c9a86f; }
 @media (orientation: landscape) and (max-height: 540px) {
-  .menu-card .menu-report { grid-column: 2; grid-row: 3; margin-top: 4px; }
+  .menu-card .menu-extra { grid-column: 2; grid-row: 3; margin-top: 4px; }
 }
+
+/* "Instalar app" steps (InstallApp.tsx). */
+.install-steps { justify-self: stretch; font-size: 1rem; line-height: 1.45; }
+.install-steps ol { margin: 8px 0 14px; padding-left: 22px; display: grid; gap: 6px; }
+.install-steps .primary { width: auto; padding: 4px 22px; }
