@@ -1,5 +1,20 @@
+import { useEffect, useState } from "react";
 import { Joystick, VirtualButton } from "ecctrl/input";
 import { useT } from "../i18n";
+
+/** A phone held sideways: short and wide (matches the landscape block at the end of styles.css). */
+export const LANDSCAPE_PHONE = "(orientation: landscape) and (max-height: 540px)";
+
+function useMedia(query: string) {
+  const [on, setOn] = useState(() => typeof matchMedia === "function" && matchMedia(query).matches);
+  useEffect(() => {
+    const m = matchMedia(query);
+    const update = () => setOn(m.matches);
+    m.addEventListener("change", update);
+    return () => m.removeEventListener("change", update);
+  }, [query]);
+  return on;
+}
 
 // ecctrl's controls are position: fixed with no offsets, so place them here.
 const joystickWrapper = {
@@ -50,18 +65,34 @@ const buttonCap = {
   textShadow: "var(--outline-clay)",
 };
 
+// Sideways phones: smaller and lower, so the text boxes and the button row up top have room.
+const joystickWrapperLandscape = { ...joystickWrapper, bottom: "max(8px, env(safe-area-inset-bottom))", width: "150px", height: "150px" };
+const joystickBaseLandscape = { ...joystickBase, width: "104px", height: "104px" };
+const joystickKnobLandscape = { ...joystickKnob, width: "52px", height: "52px" };
+const buttonWrapperLandscape = { ...buttonWrapper, bottom: "max(12px, env(safe-area-inset-bottom))", width: "70px", height: "70px" };
+const buttonCapLandscape = { ...buttonCap, width: "64px", height: "64px", fontSize: "14px" };
+
 /** On-screen joystick (left) and jump button (right) for phones and tablets. */
 export function TouchControls() {
   const t = useT();
+  const land = useMedia(LANDSCAPE_PHONE);
   return (
     <>
       <Joystick
-        joystickMaxRadius={55}
-        joystickWrapperStyle={joystickWrapper}
-        joystickBaseStyle={joystickBase}
-        joystickKnobStyle={joystickKnob}
+        // Remount on rotation so ecctrl picks up the new sizes.
+        key={land ? "l" : "p"}
+        joystickMaxRadius={land ? 46 : 55}
+        joystickWrapperStyle={land ? joystickWrapperLandscape : joystickWrapper}
+        joystickBaseStyle={land ? joystickBaseLandscape : joystickBase}
+        joystickKnobStyle={land ? joystickKnobLandscape : joystickKnob}
       />
-      <VirtualButton id="jump" label={t("jump")} buttonWrapperStyle={buttonWrapper} buttonCapStyle={buttonCap} />
+      <VirtualButton
+        key={land ? "jl" : "jp"}
+        id="jump"
+        label={t("jump")}
+        buttonWrapperStyle={land ? buttonWrapperLandscape : buttonWrapper}
+        buttonCapStyle={land ? buttonCapLandscape : buttonCap}
+      />
     </>
   );
 }

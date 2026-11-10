@@ -6,12 +6,17 @@ import "@fontsource/pixelify-sans/latin-700.css";
 import "./styles.css";
 import { installUiTextures } from "./ui/uiTextures";
 import { initSound } from "./audio/sound";
+import { ErrorBoundary } from "./ui/ErrorBoundary";
+import { installStaleReload } from "./staleReload";
 
+installStaleReload();
 installUiTextures();
 initSound();
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <App />
+    <ErrorBoundary>
+      <App />
+    </ErrorBoundary>
   </StrictMode>,
 );

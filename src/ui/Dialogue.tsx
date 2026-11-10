@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useRef } from "react";
 import { scriptFor, type Script } from "../game/questLogic";
 import { MayaClock, RankChip } from "./GameUI";
 import { useGame } from "../state/useGame";
@@ -83,13 +83,24 @@ export function DialogueBox() {
   // While it closes, the last line stays on screen for the exit animation.
   const [shown, leaving] = useExit(dialogue);
   const dialogueId = shown?.id ?? null;
-  const script = useMemo(() => (dialogueId ? scriptFor(dialogueId) : null), [dialogueId]);
+  // The script is built once when the conversation opens and kept until the box is gone: its end
+  // action often changes the quest state, and rebuilding it then would give a different (shorter)
+  // script than the line numbers being shown.
+  // A conversation opens as a fresh { id, line: 0 } object (openDialogue), even with the same person.
+  const kept = useRef<{ id: string; opened: unknown; script: Script | null } | null>(null);
+  if (!dialogueId) kept.current = null;
+  else if (dialogue && (!kept.current || kept.current.id !== dialogue.id || (dialogue.line === 0 && kept.current.opened !== dialogue))) {
+    kept.current = { id: dialogue.id, opened: dialogue, script: scriptFor(dialogue.id) };
+  }
+  const script = kept.current?.script ?? null;
   current = dialogue ? script : null;
   useEffect(() => {
     playerState.frozen = !!dialogue;
   }, [dialogue]);
   if (!shown || !script) return null;
   const info = script;
+  const lineText = info.lines[Math.min(shown.line, info.lines.length - 1)];
+  if (!lineText) return null;
   const last = shown.line >= info.lines.length - 1;
   return (
     <section key={shown.id} className={leaving ? "dialogue ui-leave" : "dialogue"} aria-live="polite">
@@ -101,7 +112,7 @@ export function DialogueBox() {
       </header>
       {/* Keyed by line, so each new line slides in. */}
       <p key={shown.line} className="dialogue-line">
-        {l(info.lines[shown.line])}
+        {l(lineText)}
       </p>
       <footer>
         <span className="dots">

@@ -50,9 +50,12 @@ function poses(aspect: number, fov: number) {
   // Phones: centered on the computer, wide enough to show the book (left) and the record
   // player (right) too (a wider lens in portrait, see PORTRAIT_FOV).
   const cx = portrait ? -0.05 : 0.1;
+  // Very wide screens (phones held sideways): aim a little lower so the desk sits higher in the
+  // frame, above the buttons at the bottom.
+  const wide = aspect > 1.75 ? 1 : 0;
   const room = {
-    pos: new THREE.Vector3(cx, 1.42, -1.25 + d),
-    look: new THREE.Vector3(portrait ? cx : cx - 0.1, 1.17, -1.25),
+    pos: new THREE.Vector3(cx, 1.42 - wide * 0.04, -1.25 + d),
+    look: new THREE.Vector3(portrait ? cx : cx - 0.1, 1.17 - wide * 0.16, -1.25),
   };
   const dh = SCREEN.size[1] / 2 / Math.tan(half) / 0.94;
   const dw = SCREEN.size[0] / 2 / (Math.tan(half) * aspect) / 0.96;

@@ -18,28 +18,26 @@ const reduced = () => typeof matchMedia === "function" && matchMedia("(prefers-r
 export function useExit<T>(value: T | null | undefined | false): [T | null, boolean] {
   const live = value === null || value === undefined || value === false ? null : value;
   const last = useRef<T | null>(live);
-  const [leaving, setLeaving] = useState(false);
+  // The value whose exit animation has finished (it is then no longer rendered).
+  const [finished, setFinished] = useState<{ v: T } | null>(null);
   if (live !== null) last.current = live;
+  // A new value: forget the finished one (so the same value can animate out again later).
+  if (live !== null && finished !== null) setFinished(null);
+  // The last value stays on screen from the very first render after it goes away: there must be
+  // no frame without it, or the component would rebuild its content from changed state.
+  const held = live === null && last.current !== null && !(finished && finished.v === last.current) ? last.current : null;
   useEffect(() => {
-    if (live !== null) {
-      setLeaving(false);
-      return;
-    }
-    if (last.current === null) return;
+    if (live !== null || last.current === null) return;
+    const v = last.current;
     if (reduced()) {
-      last.current = null;
-      setLeaving(false);
+      setFinished({ v });
       return;
     }
-    setLeaving(true);
-    const t = window.setTimeout(() => {
-      last.current = null;
-      setLeaving(false);
-    }, EXIT_MS);
+    const t = window.setTimeout(() => setFinished({ v }), EXIT_MS);
     return () => clearTimeout(t);
   }, [live]);
   if (live !== null) return [live, false];
-  return leaving ? [last.current, true] : [null, false];
+  return held !== null ? [held, true] : [null, false];
 }
 
 /**
