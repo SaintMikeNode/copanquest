@@ -1,4 +1,5 @@
 // Streams the voxel world from the worker (or the IndexedDB cache) to React.
+import { reportFatal } from "../crash";
 import type { MeshData } from "./mesher";
 import type { VoxelBase, VoxelMessage, VoxelRequest } from "./voxel.worker";
 import { terrainPromise } from "../world/Terrain";
@@ -114,6 +115,8 @@ async function start() {
 
   const worker = new Worker(new URL("./voxel.worker.ts", import.meta.url), { type: "module" });
   let base: VoxelBase | null = null;
+  // Without this a dead worker leaves the loading screen up forever.
+  worker.onerror = (e) => reportFatal("the voxel worker failed", e.message);
   worker.onmessage = (e: MessageEvent<VoxelMessage>) => {
     const msg = e.data;
     if (msg.type === "base") {
