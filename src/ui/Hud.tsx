@@ -66,10 +66,13 @@ export function Hud() {
           )}
         </div>
       </div>
-      <button className="hud-map" onClick={() => setOverlay("map")} aria-label={t("map")}>
-        <Minimap />
-        {!IS_TOUCH && <kbd>M</kbd>}
-      </button>
+      {/* Phones get a map button in the column instead (HudButtons): the minimap took too much room. */}
+      {!IS_TOUCH && (
+        <button className="hud-map" onClick={() => setOverlay("map")} aria-label={t("map")}>
+          <Minimap />
+          <kbd>M</kbd>
+        </button>
+      )}
       <HudButtons />
       <CameraOverlay />
       <InfoCard hidden={!!dialogue || camOn} />

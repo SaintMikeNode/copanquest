@@ -169,6 +169,7 @@ const ICON_COLORS: Record<string, string> = {
   Y: "#f2c14e", // gold
   B: "#8a5a32", // brown cover
   P: "#e9d9b4", // page shade
+  g: "#5fae4a", // map green
 };
 const ICONS: Record<string, string[]> = {
   camera: [
@@ -204,6 +205,25 @@ const ICONS: Record<string, string[]> = {
     "OBBBBBBBBBBRBBBO",
     ".OOOOOOOOOOROOO.",
     "...........R....",
+    "................",
+    "................",
+  ],
+  // Folded paper map: three panels, woods, a lake, a dotted trail and the red X.
+  map: [
+    "................",
+    "................",
+    ".OOOOOOOOOOOOOO.",
+    ".OggWWPWWWWPLLO.",
+    ".OgggWPWRWRPWLO.",
+    ".OggWWPWWRWPWWO.",
+    ".OWWWWPWRWRPWWO.",
+    ".OWYWWPWWWWPWgO.",
+    ".OWWYWPWWWYPggO.",
+    ".OWWWYPYYYWPggO.",
+    ".OWWWWPWWWWPWgO.",
+    ".OWWWWPWWWWPWWO.",
+    ".OOOOOOOOOOOOOO.",
+    "................",
     "................",
     "................",
   ],

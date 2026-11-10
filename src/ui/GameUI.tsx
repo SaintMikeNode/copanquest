@@ -51,6 +51,11 @@ export function HudButtons() {
   return (
     <div className="hud-buttons">
       {fx > 0 && <div key={fx} className="lens-fx" />}
+      {IS_TOUCH && (
+        <button className="round" onClick={() => setOverlay("map")} aria-label={t("map")} title={t("map")}>
+          <i className="px-icon" style={{ backgroundImage: "var(--icon-map)" }} />
+        </button>
+      )}
       <button className={camOn ? "round on" : "round"} onClick={() => toggleCamera()} aria-label={t("camera")} title={t("camera")} data-tut="camera">
         <i className="px-icon" style={{ backgroundImage: "var(--icon-camera)" }} />
         {!IS_TOUCH && <kbd>C</kbd>}

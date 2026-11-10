@@ -574,3 +574,22 @@ body[data-tut="menu"] [data-tut="menu"], body[data-tut="talk"] [data-tut="talk"]
   display: inline-block; padding-right: 4px; margin-right: -4px;
   clip-path: polygon(0 0, 100% 0, 100% 44%, 58% 44%, 58% 63%, 100% 63%, 100% 100%, 0 100%);
 }
+
+/* ---------- Phones and tablets (touch): no minimap, map button in the column, text boxes on top ----------
+   The right-hand column (map, camera, journal, time lens) starts at the top. The tutorial card,
+   place descriptions and dialogues sit at the top too, between the menu row and the column, so
+   they don't cover the player in the middle of the screen; the pickup message goes below them. */
+@media (pointer: coarse) {
+  .hud-buttons { top: calc(max(10px, env(safe-area-inset-top)) + 10px); }
+  .tutorial, .info-card, .dialogue {
+    top: calc(max(10px, env(safe-area-inset-top)) + 58px); bottom: auto;
+    left: 10px; right: 74px; width: auto; max-width: 560px; margin: 0 auto; transform: none;
+  }
+  .tutorial { animation-name: tut-in-touch; }
+  .info-card, .dialogue { transform-origin: 50% 0; }
+  .info-card .icon-btn, .dialogue .icon-btn { top: -4px; right: -6px; }
+  .tutorial-head strong { font-size: 1.25rem; }
+  .tutorial p { font-size: 1.08rem; }
+  .toast { top: calc(max(10px, env(safe-area-inset-top)) + 250px); }
+}
+@keyframes tut-in-touch { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: none; } }
