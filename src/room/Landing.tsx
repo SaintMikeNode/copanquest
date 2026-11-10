@@ -302,14 +302,19 @@ export default function Landing({ onIntent }: { onIntent: () => void }) {
       </Canvas>
       {(phase === "room" || phase === "out") && (
         <footer className="landing-footer">
-          {t("footer.lead")}{" "}
-          <a href="https://github.com/SaintMikeNode/copanquest" target="_blank" rel="noopener noreferrer">
-            {t("footer.openSource")}
-          </a>{" "}
-          {t("footer.of")}{" "}
-          <a href="https://todosenlaweb.com" target="_blank" rel="noopener noreferrer">
-            Todos en la Web
-          </a>
+          {/* Two balanced lines on every screen: "…de código abierto" / "de Todos en la Web". */}
+          <span>
+            {t("footer.lead")}{" "}
+            <a href="https://github.com/SaintMikeNode/copanquest" target="_blank" rel="noopener noreferrer">
+              {t("footer.openSource")}
+            </a>
+          </span>{" "}
+          <span>
+            {t("footer.of")}{" "}
+            <a href="https://todosenlaweb.com" target="_blank" rel="noopener noreferrer">
+              Todos en la Web
+            </a>
+          </span>
         </footer>
       )}
       {(phase === "room" || phase === "out") && (

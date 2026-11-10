@@ -365,6 +365,7 @@ button { font: inherit; cursor: pointer; }
   width: max-content; max-width: calc(100% - 24px); padding: 5px 12px; text-align: center; font-size: .82rem; line-height: 1.35; color: #f1e3c8;
   background: rgba(20, 12, 8, .62); border: 1px solid rgba(241, 227, 200, .18); backdrop-filter: blur(3px); z-index: 2;
 }
+.landing-footer > span { display: block; white-space: nowrap; }
 .landing-footer a { color: #f2c14e; text-decoration: none; border-bottom: 1px dotted rgba(242, 193, 78, .6); }
 .landing-footer a:hover { color: #ffe08a; }
 @media (max-width: 520px) { .landing-footer { font-size: .74rem; } }
@@ -645,7 +646,7 @@ body[data-tut="menu"] [data-tut="menu"], body[data-tut="talk"] [data-tut="talk"]
    stays visible), and the menu card in two columns (title and text left, buttons right) so
    Jugar fits on the short screen. */
 @media (orientation: landscape) and (max-height: 540px) {
-  .landing-hints { bottom: calc(max(6px, env(safe-area-inset-bottom)) + 30px); gap: 8px; }
+  .landing-hints { bottom: calc(max(6px, env(safe-area-inset-bottom)) + 54px); gap: 8px; }
   .landing-hint { height: 34px; font-size: .9rem; padding: 0 10px; }
   .landing-footer { font-size: .72rem; }
   .menu { padding: 50px 16px 46px; }
