@@ -1,6 +1,6 @@
 import { use, useMemo } from "react";
 import { voxelPromise } from "../voxel/VoxelTerrain";
-import { ConvexHullCollider, CuboidCollider, RigidBody } from "@react-three/rapier";
+import { ConvexHullCollider, CuboidCollider, RigidBody, TrimeshCollider } from "@react-three/rapier";
 import { buildGreybox } from "./buildGreybox";
 import { DECO_GROUPS } from "./groups";
 
@@ -18,6 +18,9 @@ export function SiteColliders() {
     <RigidBody type="fixed" colliders={false}>
       {g.cuboids.map((c, i) => (
         <CuboidCollider key={`c${i}`} args={c.halfExtents} position={c.position} rotation={c.rotation} />
+      ))}
+      {g.ruins.map((r, i) => (
+        <TrimeshCollider key={`t${i}`} args={[r.vertices, r.indices]} />
       ))}
       {deco.map((d, i) => (
         <CuboidCollider key={`d${i}`} args={d.h} position={d.p} collisionGroups={DECO_GROUPS} />

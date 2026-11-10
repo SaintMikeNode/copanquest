@@ -38,6 +38,31 @@ export function valueNoise(x: number, z: number, seed = 0) {
   return a + (b - a) * sx + (c - a) * sz + (a - b - c + d) * sx * sz;
 }
 
+/** Block index ranges covered by an axis-aligned box (a block is filled when its center is inside). */
+export function boxBlocks(position: [number, number, number], size: [number, number, number]) {
+  const eps = 1e-6;
+  const lo = (v: number, min: number) => Math.ceil((v - min) / BLOCK - 0.5 - eps);
+  const hi = (v: number, min: number) => Math.floor((v - min) / BLOCK - 0.5 - eps);
+  return {
+    x0: lo(position[0] - size[0] / 2, REGION.minX),
+    x1: hi(position[0] + size[0] / 2, REGION.minX),
+    y0: lo(position[1] - size[1] / 2, REGION.minY),
+    y1: hi(position[1] + size[1] / 2, REGION.minY),
+    z0: lo(position[2] - size[2] / 2, REGION.minZ),
+    z1: hi(position[2] + size[2] / 2, REGION.minZ),
+  };
+}
+
+/**
+ * Ruins: top block of column (ix, iz) of a box spanning blocks y0..y1 with `erode` blocks of
+ * erosion. Walls survive in places and collapse in others. Shared by the voxel builder and the
+ * ruin colliders (src/world/ruinCollider.ts), so the player stands on the blocks that are drawn.
+ */
+export function erodedTop(ix: number, iz: number, y0: number, y1: number, erode: number) {
+  const n = valueNoise(ix * 0.18, iz * 0.18, 11) * 0.7 + hash2(ix, iz) * 0.3;
+  return Math.max(y0, y1 - Math.floor(n * (erode + 1)));
+}
+
 /** Far terrain quantizes heights to whole meters; the voxel region uses this outside itself. */
 export const quantFar = (h: number) => Math.round(h);
 
@@ -234,22 +259,10 @@ export class VoxelWorld {
     }
 
     if (!rot) {
-      const eps = 1e-6;
-      const y0 = Math.ceil(toIy(py - sy / 2) - eps);
-      const y1 = Math.floor(toIy(py + sy / 2) - eps);
-      const z0 = Math.ceil(toIz(pz - sz / 2) - eps);
-      const z1 = Math.floor(toIz(pz + sz / 2) - eps);
-      const x0 = Math.ceil(toIx(px - sx / 2) - eps);
-      const x1 = Math.floor(toIx(px + sx / 2) - eps);
+      const { x0, x1, y0, y1, z0, z1 } = boxBlocks(s.position, s.size);
       for (let iz = z0; iz <= z1; iz++)
         for (let ix = x0; ix <= x1; ix++) {
-          let top = y1;
-          if (s.erode) {
-            // Ruins: walls survive in places, collapse in others; edges and corners keep more.
-            const n = valueNoise(ix * 0.18, iz * 0.18, 11) * 0.7 + hash2(ix, iz) * 0.3;
-            top = y1 - Math.floor(n * (s.erode + 1));
-            if (top < y0) top = y0;
-          }
+          const top = s.erode ? erodedTop(ix, iz, y0, y1, s.erode) : y1;
           if (s.carve) {
             for (let iy = y0; iy <= y1; iy++) this.clearBlock(ix, iy, iz);
             continue;

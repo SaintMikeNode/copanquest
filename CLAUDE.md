@@ -58,7 +58,7 @@ removed, so `staleReload.ts` reloads once on a missing chunk.
 ## Rules
 
 - Content must be factual about the real site. Cite the source for each POI text; mark estimates as estimates.
-- Visual meshes and colliders stay separate; each staircase gets one invisible ramp wedge.
+- Visual meshes and colliders stay separate; each staircase gets one invisible ramp wedge. Ruins with an eroded top (temple superstructures, ruined walls) get a triangle-mesh collider over the same columns the voxel builder draws (`src/world/ruinCollider.ts`, sharing `erodedTop` / `boxBlocks` with `voxelWorld.ts`): change the erosion in one place only, or the player floats above the blocks again.
 - Keep draw calls low: voxel chunks are merged into 64 m regions; check the debug panel (F3) for draw calls / triangles / voxel build time.
 - Dev console helpers: `cqTeleport(x, y, z)`, `cqView(yaw, pitch, distance)`, `cqFreeCam(x, y, z, lookX, lookY, lookZ)` (no args releases it; from inside a solid mound you can see into chambers).
 - Changing voxel generation (`decorate.ts`, `village.ts`, `mesher.ts`, `REGION`) needs a bump of `VOXEL_CODE_VERSION` in `voxelStream.ts`, or the cached voxels are reused.

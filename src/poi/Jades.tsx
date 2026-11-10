@@ -3,6 +3,7 @@ import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
 import { JADES } from "../world/villageData";
 import { moundTop } from "../world/ladders";
+import { ruinTopAt } from "../world/buildGreybox";
 import { buildPixelModel, hex, solid, type FaceName } from "../voxel/pixelModel";
 import type { Tile } from "../voxel/textures";
 import { playerState } from "../player/playerState";
@@ -37,7 +38,8 @@ export function Jades() {
     () =>
       JADES.map((j) => ({
         id: j.id,
-        pos: new THREE.Vector3(j.at[0], (j.mound ? moundTop(j.mound) : 0) + 0.9, j.at[1]),
+        // On a ruined temple top: above the blocks that are really there.
+        pos: new THREE.Vector3(j.at[0], (j.mound ? (ruinTopAt(j.mound, j.at[0], j.at[1]) ?? moundTop(j.mound)) : 0) + 0.9, j.at[1]),
       })),
     [],
   );

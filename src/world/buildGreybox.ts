@@ -4,6 +4,7 @@
 import { BLOCKS, MONUMENTS, MOUNDS, ROSALILA, type Face, type Material, type Mound, type Stair } from "./siteData";
 import { BLOCK, MATERIAL_COLOR } from "../voxel/blocks";
 import { rosalilaColliders } from "./rosalilaShape";
+import { ruinCollider, type RuinCollider } from "./ruinCollider";
 
 /** A box to rasterize into voxels. Later shapes overwrite earlier ones. */
 export interface Shape {
@@ -73,6 +74,8 @@ export interface CuboidDesc {
 export interface Greybox {
   shapes: Shape[];
   cuboids: CuboidDesc[];
+  /** Triangle meshes over ruins with eroded tops (ruinCollider.ts). */
+  ruins: RuinCollider[];
   /** Flat [x,y,z,...] point lists for ConvexHullColliders. */
   ramps: Float32Array[];
   monuments: MonumentPlacement[];
@@ -138,8 +141,12 @@ function buildStair(g: Greybox, m: Mound, s: Stair) {
   g.ramps.push(new Float32Array(pts.flat()));
 }
 
-function pushSolid(g: Greybox, shape: Shape) {
+function pushSolid(g: Greybox, shape: Shape, id = "") {
   g.shapes.push(shape);
+  if (shape.erode && !shape.rotation) {
+    g.ruins.push(ruinCollider(id, shape.position, shape.size, shape.erode));
+    return;
+  }
   g.cuboids.push({
     position: shape.position,
     halfExtents: [shape.size[0] / 2, shape.size[1] / 2, shape.size[2] / 2],
@@ -169,14 +176,13 @@ function buildMound(g: Greybox, m: Mound) {
   if (m.temple) {
     const [tw, th, td] = m.temple;
     const top = baseY + H;
-    // Collider keeps the full volume; the visible temple is a ruin with an eroded top.
-    g.cuboids.push({ position: [cx, top + th / 2, cz], halfExtents: [tw / 2, th / 2, td / 2] });
-    g.shapes.push({
+    // The visible temple is a ruin with an eroded top; its collider follows the same blocks.
+    pushSolid(g, {
       position: [cx, top + th / 2, cz],
       size: [tw, th, td],
       material: "stone",
       erode: m.ruin === false ? 0 : Math.round(th / BLOCK) - 2,
-    });
+    }, m.id);
   }
   for (const s of m.stairs ?? []) buildStair(g, m, s);
   g.footprints.push({
@@ -190,7 +196,7 @@ let cached: Greybox | null = null;
 
 export function buildGreybox(): Greybox {
   if (cached) return cached;
-  const g: Greybox = { shapes: [], cuboids: [], ramps: [], monuments: [], footprints: [] };
+  const g: Greybox = { shapes: [], cuboids: [], ruins: [], ramps: [], monuments: [], footprints: [] };
   // Big platforms first so temples and floors drawn later overwrite them.
   const ordered = [...MOUNDS].sort((a, b) => (a.id.startsWith("acropolis") ? -1 : b.id.startsWith("acropolis") ? 1 : 0));
   for (const m of ordered) buildMound(g, m);
@@ -204,7 +210,7 @@ export function buildGreybox(): Greybox {
       fillTo: b.collider && b.rotation ? 0 : undefined,
       erode: b.erode,
     };
-    if (b.collider) pushSolid(g, shape);
+    if (b.collider) pushSolid(g, shape, b.id);
     else g.shapes.push(shape);
   }
 
@@ -255,4 +261,14 @@ export function buildGreybox(): Greybox {
   g.cuboids.push(...rosalilaColliders());
   cached = g;
   return g;
+}
+
+/** Height of the ruined temple top on a mound at (x, z); null if the mound has none there. */
+export function ruinTopAt(mound: string, x: number, z: number): number | null {
+  for (const r of buildGreybox().ruins) {
+    if (r.id !== mound) continue;
+    const h = r.heightAt(x, z);
+    if (h !== null) return h;
+  }
+  return null;
 }
