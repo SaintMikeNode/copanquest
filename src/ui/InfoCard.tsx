@@ -24,8 +24,11 @@ export function InfoCard({ hidden = false }: { hidden?: boolean }) {
           ×
         </button>
       </header>
-      <p>{l(poi.body)}</p>
-      {poi.source && <p className="source">{poi.source}</p>}
+      {/* On phones this part scrolls while the title and × stay put (styles.css, touch block). */}
+      <div className="info-body">
+        <p>{l(poi.body)}</p>
+        {poi.source && <p className="source">{poi.source}</p>}
+      </div>
     </section>
   );
 }
