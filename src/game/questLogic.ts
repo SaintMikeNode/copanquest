@@ -69,6 +69,8 @@ export function completeQuest(id: string) {
   const t = getT();
   const l = useGame.getState().lang;
   useGame.getState().showToast(`${t("quest.done")} ${q.title[l]} · +50 XP`);
+  // Tomás's buggy runs again (vehicle/buggyState reads the quest).
+  if (id === "toolbox") setTimeout(() => useGame.getState().showToast(t("buggy.unlocked")), 1800);
   checkRankUp(before);
 }
 

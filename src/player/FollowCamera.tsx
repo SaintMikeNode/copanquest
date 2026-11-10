@@ -10,6 +10,7 @@ import { useCamera } from "../game/camera";
 import { useGame } from "../state/useGame";
 import { useAction } from "../game/WorldGame";
 import { directorCam } from "../dev/directorCam";
+import { buggy, useBuggy } from "../vehicle/buggyState";
 
 /** True while a menu, dialogue or card needs the cursor. */
 function blockedByUI() {
@@ -24,6 +25,10 @@ const MAX_PITCH = 1.2;
 const TARGET_HEIGHT = 0.9;
 /** Gap kept between the camera and any wall it would otherwise clip into. */
 const WALL_PADDING = 0.3;
+/** Last time the player turned the camera by hand (the buggy's chase view waits a moment). */
+let lastTurn = 0;
+const carPos = new THREE.Vector3();
+const carFwd = new THREE.Vector3();
 
 /**
  * Third-person orbit camera. Drag (mouse or one finger on the canvas) to orbit, wheel to zoom,
@@ -118,6 +123,7 @@ export function FollowCamera({ target }: { target: RefObject<EcctrlHandle | null
     };
     const look = (e: MouseEvent) => {
       if (!locked()) return;
+      if (e.movementX !== 0) lastTurn = performance.now();
       yaw.current -= e.movementX * 0.0026;
       pitch.current = THREE.MathUtils.clamp(pitch.current + e.movementY * 0.0021, MIN_PITCH, MAX_PITCH);
     };
@@ -133,6 +139,7 @@ export function FollowCamera({ target }: { target: RefObject<EcctrlHandle | null
       }
       if (e.pointerId !== active) return;
       const scale = e.pointerType === "touch" ? 0.008 : 0.005;
+      lastTurn = performance.now();
       yaw.current -= (e.clientX - lastX) * scale;
       pitch.current = THREE.MathUtils.clamp(pitch.current + (e.clientY - lastY) * scale * 0.8, MIN_PITCH, MAX_PITCH);
       lastX = e.clientX;
@@ -213,7 +220,25 @@ export function FollowCamera({ target }: { target: RefObject<EcctrlHandle | null
       cam.fov = THREE.MathUtils.damp(cam.fov, wantFov, 8, dt);
       cam.updateProjectionMatrix();
     }
-    focus.set(c.currPos.x, c.currPos.y + TARGET_HEIGHT + (photo.active ? 0.35 : 0), c.currPos.z);
+    // Buggy: follow the drawn (interpolated) buggy, not the capsule that rides along once per
+    // physics step (that made it shake on screens faster than 60 Hz). Swing in behind it as it
+    // drives, unless the player just turned the camera.
+    const driving = useBuggy.getState().driving && !!buggy.visual;
+    let carYaw = 0;
+    if (driving) {
+      buggy.visual!.updateWorldMatrix(true, false);
+      buggy.visual!.getWorldPosition(carPos);
+      carPos.y -= 0.15;
+      carFwd.set(0, 0, 1).transformDirection(buggy.visual!.matrixWorld);
+      carYaw = Math.atan2(carFwd.x, carFwd.z);
+    }
+    if (driving && performance.now() - lastTurn > 1200 && buggy.speed > 1) {
+      let d = carYaw + Math.PI - yaw.current;
+      d = Math.atan2(Math.sin(d), Math.cos(d));
+      yaw.current += d * Math.min(1, dt * Math.min(3, buggy.speed * 0.35));
+    }
+    const at = driving ? carPos : c.currPos;
+    focus.set(at.x, at.y + TARGET_HEIGHT + (photo.active ? 0.35 : 0), at.z);
     if (photo.active) {
       focus.x += Math.cos(yaw.current) * 0.45;
       focus.z -= Math.sin(yaw.current) * 0.45;
@@ -232,8 +257,10 @@ export function FollowCamera({ target }: { target: RefObject<EcctrlHandle | null
       undefined,
       undefined,
       c.body,
+      // In the buggy, its chassis and roll cage don't count as walls either.
+      driving ? (col) => col.parent()?.handle !== buggy.body?.handle : undefined,
     );
-    const want = photo.active ? 1.5 : wantDist.current;
+    const want = photo.active ? 1.5 : driving ? Math.max(wantDist.current, 6) : wantDist.current;
     const allowed = hit ? Math.max(0.4, Math.min(want, hit.timeOfImpact - WALL_PADDING)) : want;
     // Snap in immediately (never show the inside of a wall), ease back out.
     dist.current = allowed < dist.current ? allowed : THREE.MathUtils.damp(dist.current, allowed, 4, dt);

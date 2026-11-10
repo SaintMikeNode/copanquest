@@ -8,6 +8,7 @@ import { KeyboardControls, PerformanceMonitor } from "@react-three/drei";
 import { Physics } from "@react-three/rapier";
 import { keyboardMap } from "./player/controls";
 import { Player } from "./player/Player";
+import { Buggy } from "./vehicle/Buggy";
 import { playerState } from "./player/playerState";
 import { TerrainCollider } from "./world/Terrain";
 import { SiteColliders } from "./world/Greybox";
@@ -158,6 +159,7 @@ export default function Game() {
             </Suspense>
             <JaguarStatues />
             <Player />
+            <Buggy />
             {/* Filming toolkit (window.cqDirector): dev server only, not in the public build. */}
             {import.meta.env.DEV && <Director />}
             <People />

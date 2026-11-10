@@ -17,6 +17,8 @@ import { DesktopKeys, PauseMenu } from "./DesktopKeys";
 import { AudioEvents } from "../audio/AudioEvents";
 import { Tutorial } from "./Tutorial";
 import { Presence } from "./presence";
+import { BuggyPrompt } from "../vehicle/BuggyPrompt";
+import { useBuggy } from "../vehicle/buggyState";
 
 /** Desktop mouse-look: free the cursor when UI needs it, and remind how to grab it. */
 function MouseLook({ needsCursor }: { needsCursor: boolean }) {
@@ -39,6 +41,7 @@ export function Hud() {
   const overlay = useGame((s) => s.overlay);
   const dialogue = useGame((s) => s.dialogue);
   const camOn = useCamera((s) => s.active);
+  const driving = useBuggy((s) => s.driving);
   const found = useAction((s) => s.found);
   const setOverlay = useGame((s) => s.setOverlay);
   const close = () => setOverlay(null);
@@ -77,7 +80,8 @@ export function Hud() {
       <CameraOverlay />
       <InfoCard hidden={!!dialogue || camOn} />
       {!camOn && <TalkPrompt />}
-      {!camOn && !dialogue && <ActionPrompt />}
+      {!camOn && !dialogue && !driving && <ActionPrompt />}
+      {!camOn && <BuggyPrompt />}
       <DialogueBox />
       <Toast />
       <DesktopKeys />

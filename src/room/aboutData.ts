@@ -2,7 +2,18 @@
 // Keep it short and true to the README (Layout, Terrain, Credits sections).
 import type { L10n } from "../i18n";
 
-export const ABOUT: { title: L10n; items: L10n[] }[] = [
+export const ABOUT: { title: L10n; items: L10n[]; links?: boolean }[] = [
+  {
+    title: { es: "Quién", en: "Who" },
+    // The GitHub / nerdypunk.dev / todosenlaweb.com links go right under this section.
+    links: true,
+    items: [
+      {
+        es: "Un proyecto de código abierto por nerdypunkdev, como parte de Todos en la Web, programado con la ayuda de Claude, un asistente de IA.",
+        en: "An open-source project by nerdypunkdev, part of Todos en la Web, programmed with the help of Claude, an AI assistant.",
+      },
+    ],
+  },
   {
     title: { es: "Un juego en el navegador", en: "A game in your browser" },
     items: [
@@ -59,15 +70,6 @@ export const ABOUT: { title: L10n; items: L10n[] }[] = [
       {
         es: "Música y efectos de Ovani Sound; el disco del tocadiscos es una grabación de 1914 de dominio público.",
         en: "Music and sound effects by Ovani Sound; the record on the turntable is a public-domain recording from 1914.",
-      },
-    ],
-  },
-  {
-    title: { es: "Quién", en: "Who" },
-    items: [
-      {
-        es: "Un proyecto de código abierto por nerdypunkdev, como parte de Todos en la Web, programado con la ayuda de Claude, un asistente de IA.",
-        en: "An open-source project by nerdypunkdev, part of Todos en la Web, programmed with the help of Claude, an AI assistant.",
       },
     ],
   },

@@ -118,6 +118,12 @@ export const CREDITS: { heading: Key; items: CreditItem[] }[] = [
         credit: "Ovani Sound",
         license: { es: "Licencia libre de regalías de Ovani Sound", en: "Ovani Sound royalty-free license" },
       },
+      {
+        title: "Vehicles Cars Sound FX Pack Vol. 1 — Ignition A, Small Engine Loop",
+        url: "https://ovanisound.com",
+        credit: "Ovani Sound",
+        license: { es: "Licencia libre de regalías de Ovani Sound", en: "Ovani Sound royalty-free license" },
+      },
     ],
   },
   {

@@ -17,6 +17,8 @@ export interface Outfit {
   head?: "headband" | "turban" | "cap" | "none";
   basket?: boolean;
   modern?: boolean;
+  /** Field archaeologist: wide-brim hat, jacket over a shirt (`accent`), long trousers, boots. */
+  explorer?: boolean;
 }
 
 export interface Talker {
@@ -239,6 +241,28 @@ export const TALKERS: Talker[] = [
       {
         es: "¿Ves la casita redonda? Es el temazcal, un baño de vapor para limpiarse y curarse.",
         en: "See the little round house? It's the temazcal, a steam bath for getting clean and healing.",
+      },
+    ],
+  },
+  {
+    // Present-day field archaeologist (fictional) beside his buggy (siteData BUGGY). His quest
+    // ("toolbox", gameData) fixes the buggy and lends it to you. The Rosalila facts are the ones
+    // sourced in poiData ("temple-16").
+    id: "explorer",
+    name: { es: "Tomás, arqueólogo", en: "Tomás, archaeologist" },
+    // On the trail side of his buggy, where you meet him coming in from the gate; ~4.7 m from
+    // its center so his talk zone (2.8 m) and the get-in zone (2.4 m) barely touch.
+    home: [-130.5, 78.6],
+    wander: 0.4,
+    outfit: { skin: SKIN[2], hair: "#2a1d14", top: "#8a5a32", accent: "#e8dcc0", bottom: "#a8925f", head: "none", explorer: true },
+    lines: [
+      {
+        es: "¡Hola, colega! Soy Tomás, arqueólogo. Recorro el parque en mi buggy para revisar las excavaciones.",
+        en: "Hi there, colleague! I'm Tomás, an archaeologist. I drive around the park in my buggy to check on the digs.",
+      },
+      {
+        es: "Los arqueólogos excavaron túneles dentro de la Acrópolis. Así, en 1989, el hondureño Ricardo Agurcia Fasquelle descubrió el templo Rosalila, enterrado bajo el Templo 16.",
+        en: "Archaeologists dug tunnels inside the Acropolis. That's how, in 1989, Honduran archaeologist Ricardo Agurcia Fasquelle discovered the Rosalila temple, buried under Temple 16.",
       },
     ],
   },

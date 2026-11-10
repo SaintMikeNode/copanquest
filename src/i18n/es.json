@@ -157,5 +157,14 @@
   "install.ios3": "Toca «Añadir». CopánQuest aparecerá con tus apps.",
   "install.and1": "Abre el menú del navegador (los tres puntos ⋮).",
   "install.and2": "Elige «Instalar app» o «Añadir a pantalla de inicio».",
-  "install.and3": "Confirma. CopánQuest aparecerá con tus apps."
+  "install.and3": "Confirma. CopánQuest aparecerá con tus apps.",
+  "buggy.in": "Subir al buggy",
+  "buggy.out": "Bajar del buggy",
+  "buggy.locked": "El buggy de Tomás no arranca: habla con él",
+  "buggy.unlocked": "¡Tomás arregló su buggy! Ya puedes manejarlo",
+  "buggy.keys": "W/S acelerar y frenar · A/D girar · Espacio derrapar · Shift turbo",
+  "buggy.brake": "Freno",
+  "buggy.broken": "El buggy no arranca: busca la caja de herramientas de Tomás",
+  "buggy.gas": "Acelerar",
+  "buggy.hop": "Saltar o derrapar"
 }

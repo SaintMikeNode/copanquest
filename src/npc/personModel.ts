@@ -43,12 +43,24 @@ export function personRig(o: Outfit): Rig {
     white: hex("#f4f1e8"),
     eye: hex("#1a1210"),
     basket: hex("#c49e4f"),
+    topDark: hex(o.top).map((v) => v * 0.78) as [number, number, number],
+    boot: hex("#6a4426"),
+    bootDark: hex("#4a2e18"),
+    scarf: hex("#b8322a"),
+    hat: hex("#8c6b45"),
+    hatBand: hex("#3d2a1a"),
     basketDark: hex("#8c6a30"),
   };
 
   const leg = (t: Tile, f: FaceName) => {
     solid(t, C.skin, 0.05, 2);
     if (f === "top") return solid(t, C.bottom, 0.05, 2);
+    if (o.explorer) {
+      // Long trousers tucked into brown boots.
+      solid(t, C.bottom, 0.05, 2);
+      for (let y = t.h - 5; y < t.h; y++) for (let x = 0; x < t.w; x++) t.set(x, y, y === t.h - 1 ? C.bootDark : C.boot);
+      return;
+    }
     if (o.modern) {
       // Shorts to the knee, then skin, white socks and sneakers.
       const shorts = Math.ceil(t.h * 0.5);
@@ -67,7 +79,7 @@ export function personRig(o: Outfit): Rig {
   const arm = (t: Tile, f: FaceName) => {
     solid(t, C.skin, 0.05, 3);
     if (f === "bottom") return;
-    const sleeve = o.modern || o.female ? 0.35 : 0;
+    const sleeve = o.explorer ? 0.8 : o.modern || o.female ? 0.35 : 0;
     for (let y = 0; y < Math.ceil(t.h * sleeve); y++) for (let x = 0; x < t.w; x++) t.set(x, y, C.top);
   };
   const torso = (t: Tile, f: FaceName) => {
@@ -85,6 +97,18 @@ export function personRig(o: Outfit): Rig {
         if (x % 3 === 0) t.set(x, t.h - 2, C.white);
         t.set(x, t.h - 1, C.accent);
       }
+    } else if (o.explorer) {
+      // Open jacket: the shirt shows down the front, a red neckerchief at the collar, a belt.
+      if (f === "front") {
+        const cx = Math.floor(t.w / 2);
+        for (let y = 0; y < t.h - 3; y++) for (let x = cx - 2; x < cx + 2; x++) t.set(x, y, C.accent);
+        for (let x = cx - 3; x < cx + 3; x++) for (let y = 0; y < 2; y++) t.set(x, y, C.scarf);
+        t.set(cx - 1, 2, C.scarf);
+        t.set(cx, 2, C.scarf);
+        for (let y = 5; y < 9; y++) for (const x of [2, t.w - 4]) t.set(x, y, C.topDark); // pockets
+      }
+      for (let x = 0; x < t.w; x++) t.set(x, t.h - 3, C.bootDark);
+      for (let x = 0; x < t.w; x++) t.set(x, t.h - 1, C.topDark);
     } else if (o.modern) {
       for (let y = 2; y < t.h; y += 5) for (let x = 0; x < t.w; x++) if (x % 2 === 0 && f === "front") t.set(x, y, C.accent);
     } else {
@@ -136,6 +160,12 @@ export function personRig(o: Outfit): Rig {
     if (o.head === "turban" && f !== "top" && f !== "bottom") for (let x = 0; x < t.w; x++) if ((x + 1) % 4 === 0) for (let y = 0; y < t.h; y++) t.set(x, y, C.white);
   };
   const capPeak = (t: Tile) => solid(t, C.accent, 0.06, 10);
+  const hatCrown = (t: Tile, f: FaceName) => {
+    solid(t, C.hat, 0.07, 12);
+    if (f === "top") for (let x = 1; x < t.w - 1; x++) t.set(x, Math.floor(t.h / 2), C.hatBand); // pinch
+    else if (f !== "bottom") for (let y = t.h - 2; y < t.h; y++) for (let x = 0; x < t.w; x++) t.set(x, y, C.hatBand);
+  };
+  const hatBrim = (t: Tile) => solid(t, C.hat, 0.08, 13);
   const hairBack = (t: Tile) => {
     solid(t, C.hair, 0.12, 11);
     for (let y = 0; y < t.h; y += 4) for (let x = 0; x < t.w; x++) t.set(x, y, C.accent);
@@ -157,6 +187,8 @@ export function personRig(o: Outfit): Rig {
     { size: [0.3, 0.03, 0.14], paint: capPeak }, // 7
     { size: [0.3, 0.42, 0.06], paint: hairBack }, // 8
     { size: [0.42, 0.16, 0.42], paint: basket }, // 9
+    { size: [0.34, 0.14, 0.32], paint: hatCrown }, // 10
+    { size: [0.6, 0.035, 0.58], paint: hatBrim }, // 11
   ];
   const { geometries: G, material } = buildPixelModel(parts);
 
@@ -168,6 +200,7 @@ export function personRig(o: Outfit): Rig {
   if (o.head && o.head !== "none") pieces.push(place(G[6], 0, shoulderY + 0.33, 0));
   if (o.head === "cap") pieces.push(place(G[7], 0, shoulderY + 0.31, 0.22));
   if (o.basket) pieces.push(place(G[9], 0, shoulderY + 0.46, 0));
+  if (o.explorer) pieces.push(place(G[11], 0, shoulderY + 0.36, 0), place(G[10], 0, shoulderY + 0.44, 0));
   const body = mergeGeometries(pieces)!;
   const limb = (g: THREE.BufferGeometry, len: number) => place(g, 0, -len / 2, 0);
 

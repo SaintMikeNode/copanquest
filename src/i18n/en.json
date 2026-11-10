@@ -157,5 +157,14 @@
   "install.ios3": "Tap “Add”. CopánQuest will appear with your apps.",
   "install.and1": "Open the browser menu (the three dots ⋮).",
   "install.and2": "Choose “Install app” or “Add to Home screen”.",
-  "install.and3": "Confirm. CopánQuest will appear with your apps."
+  "install.and3": "Confirm. CopánQuest will appear with your apps.",
+  "buggy.in": "Get in the buggy",
+  "buggy.out": "Get out of the buggy",
+  "buggy.locked": "Tomás's buggy won't start: talk to him",
+  "buggy.unlocked": "Tomás fixed his buggy! You can drive it now",
+  "buggy.keys": "W/S gas and brake · A/D steer · Space drift · Shift turbo",
+  "buggy.brake": "Brake",
+  "buggy.broken": "The buggy won't start: find Tomás's toolbox",
+  "buggy.gas": "Gas",
+  "buggy.hop": "Hop or drift"
 }

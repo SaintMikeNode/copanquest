@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { useBuggy } from "../vehicle/buggyState";
+import { BuggyPedals } from "../vehicle/BuggyPedals";
 import { Joystick, VirtualButton } from "ecctrl/input";
 import { useT } from "../i18n";
 
@@ -76,6 +78,7 @@ const buttonCapLandscape = { ...buttonCap, width: "64px", height: "64px", fontSi
 export function TouchControls() {
   const t = useT();
   const land = useMedia(LANDSCAPE_PHONE);
+  const driving = useBuggy((s) => s.driving);
   return (
     <>
       <Joystick
@@ -86,13 +89,18 @@ export function TouchControls() {
         joystickBaseStyle={land ? joystickBaseLandscape : joystickBase}
         joystickKnobStyle={land ? joystickKnobLandscape : joystickKnob}
       />
-      <VirtualButton
-        key={land ? "jl" : "jp"}
-        id="jump"
-        label={t("jump")}
-        buttonWrapperStyle={land ? buttonWrapperLandscape : buttonWrapper}
-        buttonCapStyle={land ? buttonCapLandscape : buttonCap}
-      />
+      {/* In the buggy: the stick steers, the pedals and the hop button are on the right. */}
+      {driving ? (
+        <BuggyPedals />
+      ) : (
+        <VirtualButton
+          key={land ? "jl" : "jp"}
+          id="jump"
+          label={t("jump")}
+          buttonWrapperStyle={land ? buttonWrapperLandscape : buttonWrapper}
+          buttonCapStyle={land ? buttonCapLandscape : buttonCap}
+        />
+      )}
     </>
   );
 }

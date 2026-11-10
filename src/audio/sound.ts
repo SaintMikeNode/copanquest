@@ -5,6 +5,8 @@
 // iOS ignores HTMLMediaElement.volume.
 // Effects: short MP3s from Ovani Sound's Cozy Casual Sound FX Pack Vol. 2 (public/audio/sfx),
 // decoded on first use. Names with variants (pickup-1…6) pick one at random.
+// Buggy: engine-start ("Ignition A") and engine-loop ("Small Engine Loop") from the Vehicles
+// Cars Sound FX Pack Vol. 1; the loop is only fetched the first time someone gets in.
 // All files are 128 kbps MP3 (converted from the packs' WAVs with LAME).
 //
 // Bedroom (main page): the record on the desk, "La muerte del bardo" by Manuel de Adalid y Gamero
@@ -56,6 +58,7 @@ export const SFX = {
   discover: [1, 0.55],
   error: [1, 0.55],
   place: [1, 0.6],
+  "engine-start": [1, 0.5],
 } as const satisfies Record<string, readonly [number, number]>;
 export type SfxName = keyof typeof SFX;
 
@@ -165,6 +168,94 @@ export function play(name: SfxName, { volume = 1, rate = 1 } = {}) {
     src.connect(g).connect(master);
     src.start();
   });
+}
+
+// ---------------------------------------------------------------- buggy engine
+
+const ENGINE_LOOP = "/audio/sfx/engine-loop.mp3";
+const ENGINE_VOLUME = 0.3;
+/** How long the loop waits for the ignition to "catch" before fading in (s). */
+const ENGINE_CATCH = 0.8;
+let engineSrc: AudioBufferSourceNode | null = null;
+let engineGain: GainNode | null = null;
+let engineOn = false;
+/** Until then the loop is fading in after the ignition: updates leave its volume alone. */
+let engineReadyAt = 0;
+
+/** Getting in: the ignition, then the engine loop fades in. */
+export function engineStart() {
+  engineOn = true;
+  play("engine-start");
+  const c = context();
+  if (!c || !master || !unlocked) return;
+  // Got back in while it was still fading out: bring the same loop back up.
+  if (engineSrc && engineGain) {
+    engineGain.gain.cancelScheduledValues(c.currentTime);
+    engineGain.gain.setTargetAtTime(engineLevel(0, 0), c.currentTime, 0.2);
+    engineSrc.onended = null;
+    try {
+      engineSrc.stop(c.currentTime + 1e6);
+    } catch {
+      /* not started yet */
+    }
+    return;
+  }
+  load(ENGINE_LOOP).then((buf) => {
+    if (!buf || !engineOn || !master || engineSrc) return;
+    const src = c.createBufferSource();
+    src.buffer = buf;
+    src.loop = true;
+    // Skip the MP3 encoder's padding at both ends, or the loop clicks every time it wraps.
+    src.loopStart = 0.06;
+    src.loopEnd = buf.duration - 0.06;
+    const g = c.createGain();
+    g.gain.value = 0;
+    g.gain.setTargetAtTime(engineLevel(0, 0), c.currentTime + ENGINE_CATCH, 0.3);
+    engineReadyAt = c.currentTime + ENGINE_CATCH + 0.6;
+    src.connect(g).connect(master);
+    src.start(0, src.loopStart);
+    engineSrc = src;
+    engineGain = g;
+  });
+}
+
+function engineLevel(speed01: number, gas: number) {
+  if (!useSound.getState().sfx || useGame.getState().overlay === "pause") return 0;
+  return ENGINE_VOLUME * (0.55 + 0.45 * Math.min(1, speed01 + Math.abs(gas) * 0.25));
+}
+
+/** Every frame while driving: pitch and volume follow speed (0–1) and the pedal (−1…1). */
+export function engineUpdate(speed01: number, gas: number) {
+  const c = ctx;
+  if (!c || !engineSrc || !engineGain || !engineOn) return;
+  const t = c.currentTime;
+  engineSrc.playbackRate.setTargetAtTime(0.8 + speed01 * 0.75 + Math.abs(gas) * 0.08, t, 0.12);
+  // Don't cut the ignition's fade-in short.
+  if (t >= engineReadyAt) engineGain.gain.setTargetAtTime(engineLevel(speed01, gas), t, 0.15);
+}
+
+/** Getting out (or leaving the game): the engine fades out over about a second, then stops. */
+export function engineStop() {
+  engineOn = false;
+  const c = ctx;
+  const src = engineSrc;
+  const g = engineGain;
+  if (!c || !src || !g) return;
+  const t = c.currentTime;
+  g.gain.cancelScheduledValues(t);
+  g.gain.setValueAtTime(g.gain.value, t);
+  g.gain.setTargetAtTime(0, t, 0.3);
+  // …and winds down, like an engine switching off.
+  src.playbackRate.cancelScheduledValues(t);
+  src.playbackRate.setValueAtTime(src.playbackRate.value, t);
+  src.playbackRate.setTargetAtTime(0.6, t, 0.4);
+  src.onended = () => {
+    if (engineSrc === src) {
+      engineSrc = null;
+      engineGain = null;
+    }
+  };
+  src.stop(t + 1.6);
 }
 
 // ---------------------------------------------------------------- music
@@ -285,6 +376,11 @@ export function initSound() {
       applyRecord();
     }
   });
+  // The buggy's engine goes quiet while the game is paused (the frame loop that updates it stops).
+  useGame.subscribe((s, p) => {
+    if (s.overlay === p.overlay || !ctx || !engineGain || !engineOn) return;
+    engineGain.gain.setTargetAtTime(engineLevel(0, 0), ctx.currentTime, 0.1);
+  });
   // Game music follows playing: starts on Jugar, stops (and rewinds) on the way out, where the
   // record starts again from the beginning.
   useGame.subscribe((s, p) => {
@@ -323,5 +419,6 @@ export function soundDebug(seek?: number) {
     gap: !!gapTimer,
     record: recordEl ? { time: recordEl.currentTime, paused: recordEl.paused, gap: !!recordGap } : null,
     decoded: buffers.size,
+    engine: engineSrc && engineGain ? { on: engineOn, gain: +engineGain.gain.value.toFixed(3), rate: +engineSrc.playbackRate.value.toFixed(2) } : null,
   };
 }

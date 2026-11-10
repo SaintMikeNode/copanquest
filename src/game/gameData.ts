@@ -4,7 +4,7 @@ import type { L10n } from "../i18n";
 
 // ---------------------------------------------------------------- items & pickups
 
-export type Item = "cacao" | "anil" | "maize" | "flint" | "glyph";
+export type Item = "cacao" | "anil" | "maize" | "flint" | "glyph" | "toolbox";
 
 export const ITEM_NAMES: Record<Item, L10n> = {
   cacao: { es: "mazorca de cacao", en: "cacao pod" },
@@ -12,6 +12,7 @@ export const ITEM_NAMES: Record<Item, L10n> = {
   maize: { es: "mazorca de maíz", en: "ear of maize" },
   flint: { es: "pedernal", en: "flint" },
   glyph: { es: "fragmento de glifo", en: "glyph fragment" },
+  toolbox: { es: "caja de herramientas de Tomás", en: "Tomás's toolbox" },
 };
 
 /** Things lying around the world. y is found by raycast at runtime. */
@@ -38,6 +39,10 @@ export const PICKUPS: { id: string; item: Item; at: [number, number] }[] = [
     item: "glyph" as const,
     at,
   })),
+  // Tomás's toolbox (quest "toolbox"): on the open ground between the south end of the Ball Court
+  // and the foot of the Hieroglyphic Stairway. Kept outside both place cards' radius (stairway
+  // 9 m around [57, 204.5], 12 m away; ball court 14 m), so the pickup toast doesn't overlap a card.
+  { id: "toolbox-0", item: "toolbox", at: [53, 193] },
 ];
 
 // ---------------------------------------------------------------- quests
@@ -67,6 +72,42 @@ export interface QuestCheck {
 }
 
 export const QUESTS: Quest[] = [
+  {
+    // Unlocks the buggy (vehicle/Buggy.tsx) when finished.
+    id: "toolbox",
+    giver: "explorer",
+    title: { es: "El buggy de Tomás", en: "Tomás's buggy" },
+    goal: {
+      es: "Busca la caja de herramientas entre el Juego de Pelota y la Escalinata Jeroglífica",
+      en: "Find the toolbox between the Ball Court and the Hieroglyphic Stairway",
+    },
+    progress: (s) => [s.items.toolbox ?? 0, 1],
+    consume: ["toolbox", 1],
+    offer: [
+      {
+        es: "Te lo prestaría, pero mi buggy no arranca. Para arreglarlo necesito mi caja de herramientas… ¡y la dejé olvidada!",
+        en: "I'd lend it to you, but my buggy won't start. I need my toolbox to fix it… and I left it behind!",
+      },
+      {
+        es: "Ve al Juego de Pelota, la cancha larga entre dos rampas. Justo al final de la cancha está la Escalinata Jeroglífica: dejé la caja en el suelo, entre la cancha y la escalinata. ¿Me la traes?",
+        en: "Go to the Ball Court, the long court between two slopes. Right past its end is the Hieroglyphic Stairway: I left the box on the ground between the court and the stairway. Can you bring it to me?",
+      },
+    ],
+    remind: {
+      es: "Busca el Juego de Pelota: mi caja está justo al final de la cancha, frente a la Escalinata Jeroglífica.",
+      en: "Find the Ball Court: my toolbox is right past the end of the court, in front of the Hieroglyphic Stairway.",
+    },
+    done: [
+      {
+        es: "¡Mi caja de herramientas! Un ajuste por aquí, otro por allá… ¡listo, ya arranca!",
+        en: "My toolbox! A tweak here, another there… done, it starts!",
+      },
+      {
+        es: "Te presto el buggy: súbete cuando estés a su lado. Eso sí, despacio cerca de la gente y de los monumentos.",
+        en: "You can borrow the buggy: get in when you're next to it. Just go slow near people and monuments.",
+      },
+    ],
+  },
   {
     id: "photographer",
     giver: "guide",

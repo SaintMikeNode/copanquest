@@ -34,19 +34,21 @@ export function CreditsBook({ onClose }: { onClose: () => void }) {
               {s.items.map((it) => (
                 <p key={it.en}>{l(it)}</p>
               ))}
+              {s.links && (
+                <p className="book-links">
+                  <a href={REPO} target="_blank" rel="noopener noreferrer">
+                    GitHub ↗
+                  </a>
+                  <a href="https://nerdypunk.dev" target="_blank" rel="noopener noreferrer">
+                    nerdypunk.dev ↗
+                  </a>
+                  <a href="https://todosenlaweb.com" target="_blank" rel="noopener noreferrer">
+                    todosenlaweb.com ↗
+                  </a>
+                </p>
+              )}
             </section>
           ))}
-          <p className="book-links">
-            <a href={REPO} target="_blank" rel="noopener noreferrer">
-              GitHub ↗
-            </a>
-            <a href="https://nerdypunk.dev" target="_blank" rel="noopener noreferrer">
-              nerdypunk.dev ↗
-            </a>
-            <a href="https://todosenlaweb.com" target="_blank" rel="noopener noreferrer">
-              todosenlaweb.com ↗
-            </a>
-          </p>
         </article>
         <article className="book-page book-right">
           <h2>{t("credits")}</h2>

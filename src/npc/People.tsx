@@ -12,6 +12,7 @@ import { trackSubject } from "../game/subjects";
 import { lensMix } from "../game/lens";
 import { CharacterLayer } from "../game/layers";
 import { NO_DECO_FILTER } from "../world/groups";
+import { buggy, useBuggy } from "../vehicle/buggyState";
 
 const DRAW_DIST = 95;
 const TALK_DIST = 2.8;
@@ -459,9 +460,12 @@ function TalkTracker() {
     const p = playerState.position;
     let best: string | null = null;
     let bestD = Infinity;
-    for (const [id, v] of talkables) {
+    // Nobody to talk to from the driver's seat.
+    if (!useBuggy.getState().driving) for (const [id, v] of talkables) {
       const d = Math.hypot(p.x - v.x, p.z - v.z);
       const max = id.startsWith("jaguar") ? JAGUAR_TALK_DIST : TALK_DIST;
+      // Between Tomás and his buggy, whichever is closer wins (the buggy's prompt shows otherwise).
+      if (id === "explorer" && useBuggy.getState().near && Math.hypot(p.x - buggy.position.x, p.z - buggy.position.z) < d) continue;
       if (d < max && Math.abs(p.y - v.y) < 2.5 && d < bestD) {
         best = id;
         bestD = d;

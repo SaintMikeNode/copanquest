@@ -173,6 +173,14 @@ export const ARRIVAL = { minX: -178, minZ: 72, maxZ: 89.5, gateZ0: 77.75, gateZ1
 /** The tour jeep, parked beside the start (yaw π/2: its front points east, toward the gate). */
 export const JEEP = { at: [-160.5, 76.4] as [number, number], yaw: Math.PI / 2 };
 
+/**
+ * The archaeologist's buggy, parked on the grass between the entrance trail and the terraced
+ * west mound (west-mound-s), nose east: a clear run along the foot of the mound. Tomás stands on
+ * the trail side (npcData); you get in and out on the mound side. Fictional, like the jeep.
+ * Driving it: src/vehicle/Buggy.tsx.
+ */
+export const BUGGY = { at: [-127, 75.5] as [number, number], yaw: Math.PI / 2 };
+
 /** Start outside the entrance gate, beside the jeep, looking east toward the gate and the city. */
 export const PLAYER_SPAWN: [number, number, number] = [-164, 3, 80.7];
 /** Camera yaw at spawn (FollowCamera convention: 0 = looking north, −π/2 = looking east). */

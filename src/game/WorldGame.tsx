@@ -93,8 +93,20 @@ function itemModels() {
     }
   });
   const sparkle = m([0.1, 0.1, 0.1], (t) => solid(t, hex("#ffe36a"), 0.05, 56));
-  const { geometries, material } = buildPixelModel([cacao, anil, maize, flint, glyph, sparkle]);
-  const index: Record<Item, number> = { cacao: 0, anil: 1, maize: 2, flint: 3, glyph: 4 };
+  // Tomás's red metal toolbox: a latch and a handle groove on top.
+  const toolbox = m([0.46, 0.24, 0.24], (t, f) => {
+    solid(t, hex("#c0392b"), 0.06, 57);
+    for (let x = 0; x < t.w; x++) t.set(x, t.h - 1, hex("#8e2a20"));
+    if (f === "top") for (let x = 3; x < t.w - 3; x++) t.set(x, Math.floor(t.h / 2), hex("#3a3a3a"));
+    if (f === "front") {
+      for (let x = 0; x < t.w; x++) t.set(x, 2, hex("#8e2a20"));
+      t.set(Math.floor(t.w / 2), 3, hex("#d8d8d0"));
+      t.set(Math.floor(t.w / 2) - 1, 3, hex("#d8d8d0"));
+    }
+  });
+  // Sparkle stays at index 5 (Pickups draws it above every item).
+  const { geometries, material } = buildPixelModel([cacao, anil, maize, flint, glyph, sparkle, toolbox]);
+  const index: Record<Item, number> = { cacao: 0, anil: 1, maize: 2, flint: 3, glyph: 4, toolbox: 6 };
   return { geometries, material, index };
 }
 
