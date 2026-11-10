@@ -6,6 +6,8 @@
 // Pressing Esc while the mouse is captured makes the browser release it without sending
 // the key to the page, so losing the capture unexpectedly also opens the pause menu.
 import { useEffect, useRef } from "react";
+import { ReportBug } from "./ReportBug";
+import { ProjectCredit } from "./ProjectCredit";
 import { useGame } from "../state/useGame";
 import { useT } from "../i18n";
 import { useCamera } from "../game/camera";
@@ -102,6 +104,7 @@ export function PauseMenu() {
   };
   return (
     <Overlay title={t("pause")} onClose={resume}>
+      <ProjectCredit />
       <div className="pause-menu">
         <button className="primary" onClick={resume} autoFocus>
           ▶ {t("resume")}
@@ -124,6 +127,7 @@ export function PauseMenu() {
           🎓 {t("tut.again")}
         </button>
         <button onClick={exitToHome}>🏠 {t("home")}</button>
+        <ReportBug className="px-btn pause-report" />
       </div>
       <QuickSettings />
       <h3>{t("help")}</h3>

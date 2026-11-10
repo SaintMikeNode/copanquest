@@ -8,6 +8,7 @@ import { Overlay } from "./Overlay";
 import { Credits } from "./Credits";
 import { Help } from "./Help";
 import { Presence } from "./presence";
+import { ReportBug } from "./ReportBug";
 
 /**
  * Start menu. `crt`: shown "inside" the bedroom computer's monitor (Landing.tsx), with a
@@ -44,6 +45,7 @@ export function Menu({ crt = false, onBack }: { crt?: boolean; onBack?: () => vo
           <button onClick={() => setOverlay("help")}>{t("help")}</button>
           <button onClick={() => setOverlay("credits")}>{t("credits")}</button>
         </div>
+        <ReportBug className="px-btn menu-report" />
       </div>
       <Presence show={overlay === "credits"}>
         <Overlay title={t("credits")} onClose={() => setOverlay(null)}>

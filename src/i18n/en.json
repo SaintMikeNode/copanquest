@@ -20,7 +20,6 @@
   "controls.touch": "Use the stick on the left to walk and drag on the screen to look around. Push the stick to the edge to run.",
   "controls.settings": "Language, sound and credits: in the pause menu (Esc) or the journal (E or the book button).",
   "controls.poi": "Walk up to the stelae, altars and temples to learn about them.",
-  "greybox": "Work in progress: we keep improving the world.",
   "credits.intro": "CopánQuest uses these sources and tools. Thank you!",
   "credits.audio": "Music and sound",
   "credits.layout": "Site plan",
@@ -146,5 +145,6 @@
   "record.close": "Close",
   "room.recordOn": "Turn on record player",
   "room.recordOff": "Turn off record player",
-  "book.about": "How it was made"
+  "book.about": "How it was made",
+  "report": "Report a bug"
 }

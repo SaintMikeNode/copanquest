@@ -557,7 +557,10 @@ body[data-tut="menu"] [data-tut="menu"], body[data-tut="talk"] [data-tut="talk"]
 .book-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0 4px; }
 .book-actions .primary { width: auto; padding: 4px 18px; font-size: 1.1rem; }
 /* One page only (the record box). */
-.book.book-single { width: min(720px, 100%); height: auto; max-height: 100%; grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, auto); }
+/* As tall as its content, at most the screen; then the page scrolls inside the frame. (A grid
+   row sized "auto" would grow past max-height and spill out, so this one is a flex column.) */
+.book.book-single { width: min(720px, 100%); height: auto; max-height: 100%; display: flex; flex-direction: column; }
+.book-single .book-page { flex: 1 1 auto; min-height: 0; }
 @media (max-width: 720px) {
   .book { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); height: 100%; padding: 8px; gap: 8px; }
   .book-tabs { display: flex; gap: 6px; }
@@ -662,3 +665,16 @@ body[data-tut="menu"] [data-tut="menu"], body[data-tut="talk"] [data-tut="talk"]
 .crash { background: #133528; }
 .crash .menu-card p { margin-bottom: 16px; }
 .crash .menu-card em { opacity: .8; }
+
+/* "Reportar un error" (ReportBug.tsx): a wooden button under the start menu's row and in the
+   pause menu's list; the project credit line (ProjectCredit.tsx). */
+.report-bug { display: flex; align-items: center; justify-content: center; text-decoration: none; cursor: pointer; }
+.menu-report { margin-top: 10px; padding: 4px 10px; font-size: .95rem; }
+.pause-report { padding: 6px 12px; font-size: 1.1rem; }
+.project-credit { font-size: .9rem; line-height: 1.45; }
+.project-credit a { color: var(--red-dark); font-weight: 700; }
+.book-page .project-credit a { color: #f2c14e; }
+.overlay-body > .project-credit { justify-self: stretch; text-align: center; margin: 0 0 10px; padding-bottom: 8px; border-bottom: 2px dashed #c9a86f; }
+@media (orientation: landscape) and (max-height: 540px) {
+  .menu-card .menu-report { grid-column: 2; grid-row: 3; margin-top: 4px; }
+}

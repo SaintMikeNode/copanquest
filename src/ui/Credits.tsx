@@ -1,12 +1,14 @@
 import { useT } from "../i18n";
 import { CREDITS } from "./creditsData";
 import { useGame } from "../state/useGame";
+import { ProjectCredit } from "./ProjectCredit";
 
 export function Credits() {
   const t = useT();
   const lang = useGame((s) => s.lang);
   return (
     <div className="credits">
+      <ProjectCredit />
       <p>{t("credits.intro")}</p>
       {CREDITS.map((group) => (
         <section key={group.heading}>

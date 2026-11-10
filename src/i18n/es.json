@@ -20,7 +20,6 @@
   "controls.touch": "Usa la palanca de la izquierda para caminar y arrastra el dedo en la pantalla para mirar. Empuja la palanca hasta el borde para correr.",
   "controls.settings": "Idioma, sonido y créditos: en la pausa (Esc) o en el diario (E o el botón del libro).",
   "controls.poi": "Acércate a las estelas, altares y templos para aprender sobre ellos.",
-  "greybox": "Versión en desarrollo: seguimos mejorando el mundo.",
   "credits.intro": "CopánQuest usa estas fuentes y herramientas. ¡Gracias!",
   "credits.audio": "Música y sonido",
   "credits.layout": "Plano del sitio",
@@ -146,5 +145,6 @@
   "record.close": "Cerrar",
   "room.recordOn": "Encender tocadiscos",
   "room.recordOff": "Apagar tocadiscos",
-  "book.about": "Cómo se hizo"
+  "book.about": "Cómo se hizo",
+  "report": "Reportar un error"
 }
