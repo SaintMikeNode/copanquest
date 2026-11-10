@@ -9,6 +9,7 @@ import { SPAWN_YAW } from "../world/siteData";
 import { useCamera } from "../game/camera";
 import { useGame } from "../state/useGame";
 import { useAction } from "../game/WorldGame";
+import { directorCam } from "../dev/directorCam";
 
 /** True while a menu, dialogue or card needs the cursor. */
 function blockedByUI() {
@@ -185,6 +186,17 @@ export function FollowCamera({ target }: { target: RefObject<EcctrlHandle | null
   useFrame((_, delta) => {
     const c = target.current;
     if (!c) return;
+    // Dev director (src/dev/Director.tsx) is filming: it owns the camera.
+    if (directorCam.active) {
+      const cam = camera as THREE.PerspectiveCamera;
+      if (cam.fov !== directorCam.fov) {
+        cam.fov = directorCam.fov;
+        cam.updateProjectionMatrix();
+      }
+      camera.position.copy(directorCam.pos);
+      camera.lookAt(directorCam.look);
+      return;
+    }
     const fc = freeCam.current;
     if (fc) {
       camera.position.set(fc[0], fc[1], fc[2]);

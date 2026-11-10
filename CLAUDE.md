@@ -29,7 +29,8 @@ newest first, `status` / `build_outcome`), then purge the zone's cached HTML, wh
 serving the previous version: `npx cf cache purge -z a41b0baf1e1bfb353ebf69e1a3954fc4 --force --body
 '{"files":["https://copanquest.todosenlaweb.com/", ".../index.html", ".../sw.js", ".../registerSW.js",
 ".../manifest.webmanifest", ".../workbox-*.js"]}'` (max 30 URLs per call; full URLs). Check that the
-live `assets/index-*.js` matches the local build. A git push of the binaries can drop mid-way over
+live `assets/index-*.js` matches the local build; if the working tree has uncommitted changes the names
+differ, so instead grep the live chunks for a string the new commit adds. A git push of the binaries can drop mid-way over
 HTTPS: retry with `git -c http.postBuffer=157286400 push`. Phones keep the previous version one
 load longer (service worker, `autoUpdate`); that old code then asks for chunks the new deploy
 removed, so `staleReload.ts` reloads once on a missing chunk.
@@ -46,7 +47,7 @@ removed, so `staleReload.ts` reloads once on a missing chunk.
   - `presence.tsx` — enter / exit animations: `useExit(value)` keeps the last value on screen while it animates out, `Presence` wraps whole windows. A component rendering from `useExit` must **not rebuild its content from live state while leaving** (the dialogue keeps the script it opened with: an end action changes the quest, and a rebuilt, shorter script once crashed the app reading a line past its end).
   - `ErrorBoundary.tsx` (in `main.tsx`) — a render error shows a reload card instead of an empty dark-green page (the page background is all that's left when React unmounts).
     It also draws that card over the game for failures outside React's render, watched by `src/crash.ts`: a WebGL context lost and not restored within 1.5 s (the card goes away if it comes back; three.js redraws by itself), 20 uncaught errors in 3 s (one thrown every frame), a chunk that won't load after the one automatic reload, a dead voxel worker. Simulate a lost context with `gl.getExtension("WEBGL_lose_context").loseContext()` / `.restoreContext()` on the `.game-canvas canvas` context.
-  - `ProjectCredit.tsx` (the author credit line at the top of the credits and the pause menu; the bedroom footer is shorter: "Un proyecto educativo de código abierto de Todos en la Web", no author name), `ReportBug.tsx` (mailto hola@saintmikenode.com with page / browser / screen), `InstallApp.tsx` + `src/installApp.ts` (touch only: Chrome's install prompt caught at startup, or install steps; hidden when installed).
+  - `ProjectCredit.tsx` (the author credit line at the top of the credits and the pause menu; the bedroom footer in `Landing.tsx` is shorter and names no author: two balanced lines on every screen, "Un proyecto educativo de código abierto" / "de Todos en la Web", one nowrap `<span>` per line; on phones held sideways the bedroom buttons sit higher to clear it), `ReportBug.tsx` (mailto hola@saintmikenode.com with page / browser / screen), `InstallApp.tsx` + `src/installApp.ts` (touch only: Chrome's install prompt caught at startup, or install steps; hidden when installed).
   - Touch layout (styles.css, `pointer: coarse` blocks near the end): no minimap (a map button in the column instead), text boxes at the top as columns whose buttons stay visible and whose text scrolls; phones held sideways (`LANDSCAPE_PHONE` in `TouchControls.tsx`) get a button row top right and wide centered boxes. Desktop styles must stay untouched by these.
 - `src/npc/` — villagers, trail walkers and jaguars (`People.tsx`, data in `npcData.ts`). Their ground ray only sees fixed colliders; they step up ≤ 0.6 m and keep ~1.1 m apart. Decoration colliders (bushes, trunks, village boxes) are in their own collision group (`src/world/groups.ts`): actors spawn on the nearest bare ground and never step onto a decoration.
 - `src/game/` — quests, pickups, digging, ballgame, camera, time lens, Maya calendar. `Glow.tsx`: light shafts over things to collect (pickups, jade beads, the turkeys during their mission), one instanced draw call; owners call `glow()` every frame. `src/npc/QuestMarkers.tsx`: the floating `!` / `?` above villagers with a mission.
@@ -54,6 +55,32 @@ removed, so `staleReload.ts` reloads once on a missing chunk.
 - `src/components/PixelBlast/` — React Bits background (MIT + Commons Clause, header kept; added by hand: the project has no shadcn/Tailwind).
 - `src/i18n/` — `es.json` (source of truth) and `en.json`.
 - `branding/` — logo files (icon, wordmark, lockups; SVG with outlined letters + PNG), colors and `build-logo.mjs` to regenerate them.
+
+## Filming (dev only)
+
+Tools to record trailers and social videos: drone flights, orbits, 360° spins around the player,
+scripted walks, aimed photos and a clean frame without UI. Full API: `DIRECTOR.md`. Code in `src/dev/`
+(`Director.tsx` the API, `directorCam.ts` the camera override that `FollowCamera` and `VoxelTerrain`
+read). Everything is mounted with `import.meta.env.DEV`, so none of it reaches the production build;
+keep it that way (after changing it, build and grep the output for `cqDirector`: 0 matches).
+
+How to film:
+1. Start the dev server (`npm run dev`, port 5180) and open `http://localhost:5180/?director`.
+   It starts in the world with no bedroom or tutorial, high quality, music off (sound effects stay),
+   plants drawn to 260 m and no place cards. Wait ~12 s for the world to build.
+2. Drive it from the browser console or automation (`page.evaluate`) with `window.cq`:
+   - `cq.hud(false)` for a clean frame (aerials), `cq.hud(true)` for gameplay; `cq.fov(55)`.
+   - Camera: `cq.fly([{pos, look}, …], seconds)`, `cq.orbit({center, radius, height, seconds})`,
+     `cq.orbitPlayer({radius, height, seconds})`, `cq.hold(pos, look)`, `cq.release()`.
+   - Player: `cq.place(x, y, z, [faceX, faceZ])`, `cq.walkTo(x, z, {run: true})`,
+     `cq.photo({subject: "rosalila"})` (the explorer's camera, centered on its subject).
+   - Ready-made shots: `cq.shots.hookAerial()`, `plazaDrone()`, `ballCourtToStairway()`,
+     `acropolisOrbit()`, `templeTop360()`, `photoStela()`, `rosalila()`. All moves return promises.
+3. Record with real device emulation for phones and tablets (Playwright `isMobile: true, hasTouch: true`;
+   e.g. 390×844 portrait, 844×390 sideways, 820×1180 tablet), not `?touch`: the touch layout follows
+   media queries. Desktop: 1920×1080. Run each shot once as a rehearsal (the first run compiles shaders).
+4. Save the video files outside the repo (e.g. `../copanquest-video/`). Don't put local paths, IP
+   addresses or machine names in committed files: the repo is public.
 
 ## Rules
 
@@ -68,3 +95,4 @@ removed, so `staleReload.ts` reloads once on a missing chunk.
 - Trails (`PATHS`) must never cross stonework: check new or moved trails against every mound and stair footprint (the West Court trail used to run over Platform 13).
 - Test touch layouts in the browser at phone sizes, portrait and sideways (e.g. 375×812, 412×760, 740×340; widths under 768 emulate touch), and check desktop is unchanged.
 - Dev tools: `?debug` in the URL (or `npm run dev`) enables the collider view; `F3` toggles the debug panel; `window.cqTeleport(x, y, z)` in dev.
+- Several Claude sessions may work in this checkout at once (their commits show up on `main`): commit only your own files or hunks (stage a partial file with `git apply --cached` on a filtered diff), and never revert changes you didn't make.

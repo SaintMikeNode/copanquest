@@ -1,4 +1,5 @@
 import { use, useEffect, useMemo, useRef, useSyncExternalStore } from "react";
+import { directorCam } from "../dev/directorCam";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
 import { createBlockTextures, createPlantTextures } from "./textures";
@@ -43,8 +44,10 @@ function Plants({ groups }: { groups: PlantGroup[] }) {
   const material = useMemo(() => createPlantMaterial(createPlantTextures()), []);
   const geos = useMemo(() => groups.map(plantGeometry), [groups]);
   const meshes = useRef<(THREE.Mesh | null)[]>([]);
-  const drawDistance = level === "low" ? 45 : 75;
+  const gameDistance = level === "low" ? 45 : 75;
   useFrame(({ camera }) => {
+    // The dev director can push plants farther out for aerial shots (dev server only).
+    const drawDistance = directorCam.plants || gameDistance;
     material.uniforms.viewerPos.value.copy(camera.position);
     material.uniforms.drawDistance.value = drawDistance;
     // Skip whole groups that are out of range.

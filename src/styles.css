@@ -685,3 +685,9 @@ body[data-tut="menu"] [data-tut="menu"], body[data-tut="talk"] [data-tut="talk"]
 .install-steps { justify-self: stretch; font-size: 1rem; line-height: 1.45; }
 .install-steps ol { margin: 8px 0 14px; padding-left: 22px; display: grid; gap: 6px; }
 .install-steps .primary { width: auto; padding: 4px 22px; }
+
+/* Dev director (src/dev/Director.tsx): `cq.hud(false)` hides every on-screen control for clean
+   shots; `?director` hides the "click to look" hint. */
+body.cq-clean .hud, body.cq-clean .tutorial, body.cq-clean .toast { display: none !important; }
+body.cq-director .mouse-hint { display: none !important; }
+body.cq-nocards .info-card { display: none !important; }

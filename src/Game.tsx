@@ -1,4 +1,5 @@
 import { Suspense, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import { Director } from "./dev/Director";
 import { useFrame, useThree } from "@react-three/fiber";
 import { LoadingScreen } from "./ui/LoadingScreen";
 import { loadStore } from "./voxel/voxelStream";
@@ -157,6 +158,8 @@ export default function Game() {
             </Suspense>
             <JaguarStatues />
             <Player />
+            {/* Filming toolkit (window.cqDirector): dev server only, not in the public build. */}
+            {import.meta.env.DEV && <Director />}
             <People />
             <CameraAim />
             <Pickups />
