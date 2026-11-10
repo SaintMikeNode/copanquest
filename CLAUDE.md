@@ -20,15 +20,17 @@ Live at https://copanquest.todosenlaweb.com (Worker `copanquest`, repo `SaintMik
 `npx tsc && npx cf build`, deploy `npx cf deploy --prebuilt`, `NODE_VERSION=24`). Never push unless
 the user says so in that moment. `cloudflare.config.ts` holds the Worker name, domain and SPA fallback.
 
-**Staging:** branch `staging` → https://copanquest-staging.todosenlaweb.com (separate Worker
-`copanquest-staging`, tag `5f3b12a820924c878777c251da3dc022`, same R2 audio bucket). Its trigger
-"Deploy staging" builds with `npx tsc && npx cf build -m staging` (the `staging` mode in
-`cloudflare.config.ts` swaps the Worker name and domain) and deploys `npx cf deploy --prebuilt`.
-Workflow: commit to `staging` (or `git checkout staging && git merge main`), push `staging` only when
-the user asks, test there, then merge into `main` and push when they say so. Pushing `staging` never
-touches production. Local manual staging deploy: `npx cf build -m staging`, then
-`node scripts/clean-appledouble.mjs` and `rm -rf .cloudflare/output/v0/workers/default/assets/audio`
-(the local, git-ignored MP3s must never be uploaded), then `npx cf deploy --prebuilt`.
+**Staging:** branch `staging` → https://staging-copanquest.nerdypunk.workers.dev, a preview version
+of the same Worker `copanquest` (`previewUrls: true` in `cloudflare.config.ts`; workers.dev itself
+stays off). The trigger "Deploy non-production branches" (every branch except `main`) builds
+`npx tsc && npx cf build` and runs `npx cf workers versions create --prebuilt --preview-alias
+"$WORKERS_CI_BRANCH"`: it uploads a version without deploying it, so production traffic never
+changes; the alias is the branch name (`staging` → `staging-copanquest…`). Workflow: commit to
+`staging` (or `git checkout staging && git merge main`), push `staging` only when the user asks, test
+on the preview URL, then merge into `main` and push when they say so. Local manual preview upload:
+`npx cf build`, `node scripts/clean-appledouble.mjs`,
+`rm -rf .cloudflare/output/v0/workers/default/assets/audio` (the local, git-ignored MP3s must never
+be uploaded), then `npx cf workers versions create --prebuilt --preview-alias staging`.
 Builds go through the Cloudflare Vite plugin (v2 beta, required by `cf` for Vite projects): output is
 `.cloudflare/output/v0/` (assets in `workers/default/assets/`), not `dist/`. `npm run preview` serves it
 in the local Workers runtime, which snapshots the build when it starts: **restart the preview after every
