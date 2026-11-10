@@ -18,6 +18,7 @@ import { play, useRecord } from "../audio/sound";
 import { RecordBox } from "./RecordBox";
 import { CreditsBook } from "./CreditsBook";
 import { Presence } from "../ui/presence";
+import { setResume, takeResume } from "../staleReload";
 
 /** room → in (camera moves) → screen (menu shown) → leaving (menu fades) → out (camera moves back) → room */
 type Phase = "room" | "in" | "screen" | "leaving" | "out";
@@ -187,7 +188,12 @@ const Scene = memo(function Scene({
 
 export default function Landing({ onIntent }: { onIntent: () => void }) {
   const t = useT();
-  const [phase, setPhase] = useState<Phase>("room");
+  // After a reload for a new version from the computer's menu, start at the menu again.
+  const [phase, setPhase] = useState<Phase>(() => (takeResume() ? "screen" : "room"));
+  useEffect(() => {
+    if (phase === "screen") onIntent();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   // The computer is on from the start (its screen powers up as the page appears).
   const on = true;
   const [webgl] = useState(hasWebGL);
@@ -202,6 +208,11 @@ export default function Landing({ onIntent }: { onIntent: () => void }) {
   modalRef.current = record;
   const phaseRef = useRef(phase);
   phaseRef.current = phase;
+  // Tell staleReload.ts where to come back to.
+  useEffect(() => {
+    setResume(focus === "screen" && (phase === "in" || phase === "screen"));
+    return () => setResume(false);
+  }, [focus, phase]);
   const openRecord = useCallback(() => {
     if (phaseRef.current !== "room" && phaseRef.current !== "out") return;
     play("open");
