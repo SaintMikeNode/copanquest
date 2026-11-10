@@ -7,6 +7,7 @@ import { KeyboardControls, PerformanceMonitor } from "@react-three/drei";
 import { Physics } from "@react-three/rapier";
 import { keyboardMap } from "./player/controls";
 import { Player } from "./player/Player";
+import { playerState } from "./player/playerState";
 import { TerrainCollider } from "./world/Terrain";
 import { SiteColliders } from "./world/Greybox";
 import { VoxelTerrain } from "./voxel/VoxelTerrain";
@@ -66,13 +67,40 @@ function PauseLoop() {
   return null;
 }
 
-/** Calls onVisible after the world has rendered a few frames (shaders compiled, regions uploaded). */
-function FirstFrames({ ready, onVisible }: { ready: boolean; onVisible: () => void }) {
+/**
+ * Calls onVisible (which fades the loading screen out) once the world is really on screen.
+ * It sits last inside the world's Suspense boundary, so it only starts when the terrain, the
+ * voxels and the physics engine have all arrived: counting frames from outside that boundary
+ * released the loading screen over an empty canvas (only the page's green behind it).
+ * Then: the player stands on the ground, every shader is compiled without blocking
+ * (compileAsync), and a few frames have been drawn, so the slow first frames (shader and
+ * geometry upload) stay hidden behind the loading screen.
+ */
+function WorldReady({ ready, onVisible }: { ready: boolean; onVisible: () => void }) {
+  const gl = useThree((s) => s.gl);
+  const scene = useThree((s) => s.scene);
+  const camera = useThree((s) => s.camera);
+  // 0 = waiting for the player to land, 1 = compiling shaders, 2 = drawing frames, 3 = shown.
+  const stage = useRef(0);
   const frames = useRef(0);
+  const since = useRef(0);
   useFrame(() => {
-    if (!ready || frames.current < 0) return;
+    if (!ready || stage.current === 1 || stage.current === 3) return;
+    if (stage.current === 0) {
+      const now = performance.now();
+      since.current ||= now;
+      // A few frames for React to mount the last region meshes; never wait for the landing
+      // longer than 4 s.
+      if (++frames.current < 3 || (!playerState.grounded && now - since.current < 4000)) return;
+      stage.current = 1;
+      frames.current = 0;
+      const drawn = () => void (stage.current = 2);
+      gl.compileAsync(scene, camera).then(drawn, drawn);
+      return;
+    }
+    // useFrame runs before the frame is drawn: the 5th call means 4 frames are on screen.
     if (++frames.current > 4) {
-      frames.current = -1;
+      stage.current = 3;
       onVisible();
     }
   });
@@ -151,11 +179,9 @@ export default function Game() {
           <PoiMarkers />
           <DigMarkers />
           <PoiTracker />
+          <WorldReady ready={ready} onVisible={() => setVisible(true)} />
         </Suspense>
         <PerfProbe />
-        <Suspense fallback={null}>
-          <FirstFrames ready={ready} onVisible={() => setVisible(true)} />
-        </Suspense>
       </Canvas>
       <LoadingScreen progress={visible ? 1 : progress} done={visible} />
       <Hud />
