@@ -16,6 +16,7 @@
   <br>
   <img src="https://img.shields.io/badge/languages-Espa%C3%B1ol%20%C2%B7%20English-5a6acf" alt="languages: Español · English">
   <img src="https://img.shields.io/badge/privacy-no%20tracking-2f9a66" alt="privacy: no tracking">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-5a6acf" alt="license: MIT"></a>
   <img src="https://img.shields.io/badge/plays%20on-phone%20%C2%B7%20desktop%20%C2%B7%20offline%20(PWA)-6b4a8f" alt="plays on phone, desktop, offline (PWA)">
   <br>
   <img src="https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white" alt="TypeScript">
@@ -307,6 +308,8 @@ All player-facing facts must be verifiable. Each POI in `src/poi/poiData.ts` has
 - Las Sepulturas is about 800 m **east** of the Principal Group according to OpenStreetMap (bearing ≈ 83°), not northeast as the handoff said. Published distances vary from 0.5 to 1.5 km.
 
 ## Credits and licensing
+
+CopánQuest's own code and assets are under the **MIT license** ([LICENSE](LICENSE)). The third-party material below keeps its own license (also summarized at the end of `LICENSE`); the Ovani Sound audio is not in the repository at all.
 
 The in-game **Créditos** screen (`src/ui/creditsData.ts`) must stay in sync with this list.
 
