@@ -67,7 +67,7 @@ export function CreditsBook({ onClose }: { onClose: () => void }) {
         </article>
         <article className="book-page book-right">
           <h2>{t("credits")}</h2>
-          <Credits contact={false} />
+          <Credits credit={false} contact={false} />
         </article>
       </section>
     </div>

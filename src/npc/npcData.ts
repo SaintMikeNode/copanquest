@@ -26,6 +26,14 @@ export interface Outfit {
    * cloth and a quetzal-and-macaw plume headdress (his name). Ignores `head`.
    */
   royal?: boolean;
+  /**
+   * A Classic-period priest (an interpretation; no Copán portrait of a priest was found): a tall
+   * headdress of quetzal plumes over a jaguar-pelt band, a long white cape, a jade collar and ear
+   * flares, and a copal pouch in the left hand. Priests in Maya art carry incense and ritual tools
+   * (Royal Ontario Museum, "Things to know when you meet a Maya High Priest"); headdresses varied
+   * with role and ceremony (Archaeology magazine, "Maya clothing", 2007). Ignores `head`.
+   */
+  priest?: boolean;
 }
 
 export interface Talker {
@@ -39,6 +47,8 @@ export interface Talker {
   /** Floor height (m) for someone standing indoors (tunnels): the ground is looked for from just
    *  above it instead of dropping from the sky, which would land on the roof. */
   floorY?: number;
+  /** Performs a rite facing this point [x, z] (arms raised) while the player isn't near. */
+  ritual?: [number, number];
 }
 
 const SKIN = ["#8d5a3b", "#7a4b30", "#9a6542", "#6e432b"];
@@ -326,6 +336,55 @@ export const TALKERS: Talker[] = [
       },
     ],
   },
+  {
+    // A priest (fictional) tending the copal censers in front of Altar Q (world/AltarQRite.tsx),
+    // facing it from the west, north of the trail. 6.5 m from the altar: his talk zone (2.8 m)
+    // stays outside the Altar Q card's (poiData, 3.5 m), so the two prompts never overlap. Sources: Altar Q's scene and date, the offering of 16 felines in front of it
+    // — poiData "altar-q" (mayaruins.com Altar Q; Sugiyama et al. 2018, PLOS ONE); the founder's
+    // tomb under Temple 16 — see "founder" above; copal, a tree resin, burned as incense by the
+    // Maya in clay censers — Wikipedia "Copal"; censers found inside Rosalila (README, Rosalila).
+    id: "priest",
+    name: { es: "Ah K'in, sacerdote", en: "Ah K'in, priest" },
+    home: [39, 332.6],
+    wander: 0,
+    // Faces the altar and lifts his arms over the censers while nobody is talking to him.
+    ritual: [45, 330],
+    outfit: { skin: SKIN[3], hair: "#1d1410", top: "#f1ece0", accent: "#b8322a", bottom: "#f1ece0", priest: true },
+    lines: [
+      {
+        es: "Bienvenida, bienvenido. Cuido este altar, al pie del Templo 16. Dentro de ese templo descansa el primer rey de Copán.",
+        en: "Welcome. I look after this altar, at the foot of Temple 16. The first king of Copán rests inside that temple.",
+      },
+      {
+        es: "En estos incensarios de barro quemo copal, una resina de árbol. Su humo blanco y perfumado sube hacia el cielo.",
+        en: "In these clay censers I burn copal, a tree resin. Its white, fragrant smoke rises up to the sky.",
+      },
+      {
+        es: "El Altar Q muestra a los 16 reyes de Copán, cuatro en cada lado. Lo mandó tallar Yax Pasaj, el rey número 16, en el año 776.",
+        en: "Altar Q shows Copán's 16 kings, four on each side. Yax Pasaj, the 16th king, had it carved in the year 776.",
+      },
+      {
+        es: "Mira el frente: el fundador, K'inich Yax K'uk' Mo', le entrega el bastón de mando a Yax Pasaj. Así decía que su poder venía del primer rey.",
+        en: "Look at the front: the founder, K'inich Yax K'uk' Mo', hands the staff of rule to Yax Pasaj. That's how he said his power came from the first king.",
+      },
+      {
+        es: "Frente a este altar, los arqueólogos encontraron una ofrenda con restos de 16 felinos: jaguares, pumas y otros.",
+        en: "In front of this altar, archaeologists found an offering with the remains of 16 big cats: jaguars, pumas and others.",
+      },
+    ],
+  },
+];
+
+/**
+ * People of Copán watching the copal offering at Altar Q (world/AltarQRite.tsx): they stand still
+ * in a loose arc west of the priest (north of the trail), facing the altar. Not talkable; drawn like everyone else.
+ * `scale` < 1 for children.
+ */
+export const ONLOOKERS: { at: [number, number]; face: [number, number]; outfit: Outfit; scale?: number }[] = [
+  { at: [35, 329.6], face: [42, 331], outfit: { skin: SKIN[0], hair: "#3a332e", top: "#f2ede0", accent: "#2a5ca8", bottom: "#2a5ca8", female: true, head: "turban" } },
+  { at: [33.8, 331.8], face: [42, 331], outfit: { skin: SKIN[2], hair: "#1d1410", top: "#c46a3a", accent: "#f2c42c", bottom: "#f2ede0", head: "headband" } },
+  { at: [34.4, 333.3], face: [42, 331], outfit: { skin: SKIN[1], hair: "#1d1410", top: "#f2ede0", accent: "#c0392b", bottom: "#f2ede0", head: "none" }, scale: 0.72 },
+  { at: [35.2, 335.6], face: [42, 331], outfit: { skin: SKIN[3], hair: "#d8d2c4", top: "#f2ede0", accent: "#2f6b4f", bottom: "#c0392b", head: "headband" } },
 ];
 
 export const JAGUAR_LINES: L10n[] = [
@@ -369,6 +428,8 @@ export interface WalkerDef {
   speed: number;
   outfit: Outfit;
   era?: "present" | "past";
+  /** Talk id (`tourist-N`, see TOURISTS) for walkers you can talk to. */
+  talk?: string;
 }
 
 const PAST: Outfit[] = [
@@ -378,12 +439,81 @@ const PAST: Outfit[] = [
   { skin: SKIN[3], hair: "#3a332e", top: "#f2ede0", accent: "#2f6b4f", bottom: "#c0392b", female: true, head: "none" },
   { skin: SKIN[0], hair: "#1d1410", top: "#3f8f6a", accent: "#f2c42c", bottom: "#f2ede0", head: "headband", basket: true },
 ];
-const TOURIST: Outfit[] = [
-  { skin: "#e0b48c", hair: "#6a4a2a", top: "#e86aa4", accent: "#ffffff", bottom: "#3a5a8a", head: "cap", modern: true },
-  { skin: "#c48a5a", hair: "#1d1410", top: "#f2c42c", accent: "#1f62d0", bottom: "#2f4a7a", head: "cap", modern: true },
-  { skin: "#f0c8a0", hair: "#c9a04a", top: "#58c4e8", accent: "#ffffff", bottom: "#2a2a2a", head: "none", modern: true, female: true },
-  { skin: "#8d5a3b", hair: "#1d1410", top: "#ffffff", accent: "#c0392b", bottom: "#5a6f8a", head: "cap", modern: true },
+/**
+ * Present-day visitors you can talk to (fictional people; only seen without the time lens). They
+ * speak with respect for the place and its people. Facts they mention are sourced elsewhere in
+ * the game: UNESCO World Heritage since 1980 (Wikipedia "Copán"), the Hieroglyphic Stairway's
+ * ~2,200 glyphs (poiData "hieroglyphic-stairway"), Joya de Cerén (README, Game features), the
+ * Maya area today (Wikipedia "Maya peoples"). "The Paris of the Maya world" is a common nickname,
+ * said as hearsay.
+ */
+export const TOURISTS: { name: L10n; outfit: Outfit; lines: L10n[] }[] = [
+  {
+    name: { es: "Marco, turista de Tegucigalpa", en: "Marco, visitor from Tegucigalpa" },
+    outfit: { skin: "#c48a5a", hair: "#1d1410", top: "#e86aa4", accent: "#ffffff", bottom: "#3a5a8a", head: "cap", modern: true },
+    lines: [
+      {
+        es: "¡Hola! Vine desde Tegucigalpa con mi familia. Siempre lo vi en los libros de la escuela, pero verlo en persona es otra cosa.",
+        en: "Hi! I came from Tegucigalpa with my family. I always saw it in my schoolbooks, but seeing it in person is something else.",
+      },
+      {
+        es: "Copán es Patrimonio de la Humanidad desde 1980. ¡Qué orgullo que esté en Honduras!",
+        en: "Copán has been a World Heritage Site since 1980. I'm so proud it's in Honduras!",
+      },
+    ],
+  },
+  {
+    name: { es: "Kenji, turista de Japón", en: "Kenji, visitor from Japan" },
+    outfit: { skin: "#e0b48c", hair: "#1d1410", top: "#f2c42c", accent: "#1f62d0", bottom: "#2f4a7a", head: "cap", modern: true },
+    lines: [
+      {
+        es: "Konnichiwa. Viajé desde Japón, al otro lado del océano Pacífico, para admirar este lugar.",
+        en: "Konnichiwa. I traveled from Japan, across the Pacific Ocean, to admire this place.",
+      },
+      {
+        es: "Dicen que Copán es el «París del mundo maya» por lo detalladas que son sus esculturas. Ahora entiendo por qué.",
+        en: "They say Copán is \"the Paris of the Maya world\" because its sculptures are so detailed. Now I understand why.",
+      },
+      {
+        es: "Miro todo con calma y sin tocar las estelas. Hay que cuidarlas para que duren otros mil años.",
+        en: "I look at everything slowly and without touching the stelae. We have to take care of them so they last another thousand years.",
+      },
+    ],
+  },
+  {
+    name: { es: "Emma, turista de Canadá", en: "Emma, visitor from Canada" },
+    outfit: { skin: "#f0c8a0", hair: "#c9a04a", top: "#58c4e8", accent: "#ffffff", bottom: "#2a2a2a", head: "none", modern: true, female: true },
+    lines: [
+      {
+        es: "¡Hola! Vengo desde Canadá. Llevo años leyendo sobre los mayas y por fin estoy aquí.",
+        en: "Hi! I came all the way from Canada. I've been reading about the Maya for years, and I'm finally here.",
+      },
+      {
+        es: "La Escalinata Jeroglífica tiene unos 2,200 jeroglíficos: es el texto maya más largo que se conoce. ¡Me quedé sin palabras!",
+        en: "The Hieroglyphic Stairway has about 2,200 hieroglyphs: the longest Maya text known. It left me speechless!",
+      },
+      {
+        es: "Lo que más me emociona es pensar en las familias que vivieron aquí hace más de mil años.",
+        en: "What moves me most is thinking about the families who lived here more than a thousand years ago.",
+      },
+    ],
+  },
+  {
+    name: { es: "Don Ernesto, turista de El Salvador", en: "Don Ernesto, visitor from El Salvador" },
+    outfit: { skin: "#8d5a3b", hair: "#3a332e", top: "#ffffff", accent: "#c0392b", bottom: "#5a6f8a", head: "cap", modern: true },
+    lines: [
+      {
+        es: "Buenas. Vengo de El Salvador, aquí cerquita. Allá tenemos Joya de Cerén, una aldea maya que quedó enterrada bajo la ceniza de un volcán.",
+        en: "Good day. I'm from El Salvador, close by. Back home we have Joya de Cerén, a Maya village buried under a volcano's ash.",
+      },
+      {
+        es: "Los mayas vivieron en lo que hoy es México, Guatemala, Belice, Honduras y El Salvador. ¡Y sus descendientes siguen aquí!",
+        en: "The Maya lived in what is now Mexico, Guatemala, Belize, Honduras and El Salvador. And their descendants are still here!",
+      },
+    ],
+  },
 ];
+const TOURIST: Outfit[] = TOURISTS.map((t) => t.outfit);
 const loop = (cx: number, cz: number, rx: number, rz: number): [number, number][] =>
   Array.from({ length: 9 }, (_, i) => [cx + Math.cos((i / 8) * Math.PI * 2) * rx, cz + Math.sin((i / 8) * Math.PI * 2) * rz]);
 
@@ -420,6 +550,7 @@ export const WALKERS: WalkerDef[] = [
     speed: 0.7,
     outfit: o,
     era: "present" as const,
+    talk: `tourist-${i}`,
   })),
   { path: 0, t: 0.1, side: 0.7, speed: 1.0, outfit: { skin: SKIN[1], hair: "#1d1410", top: "#f2ede0", accent: "#c0392b", bottom: "#2a5ca8", female: true, head: "turban", basket: true } },
   { path: 0, t: 0.55, side: -0.7, speed: 1.15, outfit: { skin: SKIN[2], hair: "#1d1410", top: "#f2ede0", accent: "#1f62d0", bottom: "#f2ede0", head: "headband" } },
@@ -441,8 +572,15 @@ export const WALKERS: WalkerDef[] = [
 ];
 
 /** Name and lines for anything talkable (villager or jaguar). */
+/** People who count for "people met" (the villagers, guide, king…; not tourists or jaguars). */
+export const isMainPerson = (id: string) => TALKERS.some((t) => t.id === id);
+
 export function talkInfo(id: string): { name: L10n; lines: L10n[]; verb: "talk" | "observe" } | null {
   if (id.startsWith("jaguar")) return { name: JAGUAR_NAME, lines: JAGUAR_LINES, verb: "observe" };
+  if (id.startsWith("tourist-")) {
+    const v = TOURISTS[Number(id.slice(8))];
+    return v ? { name: v.name, lines: v.lines, verb: "talk" } : null;
+  }
   const t = TALKERS.find((q) => q.id === id);
   return t ? { name: t.name, lines: t.lines, verb: "talk" } : null;
 }

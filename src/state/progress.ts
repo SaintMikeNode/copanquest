@@ -1,5 +1,6 @@
 // Game progression: quests, inventory, photos, glyphs, artifacts, ballgame, XP and ranks.
 // Saved in localStorage (photos separately, they're bigger).
+import { isMainPerson } from "../npc/npcData";
 import { create } from "zustand";
 import { useGame } from "./useGame";
 import type { L10n } from "../i18n";
@@ -117,7 +118,7 @@ export function computeXp(): number {
   const p = useProgress.getState();
   return (
     g.places.length * 10 +
-    g.met.filter((m) => !m.startsWith("jaguar")).length * 10 +
+    g.met.filter(isMainPerson).length * 10 +
     g.jades.length * 25 +
     Object.keys(p.photos).length * 15 +
     Object.values(p.quests).filter((q) => q === "done").length * 50 +

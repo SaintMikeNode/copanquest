@@ -35,6 +35,8 @@ import { Jades } from "./poi/Jades";
 import { Boundary } from "./world/Boundary";
 import { Jeep } from "./world/Jeep";
 import { JaguarStatues } from "./world/JaguarStatues";
+import { JaguarStairMask } from "./world/JaguarStairMask";
+import { AltarQRite } from "./world/AltarQRite";
 import { Environment } from "./world/Environment";
 import { PerfProbe } from "./world/PerfProbe";
 import { PoiTracker } from "./poi/PoiTracker";
@@ -158,6 +160,8 @@ export default function Game() {
               <Jeep />
             </Suspense>
             <JaguarStatues />
+            <JaguarStairMask />
+            <AltarQRite />
             <Player />
             <Buggy />
             {/* Filming toolkit (window.cqDirector): dev server only, not in the public build. */}

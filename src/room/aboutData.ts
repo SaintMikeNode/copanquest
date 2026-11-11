@@ -13,6 +13,10 @@ export const ABOUT: { title: L10n; items: L10n[]; links?: boolean }[] = [
         es: "Un proyecto de código abierto por nerdypunkdev, como parte de Todos en la Web, programado con la ayuda de Claude, un asistente de IA.",
         en: "An open-source project by nerdypunkdev, part of Todos en la Web, programmed with the help of Claude, an AI assistant.",
       },
+      {
+        es: "Creado con fines recreativos y de divulgación científica, como un experimento para explorar cómo los datos abiertos pueden convertirse en una experiencia de juego.",
+        en: "Made for fun and for science outreach, as an experiment in turning open data into a game experience.",
+      },
     ],
   },
   {

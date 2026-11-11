@@ -3,6 +3,7 @@
 import { MOUNDS, type Face } from "./siteData";
 import { LADDERS } from "./villageData";
 import { BLOCK } from "../voxel/blocks";
+import { ruinTopAt } from "./buildGreybox";
 
 export interface LadderSegment {
   /** Point on the wall at the bottom of the ladder, center of its width [x, y, z]. */
@@ -55,7 +56,22 @@ export function ladderSegments(): LadderSegment[] {
     if (!l.templeOnly) for (let i = 0; i < m.tiers; i++) wall(half - i * m.setback, baseY + i * m.tierHeight, m.tierHeight);
     if (m.temple) {
       const th = m.temple[alongX ? 2 : 0] / 2;
-      wall(th, baseY + m.tiers * m.tierHeight, m.temple[1]);
+      const y = baseY + m.tiers * m.tierHeight;
+      wall(th, y, m.temple[1]);
+      // The temple is a ruin: its top is eroded by up to 4 m, so the ladder ends where the
+      // crumbled wall behind it actually ends (the highest column under its width), not at the
+      // intact temple's height.
+      const seg = out[out.length - 1];
+      let top = -Infinity;
+      for (const a of [-0.5, -0.25, 0, 0.25, 0.5]) {
+        const h = ruinTopAt(
+          l.mound,
+          seg.base[0] - ux * BLOCK * 0.5 + along[0] * a,
+          seg.base[2] - uz * BLOCK * 0.5 + along[1] * a,
+        );
+        if (h !== null) top = Math.max(top, h);
+      }
+      if (top > y) seg.height = top - y;
     }
   }
   return out;

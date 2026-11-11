@@ -1,11 +1,13 @@
 import { useMemo, useRef } from "react";
 import * as THREE from "three";
+import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import { useFrame } from "@react-three/fiber";
 import { CapsuleCollider, CuboidCollider, RigidBody, useRapier, type RapierRigidBody } from "@react-three/rapier";
 import { QuestMarkers } from "./QuestMarkers";
-import { JAGUAR_RANGES, TALKERS, WALKERS, type Outfit } from "./npcData";
+import { JAGUAR_RANGES, ONLOOKERS, TALKERS, WALKERS, type Outfit } from "./npcData";
+import { useGroundYs } from "../world/useGroundYs";
 import { jaguarRig, personRig } from "./personModel";
-import { PATHS } from "../world/siteData";
+import { ACROPOLIS_TOP, PATHS } from "../world/siteData";
 import { playerState } from "../player/playerState";
 import { useGame } from "../state/useGame";
 import { trackSubject } from "../game/subjects";
@@ -197,8 +199,11 @@ function Talker({ index }: { index: number }) {
     const dp = Math.hypot(p.x - a.x, p.z - a.z);
     const talking = useGame.getState().dialogue?.id === t.id;
     let moving = false;
+    const rite = t.ritual && dp >= 4.5 && !talking;
     if (dp < 4.5 || talking) {
       a.yaw = turn(a.yaw, Math.atan2(p.x - a.x, p.z - a.z), 0.12);
+    } else if (rite) {
+      a.yaw = turn(a.yaw, Math.atan2(t.ritual![0] - a.x, t.ritual![1] - a.z), 0.06);
     } else if (a.wait > 0) {
       a.wait -= dt;
     } else {
@@ -233,6 +238,12 @@ function Talker({ index }: { index: number }) {
     a.phase += dt * 6;
     swing(limbs.current, a.phase, moving ? 0.6 : 0, false);
     if (!moving && limbs.current.armR && dp < 4.5) limbs.current.armR.rotation.x = -0.6 + Math.sin(a.phase * 0.7) * 0.25; // gesturing
+    if (rite && limbs.current.armL && limbs.current.armR) {
+      // Arms lifted toward the altar, rising and falling slowly over the smoke.
+      const k = Math.sin(a.phase * 0.18);
+      limbs.current.armL.rotation.x = -2.0 + k * 0.45;
+      limbs.current.armR.rotation.x = -2.0 + k * 0.45;
+    }
     body.current?.setNextKinematicTranslation({ x: a.x, y: a.y, z: a.z });
     if (root.current) {
       root.current.position.set(a.x, a.y, a.z);
@@ -253,6 +264,65 @@ function Talker({ index }: { index: number }) {
   );
 }
 
+/**
+ * People standing still to watch the copal offering at Altar Q (npcData ONLOOKERS). Static, so
+ * each is one merged mesh (body and limbs in a fixed pose: one draw call per person), standing on
+ * the ground found once, with a capsule so nobody walks through them; hidden past DRAW_DIST.
+ */
+const ONLOOKER_POINTS = ONLOOKERS.map((o) => o.at);
+
+function onlookerMesh(outfit: Outfit) {
+  const r = personRig(outfit);
+  const m = new THREE.Matrix4();
+  const part = (g: THREE.BufferGeometry, x: number, y: number, rotX = 0) =>
+    g.clone().applyMatrix4(m.makeRotationX(rotX).setPosition(x, y, 0));
+  const geometry = mergeGeometries([
+    r.body,
+    part(r.legL, -r.legX, r.hip),
+    part(r.legR, r.legX, r.hip),
+    // Hands held a little in front, as people stand when they watch.
+    part(r.armL, -r.shoulder[0], r.shoulder[1], -0.25),
+    part(r.armR, r.shoulder[0], r.shoulder[1], -0.25),
+  ])!;
+  return { geometry, material: r.material };
+}
+
+function Onlookers() {
+  const ys = useGroundYs(ONLOOKER_POINTS, ACROPOLIS_TOP + 10);
+  const meshes = useMemo(() => ONLOOKERS.map((o) => onlookerMesh(o.outfit)), []);
+  const groups = useRef<(THREE.Group | null)[]>([]);
+  const tick = useRef(0);
+  useFrame(({ camera }, delta) => {
+    tick.current += delta;
+    if (tick.current < 0.25) return;
+    tick.current = 0;
+    for (const g of groups.current) if (g) g.visible = camera.position.distanceTo(g.position) < DRAW_DIST;
+  });
+  if (!ys) return null;
+  return (
+    <>
+      <CharacterLayer>
+        {ONLOOKERS.map((o, i) => (
+          <group
+            key={i}
+            ref={(g) => void (groups.current[i] = g)}
+            position={[o.at[0], ys[i], o.at[1]]}
+            rotation-y={Math.atan2(o.face[0] - o.at[0], o.face[1] - o.at[1])}
+            scale={o.scale ?? 1}
+          >
+            <mesh geometry={meshes[i].geometry} material={meshes[i].material} />
+          </group>
+        ))}
+      </CharacterLayer>
+      <RigidBody type="fixed" colliders={false}>
+        {ONLOOKERS.map((o, i) => (
+          <CapsuleCollider key={i} args={[0.5 * (o.scale ?? 1), 0.28]} position={[o.at[0], ys[i] + 0.8 * (o.scale ?? 1), o.at[1]]} />
+        ))}
+      </RigidBody>
+    </>
+  );
+}
+
 function Walker({ index }: { index: number }) {
   const w = WALKERS[index];
   const path = w.points ? { points: w.points, y: w.y ?? 0 } : PATHS[w.path ?? 0];
@@ -267,13 +337,17 @@ function Walker({ index }: { index: number }) {
   const body = useRef<RapierRigidBody>(null);
   const limbs = useRef<Limbs>({ legL: null, legR: null, armL: null, armR: null });
   const ground = useGround();
+  const talkPos = useMemo(() => new THREE.Vector3(), []);
   useFrame(({ camera }, delta) => {
     const dt = Math.min(delta, 0.1);
     const a = st.current;
     if (a.s === 0 && a.phase === 0) a.s = w.t * total;
     const p = playerState.position;
-    // Politely stop if the player is right in front.
-    const blocked = Math.hypot(p.x - a.x, p.z - a.z) < 1.4;
+    // Politely stop if the player is right in front. Tourists you can talk to also wait while
+    // you're close enough to talk, and while you talk.
+    const dp = Math.hypot(p.x - a.x, p.z - a.z);
+    const talking = w.talk !== undefined && useGame.getState().dialogue?.id === w.talk;
+    const blocked = dp < (w.talk ? TALK_DIST : 1.4) || talking;
     if (!blocked) a.s += a.dir * w.speed * dt;
     if (a.s > total) {
       a.s = total;
@@ -303,7 +377,8 @@ function Walker({ index }: { index: number }) {
     a.dodge += (want - a.dodge) * Math.min(1, dt * 3);
     a.x = cx + nX * a.dodge;
     a.z = cz + nZ * a.dodge;
-    a.yaw = turn(a.yaw, Math.atan2(dx, dz), 0.12);
+    // Face the player while waiting to talk (or talking); otherwise face the way they walk.
+    a.yaw = turn(a.yaw, w.talk && blocked ? Math.atan2(p.x - a.x, p.z - a.z) : Math.atan2(dx, dz), 0.12);
     // Follow the ground down, and up only by small steps (never onto blocks beside the trail).
     const first = Number.isNaN(a.y);
     const g = ground(a.x, a.z, first ? path.y + 20 : a.y + STEP, body.current);
@@ -318,6 +393,10 @@ function Walker({ index }: { index: number }) {
     // People from the other era don't take up room.
     if (present) place(key, a.x, a.z);
     else actors.delete(key);
+    if (w.talk) {
+      if (present) talkables.set(w.talk, talkPos.set(a.x, a.y, a.z));
+      else talkables.delete(w.talk);
+    }
     if (root.current) {
       root.current.position.set(a.x, a.y, a.z);
       root.current.rotation.y = a.yaw;
@@ -493,6 +572,7 @@ export function People() {
         <Jaguar key={`j${i}`} index={i} />
       ))}
       <TalkTracker />
+      <Onlookers />
       <QuestMarkers positions={talkables} />
     </>
   );

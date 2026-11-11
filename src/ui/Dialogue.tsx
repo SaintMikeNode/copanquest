@@ -3,7 +3,7 @@ import { scriptFor, type Script } from "../game/questLogic";
 import { MayaClock, RankChip } from "./GameUI";
 import { useGame } from "../state/useGame";
 import { useL10n, useT } from "../i18n";
-import { talkInfo, TALKERS } from "../npc/npcData";
+import { isMainPerson, talkInfo, TALKERS } from "../npc/npcData";
 import { JADES } from "../world/villageData";
 import { POIS } from "../poi/poiData";
 import { playerState } from "../player/playerState";
@@ -132,7 +132,7 @@ export function DialogueBox() {
 export function Progress() {
   const jades = useGame((s) => s.jades.length);
   const places = useGame((s) => s.places.length);
-  const met = useGame((s) => s.met.filter((m) => !m.startsWith("jaguar")).length);
+  const met = useGame((s) => s.met.filter(isMainPerson).length);
   const t = useT();
   return (
     <div className="progress">

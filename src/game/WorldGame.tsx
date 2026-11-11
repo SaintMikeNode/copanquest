@@ -386,6 +386,51 @@ const MARKERS: [number, number, number, number][] = [
   [43.4, 1.6, 174.4, -1],
 ];
 
+/** How close the ball's center must pass to a macaw head to score (m). */
+const HIT_RADIUS = 1.15;
+/** Markers drawn bigger than life-size so they read from the alley (and are easier to hit). */
+const MARKER_SCALE = 1.35;
+/** Aim assist: a head within this angle of the bump direction (radians) and range (m). */
+const AIM_CONE = 0.75;
+const AIM_RANGE = 14;
+/** Ball physics, to solve the arc (gravity, and the ball's linearDamping below). */
+const GRAVITY = 9.81;
+const DAMPING = 0.25;
+
+/**
+ * Velocity that sends the ball from `p` onto the macaw head nearest the bump direction (unit
+ * vector ux, uz), or null if none is ahead. Solves the flight with the ball's damping, aiming at
+ * the head's face a little off the wall and slightly high, so it comes down onto it.
+ */
+function aimAtMarker(p: { x: number; y: number; z: number }, ux: number, uz: number) {
+  let best: [number, number, number] | null = null;
+  let bestAngle = AIM_CONE;
+  for (const [mx, my, mz, side] of MARKERS) {
+    const tx = mx + side * 0.35;
+    const tz = mz;
+    const hx = tx - p.x;
+    const hz = tz - p.z;
+    const dist = Math.hypot(hx, hz);
+    if (dist < 1 || dist > AIM_RANGE) continue;
+    const angle = Math.acos(Math.max(-1, Math.min(1, (hx * ux + hz * uz) / dist)));
+    if (angle < bestAngle) {
+      bestAngle = angle;
+      best = [tx, my + 0.15, tz];
+    }
+  }
+  if (!best) return null;
+  const [tx, ty, tz] = best;
+  const hx = tx - p.x;
+  const hz = tz - p.z;
+  const dist = Math.hypot(hx, hz);
+  // Flight time grows with distance (a higher arc for far heads), within reason.
+  const t = Math.min(1.5, Math.max(0.55, dist / 7));
+  const k = (1 - Math.exp(-DAMPING * t)) / DAMPING; // distance per unit of starting speed
+  const vh = dist / k;
+  const vy = (ty - p.y + (GRAVITY * t) / DAMPING) / k - GRAVITY / DAMPING;
+  return { x: (hx / dist) * vh, y: vy, z: (hz / dist) * vh };
+}
+
 function macawHeadModel() {
   return buildPixelModel([
     {
@@ -433,19 +478,24 @@ export function BallGame() {
     if (ballHit.pending) {
       ballHit.pending = false;
       if (close) {
-        // Hip bump: away from the player, a bit upward.
+        // Hip bump: away from the player, a bit upward. With a macaw head roughly ahead (aim
+        // assist), the ball flies in an arc that lands on it instead.
         const dx = p.x - pl.x;
         const dz = p.z - pl.z;
         const d = Math.hypot(dx, dz) || 1;
-        const m = b.mass();
-        b.applyImpulse({ x: (dx / d) * 7 * m, y: 3.2 * m, z: (dz / d) * 7 * m }, true);
+        const aim = aimAtMarker(p, dx / d, dz / d);
+        if (aim) b.setLinvel(aim, true);
+        else {
+          const m = b.mass();
+          b.applyImpulse({ x: (dx / d) * 7 * m, y: 3.2 * m, z: (dz / d) * 7 * m }, true);
+        }
         play("ball");
       }
     }
     // Marker hits.
     MARKERS.forEach(([mx, my, mz], i) => {
       const d = Math.hypot(p.x - mx, p.y - my, p.z - mz);
-      if (d < 0.75 && clock.elapsedTime - lastScore.current > 1.2) {
+      if (d < HIT_RADIUS && clock.elapsedTime - lastScore.current > 1.2) {
         lastScore.current = clock.elapsedTime;
         flashT.current[i] = clock.elapsedTime;
         const before = rankIndex(computeXp());
@@ -460,22 +510,24 @@ export function BallGame() {
   });
   return (
     <>
-      <RigidBody ref={ball} colliders={false} position={[COURT.cx, 1.5, COURT.cz]} ccd linearDamping={0.25} angularDamping={0.4}>
+      <RigidBody ref={ball} colliders={false} position={[COURT.cx, 1.5, COURT.cz]} ccd linearDamping={DAMPING} angularDamping={0.4}>
         <BallCollider args={[0.2]} restitution={0.8} friction={0.6} density={60} />
         <CharacterLayer>
           <mesh geometry={model.geometries[2]} material={model.material} />
         </CharacterLayer>
       </RigidBody>
       {MARKERS.map(([x, y, z, side], i) => (
-        <group key={i} ref={(g) => void (flash.current[i] = g)} position={[x, y, z]} rotation={[0, 0, side * 0.6]}>
-          <mesh geometry={model.geometries[0]} material={model.material} rotation-y={side > 0 ? Math.PI / 2 : -Math.PI / 2} />
-          <mesh geometry={model.geometries[1]} material={model.material} position={[side * 0.35, -0.1, 0]} />
+        <group key={i} position={[x, y, z]} rotation={[0, 0, side * 0.6]} scale={MARKER_SCALE}>
+          <group ref={(g) => void (flash.current[i] = g)}>
+            <mesh geometry={model.geometries[0]} material={model.material} rotation-y={side > 0 ? Math.PI / 2 : -Math.PI / 2} />
+            <mesh geometry={model.geometries[1]} material={model.material} position={[side * 0.35, -0.1, 0]} />
+          </group>
         </group>
       ))}
       {/* Markers stick out a little from the walls: give them a body so the ball bounces off. */}
       <RigidBody type="fixed" colliders={false}>
         {MARKERS.map(([x, y, z], i) => (
-          <CuboidCollider key={i} args={[0.28, 0.28, 0.3]} position={[x, y, z]} />
+          <CuboidCollider key={i} args={[0.28 * MARKER_SCALE, 0.28 * MARKER_SCALE, 0.3 * MARKER_SCALE]} position={[x, y, z]} />
         ))}
       </RigidBody>
     </>

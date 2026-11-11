@@ -3,14 +3,14 @@ import { CREDITS } from "./creditsData";
 import { useGame } from "../state/useGame";
 import { ProjectCredit } from "./ProjectCredit";
 
-/** `contact`: the email line under the author credit (the credits book already shows it on its
- *  left page, so it turns this one off). */
-export function Credits({ contact = true }: { contact?: boolean }) {
+/** `credit`: the author credit line at the top; `contact`: the email line under it. The credits
+ *  book turns both off: its "Cómo se hizo" page already says who made it and shows the email. */
+export function Credits({ credit = true, contact = true }: { credit?: boolean; contact?: boolean }) {
   const t = useT();
   const lang = useGame((s) => s.lang);
   return (
     <div className="credits">
-      <ProjectCredit contact={contact} />
+      {credit && <ProjectCredit contact={contact} />}
       {CREDITS.map((group) => (
         <section key={group.heading}>
           <h3>{t(group.heading)}</h3>

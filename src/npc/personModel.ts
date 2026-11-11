@@ -59,7 +59,12 @@ export function personRig(o: Outfit): Rig {
     quetzalLight: hex("#5cc884"),
     macaw: hex("#d0362a"),
     macawBlue: hex("#2a5ca8"),
+    pelt: hex("#d9a441"),
+    peltDark: hex("#3a2a1a"),
+    capeEdge: hex(o.accent),
   };
+  /** King or priest: jade jewelry, bare arms with cuffs, headdress instead of a head band. */
+  const regalia = o.royal || o.priest;
 
   const leg = (t: Tile, f: FaceName) => {
     solid(t, C.skin, 0.05, 2);
@@ -83,30 +88,32 @@ export function personRig(o: Outfit): Rig {
       const cloth = Math.ceil(t.h * 0.4);
       for (let y = 0; y < cloth; y++) for (let x = 0; x < t.w; x++) t.set(x, y, y === cloth - 1 ? C.accent : C.bottom);
     }
-    if (o.royal) for (let x = 0; x < t.w; x++) t.set(x, t.h - 3, x % 2 ? C.jade : C.jadeDark); // jade anklet
+    if (regalia) for (let x = 0; x < t.w; x++) t.set(x, t.h - 3, x % 2 ? C.jade : C.jadeDark); // jade anklet
     for (let x = 0; x < t.w; x++) t.set(x, t.h - 1, hex("#5a3a22")); // sandals
   };
   const arm = (t: Tile, f: FaceName) => {
     solid(t, C.skin, 0.05, 3);
     if (f === "bottom") return;
-    const sleeve = o.royal ? 0 : o.explorer ? 0.8 : o.modern || o.female ? 0.35 : 0;
+    const sleeve = regalia ? 0 : o.explorer ? 0.8 : o.modern || o.female ? 0.35 : 0;
     for (let y = 0; y < Math.ceil(t.h * sleeve); y++) for (let x = 0; x < t.w; x++) t.set(x, y, C.top);
-    if (o.royal) for (let y = t.h - 5; y < t.h - 2; y++) for (let x = 0; x < t.w; x++) t.set(x, y, y === t.h - 4 ? C.jade : C.jadeDark); // jade cuff
+    if (regalia) for (let y = t.h - 5; y < t.h - 2; y++) for (let x = 0; x < t.w; x++) t.set(x, y, y === t.h - 4 ? C.jade : C.jadeDark); // jade cuff
   };
   const torso = (t: Tile, f: FaceName) => {
-    if (o.royal) {
-      // Bare chest, a wide collar of jade beads, a jade pectoral, a red belt with gold.
-      solid(t, f === "top" ? C.jade : C.skin, 0.04, 4);
+    if (regalia) {
+      // The king: bare chest. The priest: a white cotton tunic. Both: a wide collar of jade
+      // beads, a jade pectoral, a belt with gold (macaw red for the king, `accent` for the priest).
+      solid(t, f === "top" ? C.jade : o.priest ? C.top : C.skin, 0.04, 4);
       if (f === "top" || f === "bottom") return;
       for (let y = 0; y < 3; y++) for (let x = 0; x < t.w; x++) t.set(x, y, (x + y) % 3 === 0 ? C.white : y === 1 ? C.jade : C.jadeDark);
       if (f === "front") {
         const cx = Math.floor(t.w / 2);
         for (let y = 3; y < 8; y++) for (let x = cx - 2; x < cx + 2; x++) t.set(x, y, y === 3 || y === 7 || x === cx - 2 || x === cx + 1 ? C.gold : C.jade);
       }
+      const belt = o.priest ? C.capeEdge : C.macaw;
       for (let x = 0; x < t.w; x++) {
-        t.set(x, t.h - 3, C.macaw);
-        t.set(x, t.h - 2, x % 3 === 1 ? C.gold : C.macaw);
-        t.set(x, t.h - 1, C.macaw);
+        t.set(x, t.h - 3, belt);
+        t.set(x, t.h - 2, x % 3 === 1 ? C.gold : belt);
+        t.set(x, t.h - 1, belt);
       }
       return;
     }
@@ -266,6 +273,38 @@ export function personRig(o: Outfit): Rig {
     }
   };
 
+  // Priest: a jaguar-pelt headband (ochre with dark rosettes).
+  const peltBand = (t: Tile, f: FaceName) => {
+    solid(t, C.pelt, 0.06, 19);
+    if (f === "bottom") return;
+    for (let y = 1; y < t.h - 1; y += 3)
+      for (let x = (y % 2) * 2; x < t.w; x += 4) {
+        t.set(x, y, C.peltDark);
+        t.set(x + 1, y, C.peltDark);
+      }
+  };
+  // Priest: a long white cape with a woven red border and a band of jade-green triangles.
+  const cape = (t: Tile, f: FaceName) => {
+    solid(t, C.top, 0.04, 21);
+    if (f !== "front" && f !== "back") return;
+    for (let y = 0; y < t.h; y++) {
+      t.set(0, y, C.capeEdge);
+      t.set(t.w - 1, y, C.capeEdge);
+    }
+    for (let x = 0; x < t.w; x++) {
+      t.set(x, t.h - 1, C.capeEdge);
+      t.set(x, t.h - 2, C.capeEdge);
+      for (let k = 0; k < 3; k++) if (Math.abs((x % 6) - 2.5) < 3 - k) t.set(x, t.h - 5 + k, C.jade);
+    }
+  };
+  // Priest: a small bag of copal (jaguar pelt, tied at the top).
+  const pouch = (t: Tile, f: FaceName) => {
+    solid(t, C.pelt, 0.08, 22);
+    if (f === "top") return solid(t, C.white, 0.05, 23);
+    for (let x = 0; x < t.w; x++) t.set(x, 0, C.white);
+    for (let y = 2; y < t.h; y += 3) t.set((y * 2) % t.w, y, C.peltDark);
+  };
+
   const parts: PartSpec[] = [
     { size: [0.17, 0.5, 0.19], paint: leg }, // 0
     { size: [0.13, 0.48, 0.14], paint: arm }, // 1
@@ -287,6 +326,11 @@ export function personRig(o: Outfit): Rig {
     { size: [0.05, 0.1, 0.1], paint: earFlare }, // 16
     { size: [0.04, 0.24, 0.22], paint: shield }, // 17
     { size: [0.16, 0.12, 0.05], paint: crest }, // 18
+    // The priest: pelt band, the tallest plume, cape, copal pouch.
+    { size: [0.38, 0.14, 0.36], paint: peltBand }, // 19
+    { size: [0.12, 0.78, 0.06], paint: plume }, // 20
+    { size: [0.46, 0.84, 0.04], paint: cape }, // 21
+    { size: [0.11, 0.14, 0.09], paint: pouch }, // 22
   ];
   const { geometries: G, material } = buildPixelModel(parts);
 
@@ -295,7 +339,7 @@ export function personRig(o: Outfit): Rig {
   const pieces = [place(G[2], 0, hip + 0.26, 0), place(G[3], 0, shoulderY + 0.19, 0)];
   if (o.female) pieces.push(place(G[4], 0, hip - 0.04, 0), place(G[8], 0, shoulderY + 0.02, -0.17));
   else pieces.push(place(G[5], 0, hip + 0.02, 0));
-  if (o.head && o.head !== "none" && !o.royal) pieces.push(place(G[6], 0, shoulderY + 0.33, 0));
+  if (o.head && o.head !== "none" && !regalia) pieces.push(place(G[6], 0, shoulderY + 0.33, 0));
   if (o.royal) {
     const top = shoulderY + 0.42; // top of the headband
     pieces.push(
@@ -310,6 +354,25 @@ export function personRig(o: Outfit): Rig {
       place(G[16], 0.195, shoulderY + 0.16, 0),
     );
   }
+  if (o.priest) {
+    // A tall fan of quetzal plumes over a jaguar-pelt band, rising higher than the king's.
+    const top = shoulderY + 0.43;
+    pieces.push(
+      place(G[19], 0, shoulderY + 0.36, 0),
+      place(G[18], 0, shoulderY + 0.41, 0.19),
+      place(G[20], 0, top + 0.39, -0.1),
+      place(G[13], -0.12, top + 0.26, -0.1),
+      place(G[13], 0.12, top + 0.26, -0.1),
+      place(G[14], -0.23, top + 0.21, -0.1),
+      place(G[14], 0.23, top + 0.21, -0.1),
+      place(G[15], -0.32, top + 0.13, -0.08),
+      place(G[15], 0.32, top + 0.13, -0.08),
+      place(G[16], -0.195, shoulderY + 0.16, 0),
+      place(G[16], 0.195, shoulderY + 0.16, 0),
+      // The cape hangs from the shoulders behind the body, to below the knees.
+      place(G[21], 0, shoulderY - 0.42 + 0.02, -0.15),
+    );
+  }
   if (o.head === "cap") pieces.push(place(G[7], 0, shoulderY + 0.31, 0.22));
   if (o.basket) pieces.push(place(G[9], 0, shoulderY + 0.46, 0));
   if (o.explorer) pieces.push(place(G[11], 0, shoulderY + 0.36, 0), place(G[10], 0, shoulderY + 0.44, 0));
@@ -321,7 +384,11 @@ export function personRig(o: Outfit): Rig {
     legL: limb(G[0], 0.5),
     legR: limb(G[0], 0.5),
     // The king's shield rides on the outside of his right forearm (the −x arm: he faces +z).
-    armL: o.royal ? mergeGeometries([limb(G[1], 0.48), place(G[17], -0.085, -0.33, 0)])! : limb(G[1], 0.48),
+    armL: o.royal
+      ? mergeGeometries([limb(G[1], 0.48), place(G[17], -0.085, -0.33, 0)])!
+      : o.priest
+        ? mergeGeometries([limb(G[1], 0.48), place(G[22], 0, -0.53, 0.02)])! // copal pouch in the hand
+        : limb(G[1], 0.48),
     armR: limb(G[1], 0.48),
     material,
     hip,

@@ -171,7 +171,7 @@ export const POIS: Poi[] = [
     id: "altar-q",
     position: [45, 330],
     y: ACROPOLIS_TOP,
-    radius: 5,
+    radius: 3.5, // the priest stands 6.5 m away: his talk zone stays outside this one
     markerHeight: 3,
     title: { es: "Altar Q", en: "Altar Q" },
     date: { es: "Año 776 d. C.", en: "AD 776" },
@@ -244,8 +244,8 @@ export const POIS: Poi[] = [
     markerHeight: 4,
     title: { es: "Patio de los Jaguares", en: "Court of the Jaguars" },
     body: {
-      es: "Al pie de la escalinata oeste de este patio hay dos jaguares de piedra de tamaño real. Sus manchas son agujeros redondos que quizá tenían discos de obsidiana. En lo alto de la escalinata hay una gran cara del Dios Sol.",
-      en: "At the foot of this court's west stairway there are two life-size stone jaguars. Their spots are round holes that may once have held obsidian disks. At the top of the stairway is a big face of the Sun God.",
+      es: "Al pie de la escalinata oeste de este patio hay dos jaguares de piedra de tamaño real. Sus manchas son agujeros redondos que quizá tenían discos de obsidiana. En lo alto, la cabeza del Dios Jaguar, el Sol de la noche, sale de las fauces de una serpiente, entre dos grandes signos de Venus.",
+      en: "At the foot of this court's west stairway there are two life-size stone jaguars. Their spots are round holes that may once have held obsidian disks. At the top, the head of the Jaguar God, the Night Sun, comes out of a serpent's jaws, between two giant Venus signs.",
     },
     source: "mayaruins.com (Jaguar Stairway)",
   },

@@ -6,9 +6,13 @@ import { buildPixelModel, hex, solid } from "../voxel/pixelModel";
 
 /**
  * Wooden ladders on the stepped walls: one pair of rails 1 m apart with rungs every ~0.33 m,
- * mounted just off the wall and rising a little above each ledge. All merged into one mesh.
+ * mounted just off the wall and rising a little above each ledge (on ruined temple walls, above the
+ * crumbled top: `ladderSegments`). All merged into one mesh.
  * (Climbing zones are handled by the player controller from the same segments.)
  */
+/** How far the rails rise above the top of the wall (m). */
+const RAIL_OVER = 0.4;
+
 export function Ladders() {
   const { geometry, material } = useMemo(() => {
     const WOOD = hex("#8a5a32");
@@ -41,11 +45,14 @@ export function Ladders() {
       q.setFromAxisAngle(up, Math.atan2(-seg.along[1], seg.along[0]));
       const ox = bx + seg.out[0] * 0.12;
       const oz = bz + seg.out[1] * 0.12;
-      const top = seg.height + 0.6;
+      // Rails stop RAIL_OVER above the ledge (a handhold, like a real ladder over a wall top).
+      // Stacked 0.5 m pieces; the last one is shortened to fit.
+      const top = seg.height + RAIL_OVER;
       for (const side of [-0.42, 0.42]) {
-        for (let y = 0; y < top; y += 0.5) {
+        for (let y = 0; y < top - 0.01; y += 0.5) {
+          const len = Math.min(0.5, top - y);
           const g = G[0].clone();
-          m.compose(new THREE.Vector3(ox + seg.along[0] * side, by + y + 0.25, oz + seg.along[1] * side), q, new THREE.Vector3(1, 1, 1));
+          m.compose(new THREE.Vector3(ox + seg.along[0] * side, by + y + len / 2, oz + seg.along[1] * side), q, new THREE.Vector3(1, len / 0.5, 1));
           parts.push(g.applyMatrix4(m));
         }
       }

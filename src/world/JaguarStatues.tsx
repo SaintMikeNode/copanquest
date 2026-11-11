@@ -3,18 +3,20 @@
 // round holes that may once have held obsidian disks (mayaruins.com, Jaguar Stairway; see the
 // "jaguars" point of interest). Blocky pixel-art models, an interpretation of the sculptures at
 // game scale, with one box collider each.
-import { useEffect, useMemo, useState } from "react";
-import { CuboidCollider, RigidBody, useRapier } from "@react-three/rapier";
+import { useMemo } from "react";
+import { CuboidCollider, RigidBody } from "@react-three/rapier";
 import { buildPixelModel, hex, solid, type FaceName } from "../voxel/pixelModel";
 import type { Tile } from "../voxel/textures";
 import { LAYER_WORLD } from "../game/layers";
 import { ACROPOLIS_TOP } from "./siteData";
+import { useGroundYs } from "./useGroundYs";
 
 /** Where they stand: the court floor at the foot of the stairway, flanking its center, facing east. */
 const STATUES: { at: [number, number]; mirror: boolean }[] = [
   { at: [92.9, 280.6], mirror: false },
   { at: [92.9, 289.4], mirror: true },
 ];
+const STATUE_POINTS = STATUES.map((s) => s.at);
 const YAW = Math.PI / 2; // model front (+z) → east
 
 const STONE = hex("#9a958a");
@@ -107,28 +109,8 @@ function layout(mirror: boolean): [number, number, number, number, number, numbe
 
 export function JaguarStatues() {
   const model = useMemo(statueModel, []);
-  const { world, rapier } = useRapier();
   // Ground under each statue (court floor or the last step), found once the colliders exist.
-  const [ys, setYs] = useState<number[] | null>(null);
-  useEffect(() => {
-    let raf = 0;
-    const ray = new rapier.Ray({ x: 0, y: 0, z: 0 }, { x: 0, y: -1, z: 0 });
-    const find = () => {
-      const out: number[] = [];
-      for (const s of STATUES) {
-        ray.origin = { x: s.at[0], y: ACROPOLIS_TOP + 10, z: s.at[1] };
-        const hit = world.castRay(ray, 30, true, rapier.QueryFilterFlags.EXCLUDE_SENSORS | rapier.QueryFilterFlags.EXCLUDE_KINEMATIC | rapier.QueryFilterFlags.EXCLUDE_DYNAMIC);
-        if (!hit) {
-          raf = requestAnimationFrame(find);
-          return;
-        }
-        out.push(ACROPOLIS_TOP + 10 - hit.timeOfImpact);
-      }
-      setYs(out);
-    };
-    raf = requestAnimationFrame(find);
-    return () => cancelAnimationFrame(raf);
-  }, [world, rapier]);
+  const ys = useGroundYs(STATUE_POINTS, ACROPOLIS_TOP + 10);
   if (!ys) return null;
   return (
     <>
