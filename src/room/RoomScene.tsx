@@ -11,6 +11,7 @@ import * as T from "./roomTextures";
 import { CrtScreen } from "./Crt";
 import { RecordPlayer } from "./RecordPlayer";
 import { CreditsBookModel } from "./CreditsBookModel";
+import { CdModel } from "./CdModel";
 import { HandHint } from "./HandHint";
 import { RoundedBoxGeometry } from "three/examples/jsm/geometries/RoundedBoxGeometry.js";
 import { ConvexGeometry } from "three/examples/jsm/geometries/ConvexGeometry.js";
@@ -130,7 +131,9 @@ export function RoomScene({
   onMonitor,
   onRecord,
   onBook,
+  onCd,
   bookOpen,
+  cdInsert,
   prompt,
   power,
   boost,
@@ -139,7 +142,10 @@ export function RoomScene({
   onMonitor: () => void;
   onRecord: () => void;
   onBook: () => void;
+  onCd: () => void;
   bookOpen: { current: number };
+  /** The about CD: 0 on the desk … 1 inside the computer (CdModel). */
+  cdInsert: { current: number };
   prompt: string;
   power: { current: number };
   boost: { current: number };
@@ -650,12 +656,14 @@ export function RoomScene({
         </mesh>
       </group>
 
-      {/* Floppy disks and a CD. */}
+      {/* Floppy disks. */}
       {M.floppies.map((m, i) => (
         <mesh key={i} material={[M.black, M.black, m, M.black, M.black, M.black]} position={[0.24 + i * 0.03, DESK_TOP + 0.002 + i * 0.0045, -1.21 + i * 0.015]} rotation={[0, 0.2 + i * 0.35, 0]}>
           <boxGeometry args={box(0.09, 0.004, 0.09)} />
         </mesh>
       ))}
+      {/* The about CD, leaning on the front of the computer case (clickable: plays the video). */}
+      <CdModel onOpen={onCd} hover={hover} insert={cdInsert} />
       {/* Record player (clickable: opens the record box). */}
       <group position={[0.57, DESK_TOP, -1.215]} rotation={[0, -0.12, 0]} scale={1.22}>
         <RecordPlayer position={[0, 0, 0]} onOpen={onRecord} hover={hover} />

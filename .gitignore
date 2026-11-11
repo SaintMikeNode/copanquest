@@ -11,3 +11,7 @@ data/raw/
 # Licensed audio (Ovani Sound): served from the R2 bucket "copanquest-assets" by worker/index.ts,
 # never committed (the license forbids redistributing the files on their own).
 public/audio/
+
+# The "Acerca de" videos (made from the 1080p masters with ffmpeg, see src/room/AboutVideo.tsx):
+# served from the R2 bucket "copanquest-assets" by worker/index.ts, kept out of Git (size).
+public/video/

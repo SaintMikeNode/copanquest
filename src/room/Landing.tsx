@@ -4,6 +4,9 @@
 // loads when the player presses Jugar (the game chunk is fetched once they zoom in).
 // The book on the desk works the same way (C, a click on it or the Créditos button): the
 // camera flies down to it while its cover opens, then the credits book appears over it.
+// The CD next to the monitor (A, a click on it or the Acerca de button) goes into the computer's
+// CD tray, then the camera zooms into the screen and the "how it was made" video plays there
+// (AboutVideo.tsx; nothing is downloaded before that click). ES / EN switch: top right.
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
@@ -14,16 +17,23 @@ import { Menu } from "../ui/Menu";
 import { useT } from "../i18n";
 import { useGame } from "../state/useGame";
 import { IS_TOUCH } from "../config";
-import { play, useRecord } from "../audio/sound";
+import { play, useRecord, useSound } from "../audio/sound";
 import { RecordBox } from "./RecordBox";
 import { CreditsBook } from "./CreditsBook";
 import { Presence } from "../ui/presence";
 import { setResume, takeResume } from "../staleReload";
+import { AboutVideo, prepareVideo } from "./AboutVideo";
+import { LangToggle } from "../ui/LangToggle";
 
-/** room → in (camera moves) → screen (menu shown) → leaving (menu fades) → out (camera moves back) → room */
-type Phase = "room" | "in" | "screen" | "leaving" | "out";
-/** What the camera zooms to: the computer's screen or the book on the desk. */
-type Focus = "screen" | "book";
+/**
+ * room → in (camera moves) → screen (menu shown) → leaving (menu fades) → out (camera moves back) → room.
+ * For the video, "insert" (the CD goes into the computer, camera still) comes before "in".
+ */
+type Phase = "room" | "insert" | "in" | "screen" | "leaving" | "out";
+/** What the camera zooms to: the computer's screen (menu or video) or the book on the desk. */
+type Focus = "screen" | "book" | "video";
+/** How long the CD takes to go into the computer (and back out). */
+const CD_SECONDS = 1.5;
 /** Menu crossfade over the CRT, both ways (matches .crt / .crt-leave in styles.css). */
 const FADE_MS = 380;
 
@@ -88,6 +98,7 @@ function CameraRig({
   power,
   boost,
   bookOpen,
+  cd,
 }: {
   phase: Phase;
   focus: Focus;
@@ -96,6 +107,7 @@ function CameraRig({
   power: { current: number };
   boost: { current: number };
   bookOpen: { current: number };
+  cd: { current: number };
 }) {
   const camera = useThree((s) => s.camera) as THREE.PerspectiveCamera;
   const size = useThree((s) => s.size);
@@ -112,6 +124,10 @@ function CameraRig({
     // The screen powers up once when the page appears.
     power.current = on ? Math.min(1, power.current + d * 1.1) : 0;
     psxLights.uScreenColor.value.copy(SCREEN_GLOW).multiplyScalar(power.current);
+    // The CD goes in first (the camera waits), and comes back out while the camera pulls back.
+    const watching = focus === "video" && (phase === "insert" || phase === "in" || phase === "screen" || phase === "leaving");
+    cd.current = THREE.MathUtils.clamp(cd.current + (watching ? d : -d) / CD_SECONDS, 0, 1);
+    if (phase === "insert" && cd.current >= 1) onArrive("in");
     const target = phase === "in" || phase === "screen" || phase === "leaving" ? 1 : 0;
     const before = t.current;
     t.current = THREE.MathUtils.clamp(t.current + (target ? d : -d) / ZOOM_SECONDS, 0, 1);
@@ -119,7 +135,7 @@ function CameraRig({
     if (phase === "out" && before > 0 && t.current <= 0) onArrive("room");
     const k = ease(t.current);
     // The CRT's zoom glow only for the screen; the book's cover opens over the second half.
-    boost.current = focus === "screen" ? k : 0;
+    boost.current = focus === "book" ? 0 : k;
     bookOpen.current = focus === "book" ? THREE.MathUtils.smoothstep(t.current, 0.45, 0.95) : 0;
     const aspect = size.width / size.height;
     const fov = aspect < 0.9 ? PORTRAIT_FOV : FOV;
@@ -160,6 +176,7 @@ const Scene = memo(function Scene({
   onMonitor,
   onRecord,
   onBook,
+  onCd,
   prompt,
   hover,
 }: {
@@ -170,18 +187,20 @@ const Scene = memo(function Scene({
   onMonitor: () => void;
   onRecord: () => void;
   onBook: () => void;
+  onCd: () => void;
   prompt: string;
   hover: (on: boolean) => void;
 }) {
   const power = useRef(0);
   const boost = useRef(0);
   const bookOpen = useRef(0);
+  const cd = useRef(0);
   return (
     <>
       <color attach="background" args={["#140c08"]} />
-      <CameraRig phase={phase} focus={focus} on={on} onArrive={onArrive} power={power} boost={boost} bookOpen={bookOpen} />
+      <CameraRig phase={phase} focus={focus} on={on} onArrive={onArrive} power={power} boost={boost} bookOpen={bookOpen} cd={cd} />
       <SnapGrid />
-      <RoomScene onMonitor={onMonitor} onRecord={onRecord} onBook={onBook} bookOpen={bookOpen} prompt={prompt} power={power} boost={boost} hover={hover} />
+      <RoomScene onMonitor={onMonitor} onRecord={onRecord} onBook={onBook} onCd={onCd} bookOpen={bookOpen} cdInsert={cd} prompt={prompt} power={power} boost={boost} hover={hover} />
     </>
   );
 });
@@ -227,6 +246,20 @@ export default function Landing({ onIntent }: { onIntent: () => void }) {
     setFocus("book");
     setPhase(reduceMotion() ? "screen" : "in");
   }, []);
+  // The CD goes into the computer, then the camera zooms in and the video plays on the screen.
+  // The record pauses for it (the video has sound; the first click of the page would otherwise
+  // start the record under it) and comes back afterwards if it was on.
+  const recordWas = useRef(false);
+  const openVideo = useCallback(() => {
+    if (phaseRef.current !== "room") return;
+    setRecord(false);
+    prepareVideo(useGame.getState().lang); // start buffering during the animation
+    recordWas.current = useRecord.getState().wanted && useSound.getState().music; // (sound off: leave it)
+    if (recordWas.current) useRecord.getState().setOn(false);
+    play("open");
+    setFocus("video");
+    setPhase(reduceMotion() ? "screen" : "insert");
+  }, []);
   const dpr = useMemo(() => Math.min(1, Math.max(0.25, RENDER_HEIGHT / window.innerHeight)), []);
 
   const zoomIn = useCallback(() => {
@@ -241,6 +274,10 @@ export default function Landing({ onIntent }: { onIntent: () => void }) {
   const zoomOut = useCallback(() => {
     if (phaseRef.current !== "screen") return;
     play(focusRef.current === "book" ? "page" : "close");
+    if (focusRef.current === "video" && recordWas.current) {
+      recordWas.current = false;
+      useRecord.getState().setOn(true);
+    }
     // Fade the menu (or the book's pages) out first, then pull the camera back.
     setPhase("leaving");
     leaveTimer.current = window.setTimeout(() => setPhase("out"), FADE_MS);
@@ -255,6 +292,7 @@ export default function Landing({ onIntent }: { onIntent: () => void }) {
       const plain = !e.ctrlKey && !e.metaKey && !e.altKey && !e.repeat;
       const inRoom = phaseRef.current === "room" || phaseRef.current === "out";
       const reading = focusRef.current === "book" && phaseRef.current === "screen";
+      const watching = focusRef.current === "video" && phaseRef.current === "screen";
       if (plain && (inRoom || reading) && e.code === "KeyM") {
         const r = useRecord.getState();
         r.setOn(!r.spinning);
@@ -263,6 +301,11 @@ export default function Landing({ onIntent }: { onIntent: () => void }) {
       if (plain && e.code === "KeyC") {
         if (reading) zoomOut();
         else if (phaseRef.current === "room") openBook();
+        return;
+      }
+      if (plain && e.code === "KeyA") {
+        if (watching) zoomOut();
+        else if (phaseRef.current === "room") openVideo();
         return;
       }
       if (modalRef.current) {
@@ -280,7 +323,7 @@ export default function Landing({ onIntent }: { onIntent: () => void }) {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [zoomIn, zoomOut, openBook]);
+  }, [zoomIn, zoomOut, openBook, openVideo]);
 
   // No WebGL: just the menu.
   if (!webgl) return <Menu />;
@@ -298,7 +341,7 @@ export default function Landing({ onIntent }: { onIntent: () => void }) {
           if (IS_TOUCH) zoomIn();
         }}
       >
-        <Scene phase={phase} focus={focus} on={on} onArrive={setPhase} onMonitor={zoomIn} onRecord={openRecord} onBook={openBook} prompt={prompt} hover={setPointer} />
+        <Scene phase={phase} focus={focus} on={on} onArrive={setPhase} onMonitor={zoomIn} onRecord={openRecord} onBook={openBook} onCd={openVideo} prompt={prompt} hover={setPointer} />
       </Canvas>
       {(phase === "room" || phase === "out") && (
         <footer className="landing-footer">
@@ -331,6 +374,15 @@ export default function Landing({ onIntent }: { onIntent: () => void }) {
             {!IS_TOUCH && <kbd>C</kbd>}
             <span className="landing-note">✦</span> {t("credits")}
           </button>
+          <button className="landing-hint landing-record pill" onClick={openVideo}>
+            {!IS_TOUCH && <kbd>A</kbd>}
+            <span className="landing-note">◉</span> {t("about.button")}
+          </button>
+        </div>
+      )}
+      {(phase === "room" || phase === "out") && (
+        <div className="landing-lang">
+          <LangToggle />
         </div>
       )}
       <Presence show={record && (phase === "room" || phase === "out")}>
@@ -339,6 +391,11 @@ export default function Landing({ onIntent }: { onIntent: () => void }) {
       <Presence show={focus === "book" && phase === "screen"}>
         <CreditsBook onClose={zoomOut} />
       </Presence>
+      {focus === "video" && (phase === "screen" || phase === "leaving") && (
+        <div className={phase === "leaving" ? "crt-wrap crt-leave" : "crt-wrap"}>
+          <AboutVideo onBack={zoomOut} />
+        </div>
+      )}
       {focus === "screen" && (phase === "screen" || phase === "leaving") && (
         <div className={phase === "leaving" ? "crt-wrap crt-leave" : "crt-wrap"}>
           <Menu crt onBack={zoomOut} />

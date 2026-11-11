@@ -405,6 +405,15 @@ button { font: inherit; cursor: pointer; }
 .crt .menu-lang { top: calc(max(0px, env(safe-area-inset-top)) + 52px); }
 @keyframes crt-flicker { 0%, 100% { opacity: 1; } 47% { opacity: .92; } 48% { opacity: 1; } 81% { opacity: .95; } 82% { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .crt-wrap, .crt-fx, .landing-hint, .landing-note { animation: none; } }
+/* ES / EN switch over the bedroom view (Landing.tsx), top right. */
+.landing-lang { position: absolute; z-index: 2; top: calc(max(0px, env(safe-area-inset-top)) + 12px); right: 12px; }
+/* The about video "inside" the monitor (AboutVideo.tsx), same CRT frame as the menu. */
+.about-screen { background: #000; }
+.about-video-box, .about-video { position: absolute; inset: 0; width: 100%; height: 100%; }
+.about-video { object-fit: contain; background: #000; }
+.about-status { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); margin: 0; color: #9be3b5;
+  font-size: 1.1rem; pointer-events: none; animation: hint-pulse 1.4s ease-in-out infinite; }
+.about-play { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 84px; height: 84px; font-size: 2.2rem; z-index: 3; }
 
 /* ---------- First-play tutorial (src/ui/Tutorial.tsx) ---------- */
 .tutorial {

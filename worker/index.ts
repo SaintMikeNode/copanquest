@@ -1,9 +1,11 @@
-// Worker for copanquest.todosenlaweb.com. Everything is static assets except /audio/*, which
-// this Worker serves from the R2 bucket "copanquest-assets": the music and sound effects are
-// licensed (Ovani Sound) for use in the game but may not be redistributed as loose files, so
-// they are not in the public Git repo. Requests for /audio/* run this Worker first
+// Worker for copanquest.todosenlaweb.com. Everything is static assets except /audio/* and
+// /video/*, which this Worker serves from the R2 bucket "copanquest-assets": the music and sound
+// effects are licensed (Ovani Sound) for use in the game but may not be redistributed as loose
+// files, so they are not in the public Git repo; the "Acerca de" videos are kept out of Git for
+// their size (AboutVideo.tsx). Requests for /audio/* and /video/* run this Worker first
 // (assets.runWorkerFirst in cloudflare.config.ts); anything not in the bucket falls back to the
-// built assets, so local dev and preview keep using the files in public/audio (git-ignored).
+// built assets, so local dev and preview keep using the files in public/audio and public/video
+// (git-ignored).
 //
 // Edge cache: each audio file is kept in the Cloudflare data center's cache (Cache API) after
 // its first read, so later players nearby get it without an R2 read (faster, and fewer billed
@@ -39,10 +41,10 @@ interface EdgeCache {
 
 const edgeCache = (): EdgeCache | null => (globalThis as unknown as { caches?: { default?: EdgeCache } }).caches?.default ?? null;
 
-function audioHeaders(obj: R2ObjectBody): Headers {
+function audioHeaders(obj: R2ObjectBody, key: string): Headers {
   const headers = new Headers();
   obj.writeHttpMetadata(headers);
-  if (!headers.has("content-type")) headers.set("content-type", "audio/mpeg");
+  if (!headers.has("content-type")) headers.set("content-type", key.endsWith(".mp4") ? "video/mp4" : "audio/mpeg");
   headers.set("etag", obj.httpEtag);
   headers.set("accept-ranges", "bytes");
   headers.set("cache-control", "public, max-age=31536000, immutable");
@@ -50,8 +52,8 @@ function audioHeaders(obj: R2ObjectBody): Headers {
 }
 
 /** Whole file from R2 as a 200 response. */
-function fullResponse(obj: R2ObjectBody, head: boolean): Response {
-  const headers = audioHeaders(obj);
+function fullResponse(obj: R2ObjectBody, key: string, head: boolean): Response {
+  const headers = audioHeaders(obj, key);
   headers.set("content-length", String(obj.size));
   return new Response(head ? null : obj.body, { headers });
 }
@@ -59,7 +61,7 @@ function fullResponse(obj: R2ObjectBody, head: boolean): Response {
 export default {
   async fetch(request: Request, env: Env, ctx: Ctx): Promise<Response> {
     const url = new URL(request.url);
-    if (!url.pathname.startsWith("/audio/")) return env.ASSETS.fetch(request);
+    if (!url.pathname.startsWith("/audio/") && !url.pathname.startsWith("/video/")) return env.ASSETS.fetch(request);
     if (request.method !== "GET" && request.method !== "HEAD") return new Response(null, { status: 405 });
 
     const head = request.method === "HEAD";
@@ -89,20 +91,20 @@ export default {
       if (cache && !head) {
         ctx.waitUntil(
           env.AUDIO.get(key)
-            .then((whole) => (whole ? cache.put(cacheKey, fullResponse(whole, false)) : undefined))
+            .then((whole) => (whole ? cache.put(cacheKey, fullResponse(whole, key, false)) : undefined))
             .catch(() => undefined),
         );
       }
       const r = obj.range;
       const start = r.suffix !== undefined ? obj.size - r.suffix : (r.offset ?? 0);
       const length = r.suffix !== undefined ? r.suffix : (r.length ?? obj.size - start);
-      const headers = audioHeaders(obj);
+      const headers = audioHeaders(obj, key);
       headers.set("content-range", `bytes ${start}-${start + length - 1}/${obj.size}`);
       headers.set("content-length", String(length));
       return new Response(head ? null : obj.body, { status: 206, headers });
     }
 
-    const response = fullResponse(obj, head);
+    const response = fullResponse(obj, key, head);
     if (cache && !head) ctx.waitUntil(cache.put(cacheKey, response.clone()).catch(() => undefined));
     return response;
   },
