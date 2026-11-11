@@ -341,4 +341,4 @@ The in-game **Créditos** screen (`src/ui/creditsData.ts`) must stay in sync wit
 
 **Software:** three.js (MIT), React (MIT), pmndrs React Three Fiber / drei / react-three-rapier / ecctrl / zustand (MIT), Rapier (Apache-2.0), Vite (MIT), vite-plugin-pwa (MIT), geotiff.js (MIT).
 
-Code license: not chosen yet.
+CopánQuest's own code: **MIT** ([LICENSE](LICENSE)).
