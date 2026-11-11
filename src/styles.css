@@ -175,6 +175,9 @@ button { font: inherit; cursor: pointer; }
   padding: 6px 14px; font-size: 1.1rem; display: inline-flex; align-items: center; white-space: nowrap;
 }
 .talk-prompt:active { transform: translateX(-50%) translateY(2px); }
+/* The buggy's prompt can be long ("El buggy no arranca: busca la caja…"): it wraps, centered,
+   within the screen instead of running off both sides on phones. */
+.buggy-prompt { white-space: normal; text-align: center; justify-content: center; width: max-content; max-width: calc(100vw - 32px); line-height: 1.25; }
 .buggy-keys {
   position: absolute; left: 50%; transform: translateX(-50%); bottom: calc(max(16px, env(safe-area-inset-bottom)) + 58px);
   margin: 0; padding: 3px 10px; font-size: .9rem; width: max-content; max-width: calc(100vw - 32px); text-align: center; pointer-events: none;
