@@ -5,7 +5,8 @@ import type { L10n } from "../i18n";
 export const ABOUT: { title: L10n; items: L10n[]; links?: boolean }[] = [
   {
     title: { es: "Quién", en: "Who" },
-    // The GitHub / nerdypunk.dev / todosenlaweb.com links go right under this section.
+    // "código abierto" (GitHub), "nerdypunkdev" and "Todos en la Web" are links inside the text
+    // (CreditsBook INLINE_LINKS: keep those words when editing it); the contact email goes below.
     links: true,
     items: [
       {

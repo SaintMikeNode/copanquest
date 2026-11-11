@@ -4,9 +4,32 @@
 import { useState } from "react";
 import { useL10n, useT } from "../i18n";
 import { Credits } from "../ui/Credits";
+import { CONTACT } from "../ui/ProjectCredit";
 import { ABOUT } from "./aboutData";
 
 const REPO = "https://github.com/SaintMikeNode/copanquest";
+
+/** Words in the "Who" text that link out, inline in the sentence. */
+const INLINE_LINKS: [string, string][] = [
+  ["código abierto", REPO],
+  ["open-source", REPO],
+  ["nerdypunkdev", "https://nerdypunk.dev"],
+  ["Todos en la Web", "https://todosenlaweb.com"],
+];
+const LINK_RE = new RegExp(`(${INLINE_LINKS.map(([w]) => w).join("|")})`);
+
+function withLinks(text: string) {
+  return text.split(LINK_RE).map((part, i) => {
+    const url = INLINE_LINKS.find(([w]) => w === part)?.[1];
+    return url ? (
+      <a key={i} href={url} target="_blank" rel="noopener noreferrer">
+        {part}
+      </a>
+    ) : (
+      part
+    );
+  });
+}
 
 export function CreditsBook({ onClose }: { onClose: () => void }) {
   const t = useT();
@@ -32,19 +55,11 @@ export function CreditsBook({ onClose }: { onClose: () => void }) {
             <section key={s.title.en}>
               <h3>{l(s.title)}</h3>
               {s.items.map((it) => (
-                <p key={it.en}>{l(it)}</p>
+                <p key={it.en}>{s.links ? withLinks(l(it)) : l(it)}</p>
               ))}
               {s.links && (
-                <p className="book-links">
-                  <a href={REPO} target="_blank" rel="noopener noreferrer">
-                    GitHub ↗
-                  </a>
-                  <a href="https://nerdypunk.dev" target="_blank" rel="noopener noreferrer">
-                    nerdypunk.dev ↗
-                  </a>
-                  <a href="https://todosenlaweb.com" target="_blank" rel="noopener noreferrer">
-                    todosenlaweb.com ↗
-                  </a>
+                <p className="book-contact">
+                  {t("book.contact")}: <a href={`mailto:${CONTACT}`}>{CONTACT}</a>
                 </p>
               )}
             </section>
@@ -52,7 +67,7 @@ export function CreditsBook({ onClose }: { onClose: () => void }) {
         </article>
         <article className="book-page book-right">
           <h2>{t("credits")}</h2>
-          <Credits />
+          <Credits contact={false} />
         </article>
       </section>
     </div>
