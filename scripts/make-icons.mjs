@@ -1,52 +1,28 @@
-// Generates the PWA icons (a stylized red stepped temple) without image tools.
-import { writeFile, mkdir } from "node:fs/promises";
+// Generates the favicon and the PWA icons from the voxel temple icon (branding/voxel-icon.mjs).
+// public/favicon.svg is the rounded brand tile (also shown in the menu, the loading screen and on
+// the bedroom computer's CRT); the PNG app icons are full-bleed squares, and the maskable one keeps
+// the temple inside Android's safe zone.
+import { mkdir, writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
-import { encodePNG } from "./lib/png.mjs";
+import sharp from "sharp";
+import { iconSvg } from "../branding/voxel-icon.mjs";
 
-const out = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "public", "icons");
-const hex = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
-const SKY = hex("#f1d9a6");
-const RED = hex("#b3402a");
-const GOLD = hex("#e9b949");
-const GROUND = hex("#2f6b4f");
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const pub = path.join(root, "public");
+const out = path.join(pub, "icons");
 
-function draw(size, pad) {
-  const data = new Uint8Array(size * size * 4);
-  // shapes in a 64-unit design space, shrunk by `pad` (fraction) for maskable safe zone
-  const s = (size * (1 - 2 * pad)) / 64;
-  const o = size * pad;
-  const rects = [
-    [0, 56, 64, 8, GROUND],
-    [8, 48, 48, 8, RED],
-    [14, 40, 36, 8, RED],
-    [20, 32, 24, 8, RED],
-    [25, 20, 14, 12, RED],
-    [27, 14, 10, 6, RED],
-    [29, 34, 6, 22, GOLD],
-  ];
-  for (let y = 0; y < size; y++) {
-    for (let x = 0; x < size; x++) {
-      let c = SKY;
-      const u = (x - o) / s;
-      const v = (y - o) / s;
-      for (const [rx, ry, rw, rh, col] of rects) {
-        if (u >= rx && u < rx + rw && v >= ry && v < ry + rh) c = col;
-      }
-      if (pad > 0 && (y - o) / s >= 56) c = GROUND; // extend ground to the bottom edge
-      const i = (y * size + x) * 4;
-      data[i] = c[0];
-      data[i + 1] = c[1];
-      data[i + 2] = c[2];
-      data[i + 3] = 255;
-    }
-  }
-  return encodePNG({ width: size, height: size, bitDepth: 8, colorType: 6, data });
-}
+const png = (svg, size, file) =>
+  sharp(Buffer.from(svg), { density: 72 * (size / 64) * 1.5 })
+    .resize(size, size)
+    .png({ compressionLevel: 9 })
+    .toFile(path.join(out, file));
 
 await mkdir(out, { recursive: true });
-await writeFile(path.join(out, "icon-192.png"), draw(192, 0.06));
-await writeFile(path.join(out, "icon-512.png"), draw(512, 0.06));
-await writeFile(path.join(out, "icon-maskable-512.png"), draw(512, 0.16));
-await writeFile(path.join(out, "apple-touch-icon.png"), draw(180, 0.06));
-console.log("Icons written to public/icons/");
+await writeFile(path.join(pub, "favicon.svg"), iconSvg(64, { tile: "rounded" }));
+const square = iconSvg(512, { tile: "square", pad: 0.03 });
+await png(square, 192, "icon-192.png");
+await png(square, 512, "icon-512.png");
+await png(square, 180, "apple-touch-icon.png");
+await png(iconSvg(512, { tile: "square", pad: 0.12 }), 512, "icon-maskable-512.png");
+console.log("Favicon and icons written to public/");

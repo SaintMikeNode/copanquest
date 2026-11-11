@@ -7,6 +7,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import opentype from "opentype.js";
 import sharp from "sharp";
+import { iconInner } from "./voxel-icon.mjs";
 
 const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const out = path.join(repo, "branding");
@@ -23,8 +24,8 @@ const JADE_BOTTOM = "#06140f";
 const FRET = "#1c4a36";
 const MINT = "#9be3b5";
 
-// The game icon (same as public/favicon.svg): a stepped pyramid on a sand tile.
-const ICON_INNER = `<rect width="64" height="64" rx="12" fill="#f1d9a6"/><g fill="#b3402a"><rect x="8" y="48" width="48" height="8"/><rect x="14" y="40" width="36" height="8"/><rect x="20" y="32" width="24" height="8"/><rect x="25" y="20" width="14" height="12"/></g><rect x="29" y="34" width="6" height="22" fill="#e9b949"/>`;
+// The game icon (same as public/favicon.svg): the voxel temple on the jade tile, in a 64-unit box.
+const ICON_INNER = iconInner(64, { id: "cq-icon-bg" });
 
 /**
  * "CopánQuest" as outlines, baseline at y = 0, starting at x = 0. Pixelify Sans' capital C is

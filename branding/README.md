@@ -1,6 +1,7 @@
 # CopánQuest branding
 
-The logo is the game's icon (a stepped Maya pyramid on a sand tile, also `public/favicon.svg`)
+The logo is the game's icon (a stepped Maya temple built from voxels, in isometric view, with a
+pixel sun behind it on a dark jade tile; also `public/favicon.svg` and the app icons)
 and the **CopánQuest** wordmark in yellow with a dark red drop shadow, the same as the title
 screen on the bedroom computer's CRT.
 
@@ -24,7 +25,9 @@ versions are made for dark backgrounds (the yellow is light); on white, use the 
 | Wordmark shadow | `#7a1d10` |
 | Pyramid red | `#b3402a` |
 | Stair gold | `#e9b949` |
-| Icon sand | `#f1d9a6` |
+| Temple top / stucco light | `#c9553a` |
+| Temple walls (cream) | `#e8dcc0` |
+| Sun | `#f2c14e` |
 | Jade background | `#0d2a20` → `#06140f` |
 | Fret green | `#1c4a36` |
 | Tagline mint | `#9be3b5` |
@@ -37,6 +40,10 @@ the C (the game does the same: `.title-c` in `src/styles.css`, `drawTitle` in `s
 
 ## Rebuilding
 
+The icon is drawn by `voxel-icon.mjs` (the voxel model, isometric projection and colors, plain SVG
+with no dependencies). Change it there, then rebuild both the logo files and the game's icons:
+
 ```bash
 npm i --no-save opentype.js@1.3.4 && node branding/build-logo.mjs
+npm run icons   # public/favicon.svg and public/icons/*.png
 ```

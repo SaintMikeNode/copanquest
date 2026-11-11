@@ -8,7 +8,7 @@ Web 3D exploration game: Honduran kids walk around the Maya city of Copán as it
 - `npm run build` — typecheck + production build (`.cloudflare/output/v0/`)
 - `npm run typecheck`
 - `npm run heightmap` — regenerate `public/terrain/` from the Copernicus DEM
-- `npm run icons` — regenerate PWA icons
+- `npm run icons` — regenerate `public/favicon.svg` and the PWA icons from the voxel temple icon (`branding/voxel-icon.mjs`; the logo files come from `branding/build-logo.mjs`, see `branding/README.md`)
 
 Node 24 (matches Cloudflare Workers Builds; `.nvmrc` / `.node-version` / `engines`). On this Mac it is
 installed keg-only by Homebrew: prefix commands with `PATH="/opt/homebrew/opt/node@24/bin:$PATH"`
