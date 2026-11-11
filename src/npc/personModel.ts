@@ -50,6 +50,15 @@ export function personRig(o: Outfit): Rig {
     hat: hex("#8c6b45"),
     hatBand: hex("#3d2a1a"),
     basketDark: hex("#8c6a30"),
+    jade: hex("#2f9e6e"),
+    jadeDark: hex("#1d6b4a"),
+    gold: hex("#f2c42c"),
+    goggle: hex("#e8eef0"),
+    goggleDark: hex("#9fb4bc"),
+    quetzal: hex("#1f8a4c"),
+    quetzalLight: hex("#5cc884"),
+    macaw: hex("#d0362a"),
+    macawBlue: hex("#2a5ca8"),
   };
 
   const leg = (t: Tile, f: FaceName) => {
@@ -74,15 +83,33 @@ export function personRig(o: Outfit): Rig {
       const cloth = Math.ceil(t.h * 0.4);
       for (let y = 0; y < cloth; y++) for (let x = 0; x < t.w; x++) t.set(x, y, y === cloth - 1 ? C.accent : C.bottom);
     }
+    if (o.royal) for (let x = 0; x < t.w; x++) t.set(x, t.h - 3, x % 2 ? C.jade : C.jadeDark); // jade anklet
     for (let x = 0; x < t.w; x++) t.set(x, t.h - 1, hex("#5a3a22")); // sandals
   };
   const arm = (t: Tile, f: FaceName) => {
     solid(t, C.skin, 0.05, 3);
     if (f === "bottom") return;
-    const sleeve = o.explorer ? 0.8 : o.modern || o.female ? 0.35 : 0;
+    const sleeve = o.royal ? 0 : o.explorer ? 0.8 : o.modern || o.female ? 0.35 : 0;
     for (let y = 0; y < Math.ceil(t.h * sleeve); y++) for (let x = 0; x < t.w; x++) t.set(x, y, C.top);
+    if (o.royal) for (let y = t.h - 5; y < t.h - 2; y++) for (let x = 0; x < t.w; x++) t.set(x, y, y === t.h - 4 ? C.jade : C.jadeDark); // jade cuff
   };
   const torso = (t: Tile, f: FaceName) => {
+    if (o.royal) {
+      // Bare chest, a wide collar of jade beads, a jade pectoral, a red belt with gold.
+      solid(t, f === "top" ? C.jade : C.skin, 0.04, 4);
+      if (f === "top" || f === "bottom") return;
+      for (let y = 0; y < 3; y++) for (let x = 0; x < t.w; x++) t.set(x, y, (x + y) % 3 === 0 ? C.white : y === 1 ? C.jade : C.jadeDark);
+      if (f === "front") {
+        const cx = Math.floor(t.w / 2);
+        for (let y = 3; y < 8; y++) for (let x = cx - 2; x < cx + 2; x++) t.set(x, y, y === 3 || y === 7 || x === cx - 2 || x === cx + 1 ? C.gold : C.jade);
+      }
+      for (let x = 0; x < t.w; x++) {
+        t.set(x, t.h - 3, C.macaw);
+        t.set(x, t.h - 2, x % 3 === 1 ? C.gold : C.macaw);
+        t.set(x, t.h - 1, C.macaw);
+      }
+      return;
+    }
     solid(t, C.top, 0.05, 4);
     if (f === "top" || f === "bottom") return;
     if (o.female) {
@@ -140,7 +167,20 @@ export function personRig(o: Outfit): Rig {
     if (f === "bottom") return;
     const rows = f === "back" ? Math.floor(t.h * (o.female ? 1 : 0.65)) : 3;
     for (let y = 0; y < rows; y++) for (let x = 0; x < t.w; x++) t.set(x, y, C.hair);
-    if (f === "front") {
+    if (f === "front" && o.royal) {
+      // Goggles: a pale ring around each eye (Altar Q, in the style of Teotihuacan).
+      const ey = 5;
+      for (const ex of [2, t.w - 4]) {
+        for (let y = ey - 2; y <= ey + 1; y++) for (let x = ex - 1; x <= ex + 2; x++) t.set(x, y, y === ey + 1 ? C.goggleDark : C.goggle);
+        t.set(ex, ey, C.white);
+        t.set(ex + 1, ey, C.eye);
+        t.set(ex, ey - 1, C.eye);
+        t.set(ex + 1, ey - 1, C.eye);
+      }
+      const mx = Math.floor(t.w / 2);
+      t.set(mx, ey + 2, C.skinDark);
+      for (const x of [mx - 1, mx]) t.set(x, ey + 4, C.skinDark);
+    } else if (f === "front") {
       const ey = 5;
       for (const ex of [2, t.w - 4]) {
         t.set(ex, ey, C.white);
@@ -176,6 +216,56 @@ export function personRig(o: Outfit): Rig {
     if (f === "top") for (let y = 2; y < t.h - 2; y++) for (let x = 2; x < t.w - 2; x++) t.set(x, y, (x * 7 + y) % 5 ? hex("#f0bd2e") : hex("#d69a1c"));
   };
 
+  const royalBand = (t: Tile, f: FaceName) => {
+    solid(t, C.jade, 0.06, 14);
+    if (f === "top" || f === "bottom") return;
+    for (let x = 0; x < t.w; x++) {
+      t.set(x, 0, C.gold);
+      if (x % 3 === 1) t.set(x, Math.floor(t.h / 2), C.white);
+      t.set(x, t.h - 1, C.jadeDark);
+    }
+  };
+  // Long green quetzal tail feathers rising from red and yellow macaw feathers.
+  const plume = (t: Tile, f: FaceName) => {
+    solid(t, C.quetzal, 0.08, 15);
+    if (f === "top" || f === "bottom") return;
+    const mid = Math.floor(t.w / 2);
+    for (let y = 0; y < t.h; y++) t.set(mid, y, C.quetzalLight);
+    for (let x = 0; x < t.w; x++) {
+      t.set(x, 0, C.quetzalLight);
+      for (let y = t.h - 4; y < t.h; y++) t.set(x, y, y >= t.h - 2 ? C.macaw : C.gold);
+    }
+  };
+  const earFlare = (t: Tile, f: FaceName) => {
+    solid(t, C.jade, 0.06, 16);
+    if (f === "left" || f === "right") {
+      const cx = Math.floor(t.w / 2);
+      const cy = Math.floor(t.h / 2);
+      t.set(cx, cy, C.white);
+      t.set(cx - 1, cy, C.jadeDark);
+    }
+  };
+  // Small square shield: red frame, ochre face with a goggle eye, a fringe of green feathers.
+  const shield = (t: Tile, f: FaceName) => {
+    solid(t, C.macaw, 0.05, 17);
+    if (f !== "left" && f !== "right") return;
+    for (let y = 1; y < t.h - 3; y++) for (let x = 1; x < t.w - 1; x++) t.set(x, y, hex("#e0b25a"));
+    const cx = Math.floor(t.w / 2);
+    const cy = Math.floor((t.h - 3) / 2);
+    for (let y = cy - 2; y <= cy + 1; y++) for (let x = cx - 2; x <= cx + 1; x++) t.set(x, y, C.goggle);
+    for (let y = cy - 1; y <= cy; y++) for (let x = cx - 1; x <= cx; x++) t.set(x, y, C.eye);
+    for (let y = t.h - 3; y < t.h; y++) for (let x = 0; x < t.w; x++) t.set(x, y, (x + y) % 2 ? C.quetzal : C.quetzalLight);
+  };
+  // Front of the headdress: bands of macaw red, yellow and blue.
+  const crest = (t: Tile, f: FaceName) => {
+    solid(t, C.macaw, 0.05, 18);
+    if (f === "top" || f === "bottom") return;
+    for (let x = 0; x < t.w; x++) {
+      t.set(x, 1, C.gold);
+      t.set(x, t.h - 2, C.macawBlue);
+    }
+  };
+
   const parts: PartSpec[] = [
     { size: [0.17, 0.5, 0.19], paint: leg }, // 0
     { size: [0.13, 0.48, 0.14], paint: arm }, // 1
@@ -189,6 +279,14 @@ export function personRig(o: Outfit): Rig {
     { size: [0.42, 0.16, 0.42], paint: basket }, // 9
     { size: [0.34, 0.14, 0.32], paint: hatCrown }, // 10
     { size: [0.6, 0.035, 0.58], paint: hatBrim }, // 11
+    // The king (royal): headband, quetzal plumes (3 heights), ear flares, shield, macaw crest.
+    { size: [0.38, 0.12, 0.36], paint: royalBand }, // 12
+    { size: [0.1, 0.52, 0.06], paint: plume }, // 13
+    { size: [0.1, 0.42, 0.06], paint: plume }, // 14
+    { size: [0.1, 0.3, 0.06], paint: plume }, // 15
+    { size: [0.05, 0.1, 0.1], paint: earFlare }, // 16
+    { size: [0.04, 0.24, 0.22], paint: shield }, // 17
+    { size: [0.16, 0.12, 0.05], paint: crest }, // 18
   ];
   const { geometries: G, material } = buildPixelModel(parts);
 
@@ -197,7 +295,21 @@ export function personRig(o: Outfit): Rig {
   const pieces = [place(G[2], 0, hip + 0.26, 0), place(G[3], 0, shoulderY + 0.19, 0)];
   if (o.female) pieces.push(place(G[4], 0, hip - 0.04, 0), place(G[8], 0, shoulderY + 0.02, -0.17));
   else pieces.push(place(G[5], 0, hip + 0.02, 0));
-  if (o.head && o.head !== "none") pieces.push(place(G[6], 0, shoulderY + 0.33, 0));
+  if (o.head && o.head !== "none" && !o.royal) pieces.push(place(G[6], 0, shoulderY + 0.33, 0));
+  if (o.royal) {
+    const top = shoulderY + 0.42; // top of the headband
+    pieces.push(
+      place(G[12], 0, shoulderY + 0.36, 0),
+      place(G[18], 0, shoulderY + 0.4, 0.19),
+      place(G[13], 0, top + 0.26, -0.1),
+      place(G[14], -0.11, top + 0.21, -0.1),
+      place(G[14], 0.11, top + 0.21, -0.1),
+      place(G[15], -0.22, top + 0.15, -0.1),
+      place(G[15], 0.22, top + 0.15, -0.1),
+      place(G[16], -0.195, shoulderY + 0.16, 0),
+      place(G[16], 0.195, shoulderY + 0.16, 0),
+    );
+  }
   if (o.head === "cap") pieces.push(place(G[7], 0, shoulderY + 0.31, 0.22));
   if (o.basket) pieces.push(place(G[9], 0, shoulderY + 0.46, 0));
   if (o.explorer) pieces.push(place(G[11], 0, shoulderY + 0.36, 0), place(G[10], 0, shoulderY + 0.44, 0));
@@ -208,7 +320,8 @@ export function personRig(o: Outfit): Rig {
     body,
     legL: limb(G[0], 0.5),
     legR: limb(G[0], 0.5),
-    armL: limb(G[1], 0.48),
+    // The king's shield rides on the outside of his right forearm (the −x arm: he faces +z).
+    armL: o.royal ? mergeGeometries([limb(G[1], 0.48), place(G[17], -0.085, -0.33, 0)])! : limb(G[1], 0.48),
     armR: limb(G[1], 0.48),
     material,
     hip,

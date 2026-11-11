@@ -89,14 +89,14 @@ function onDeco(ground: Ground, x: number, z: number, g: number, exclude: Rapier
  * never on top of a bush, trunk or village box: if a decoration is there, the nearest bare spot.
  * Null while the colliders aren't there yet.
  */
-function spawnSpot(ground: Ground, x: number, z: number, exclude: RapierRigidBody | null) {
+function spawnSpot(ground: Ground, x: number, z: number, exclude: RapierRigidBody | null, fromY = 60) {
   for (const [dx, dz] of SPAWN_OFFSETS) {
-    const all = ground(x + dx, z + dz, 60, exclude);
+    const all = ground(x + dx, z + dz, fromY, exclude);
     if (all === null) return null;
-    const bare = ground(x + dx, z + dz, 60, exclude, true);
+    const bare = ground(x + dx, z + dz, fromY, exclude, true);
     if (bare !== null && Math.abs(all - bare) < 0.25) return { x: x + dx, z: z + dz, y: all };
   }
-  const y = ground(x, z, 60, exclude, true);
+  const y = ground(x, z, fromY, exclude, true);
   return y === null ? null : { x, z, y };
 }
 
@@ -186,7 +186,8 @@ function Talker({ index }: { index: number }) {
     if (Number.isNaN(a.y)) {
       // Wait for the colliders: with the step limit, starting at a wrong height (0) would leave
       // the actor stuck inside a raised court.
-      const s0 = spawnSpot(ground, a.x, a.z, body.current);
+      // Indoors (floorY), look from just above the floor: from the sky it'd land on the roof.
+      const s0 = spawnSpot(ground, a.x, a.z, body.current, t.floorY !== undefined ? t.floorY + 1 : 60);
       if (s0 === null) return;
       a.x = a.tx = s0.x;
       a.z = a.tz = s0.z;

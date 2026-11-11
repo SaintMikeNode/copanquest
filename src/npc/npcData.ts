@@ -3,6 +3,7 @@
 // are fictional. The guide is a present-day Ch'orti' Maya — the Ch'orti' live in the Copán
 // region today; the villagers show how Classic-period families lived (Joya de Cerén model).
 import type { L10n } from "../i18n";
+import { ROSALILA } from "../world/siteData";
 
 export interface Outfit {
   skin: string;
@@ -19,6 +20,12 @@ export interface Outfit {
   modern?: boolean;
   /** Field archaeologist: wide-brim hat, jacket over a shirt (`accent`), long trousers, boots. */
   explorer?: boolean;
+  /**
+   * Copán's founding king as Altar Q portrays him: Teotihuacan-style goggles around the eyes and
+   * a small square shield on the right forearm; plus jade collar, ear flares and cuffs, a red hip
+   * cloth and a quetzal-and-macaw plume headdress (his name). Ignores `head`.
+   */
+  royal?: boolean;
 }
 
 export interface Talker {
@@ -29,6 +36,9 @@ export interface Talker {
   wander: number;
   outfit: Outfit;
   lines: L10n[];
+  /** Floor height (m) for someone standing indoors (tunnels): the ground is looked for from just
+   *  above it instead of dropping from the sky, which would land on the roof. */
+  floorY?: number;
 }
 
 const SKIN = ["#8d5a3b", "#7a4b30", "#9a6542", "#6e432b"];
@@ -263,6 +273,56 @@ export const TALKERS: Talker[] = [
       {
         es: "Los arqueólogos excavaron túneles dentro de la Acrópolis. Así, en 1989, el hondureño Ricardo Agurcia Fasquelle descubrió el templo Rosalila, enterrado bajo el Templo 16.",
         en: "Archaeologists dug tunnels inside the Acropolis. That's how, in 1989, Honduran archaeologist Ricardo Agurcia Fasquelle discovered the Rosalila temple, buried under Temple 16.",
+      },
+    ],
+  },
+  {
+    // Copán's founding king, beside Rosalila in its chamber inside Temple 16 (siteData ROSALILA):
+    // in front of the west façade, south of the doorway and off the plinth (x < 68.8), where you
+    // see him as you come round the corner from the tunnel; outside the Rosalila card's radius
+    // (poiData "rosalila", 5 m) so the two boxes don't overlap. His look follows his portrait on
+    // Altar Q (goggles, square shield on the right forearm; Outfit.royal).
+    // Sources: Altar Q text (accession 426, arrival at Copán months later) and portrait — David
+    // Stuart, "The Arrival of Strangers" / mayaruins.com Altar Q; Hunal tomb under Temple 16, an
+    // older man with healed injuries incl. a broken right forearm, and the link to the shield —
+    // Bell, Canuto & Sharer (eds.) 2004, "Understanding Early Classic Copan", Penn Museum;
+    // Braswell; isotopes pointing to an upbringing in the central Petén near Tikal — Buikstra et
+    // al. 2004 (same volume); name glosses and Rosalila's bird masks with his name in the
+    // headdress — World History Encyclopedia "K'inich Yax K'uk' Mo'", Asociación Copán.
+    id: "founder",
+    name: { es: "K'inich Yax K'uk' Mo', rey fundador", en: "K'inich Yax K'uk' Mo', founding king" },
+    home: [66.6, 323.8],
+    floorY: ROSALILA.baseY,
+    wander: 0,
+    outfit: { skin: SKIN[1], hair: "#1d1410", top: "#2f9e6e", accent: "#f2c42c", bottom: "#b8322a", head: "none", royal: true },
+    lines: [
+      {
+        es: "¡Bienvenida, bienvenido a mi templo! Soy K'inich Yax K'uk' Mo', el primer rey de la dinastía de Copán. Me convertí en rey en el año 426 y llegué aquí unos meses después.",
+        en: "Welcome to my temple! I'm K'inich Yax K'uk' Mo', the first king of Copán's dynasty. I became king in the year 426 and arrived here a few months later.",
+      },
+      {
+        es: "Mi nombre junta al Sol (K'inich), al quetzal (K'uk') y a la guacamaya (Mo'). Por eso llevo plumas verdes y rojas. Las grandes aves de Rosalila llevan mi nombre en su tocado.",
+        en: "My name brings together the Sun (K'inich), the quetzal (K'uk') and the macaw (Mo'). That's why I wear green and red feathers. Rosalila's giant birds carry my name in their headdress.",
+      },
+      {
+        es: "En el Altar Q me tallaron con círculos alrededor de los ojos, como unos anteojos, y un escudo cuadrado en el brazo: al estilo de Teotihuacan, una gran ciudad del centro de México.",
+        en: "On Altar Q they carved me with rings around my eyes, like goggles, and a square shield on my arm: in the style of Teotihuacan, a great city in central Mexico.",
+      },
+      {
+        es: "En ese altar le entrego el bastón de mando a Yax Pasaj, el rey número 16. ¡Aunque entre nosotros hay más de 300 años!",
+        en: "On that altar I hand the staff of rule to Yax Pasaj, the 16th king. Even though more than 300 years separate us!",
+      },
+      {
+        es: "Debajo del Templo 16, los arqueólogos encontraron la tumba de un hombre mayor con heridas viejas ya sanadas, como un brazo derecho roto. Creen que es la mía.",
+        en: "Under Temple 16, archaeologists found the tomb of an older man with old, healed injuries, like a broken right arm. They think it's mine.",
+      },
+      {
+        es: "Estudiando mis huesos descubrieron que de niño no viví en Copán: crecí lejos, probablemente cerca de Tikal, en Guatemala.",
+        en: "By studying my bones they found out I didn't grow up in Copán: I grew up far away, probably near Tikal, in Guatemala.",
+      },
+      {
+        es: "Los reyes que vinieron después me honraron como su antepasado y construyeron templo sobre templo encima de mi tumba. Rosalila es uno de ellos.",
+        en: "The kings who came after me honored me as their ancestor and built temple upon temple over my tomb. Rosalila is one of them.",
       },
     ],
   },
