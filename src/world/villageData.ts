@@ -191,13 +191,19 @@ export const VILLAGE_RECTS: [number, number, number, number][] = [
 
 // ---------------------------------------------------------------- ladders
 
-/** Wooden ladders up stepped walls: one segment per terrace (plus the temple wall). */
-export const LADDERS: { mound: string; face: Face; offset: number }[] = [
+/** Wooden ladders up stepped walls: one segment per terrace (plus the temple wall).
+ *  `templeOnly`: just the temple wall (where a stair already climbs the terraces). */
+export const LADDERS: { mound: string; face: Face; offset: number; templeOnly?: boolean }[] = [
   { mound: "acropolis", face: "n", offset: -73 }, // Acropolis north wall, west of Temple 11's stair
   { mound: "temple16", face: "n", offset: 0 },
   { mound: "temple22", face: "n", offset: 0 },
   { mound: "temple26", face: "e", offset: 0 },
+  // Top of the Hieroglyphic Stairway: from its landing up Temple 26's west wall to the roof.
+  { mound: "temple26", face: "w", offset: 0, templeOnly: true },
   { mound: "str10", face: "e", offset: 6 },
+  // Temple 11's south side, west of its stair (x −12…8): from the stair's top up the temple wall
+  // to the jade bead on its roof.
+  { mound: "temple11", face: "s", offset: 12 },
 ];
 
 // ---------------------------------------------------------------- jade beads (collectibles)

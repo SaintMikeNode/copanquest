@@ -52,7 +52,7 @@ export function ladderSegments(): LadderSegment[] {
         height: h,
         width: 1,
       });
-    for (let i = 0; i < m.tiers; i++) wall(half - i * m.setback, baseY + i * m.tierHeight, m.tierHeight);
+    if (!l.templeOnly) for (let i = 0; i < m.tiers; i++) wall(half - i * m.setback, baseY + i * m.tierHeight, m.tierHeight);
     if (m.temple) {
       const th = m.temple[alongX ? 2 : 0] / 2;
       wall(th, baseY + m.tiers * m.tierHeight, m.temple[1]);
