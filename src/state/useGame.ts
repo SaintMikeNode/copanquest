@@ -10,6 +10,17 @@ function initialLang(): Lang {
   } catch {
     /* storage unavailable */
   }
+  // First visit: the browser's preferred language, if it is English or Spanish (the first of the
+  // two in its list wins); anything else gets Spanish.
+  try {
+    const prefs = navigator.languages?.length ? navigator.languages : [navigator.language];
+    for (const p of prefs) {
+      const code = p?.toLowerCase().slice(0, 2);
+      if (code === "en" || code === "es") return code;
+    }
+  } catch {
+    /* no navigator */
+  }
   return "es";
 }
 
